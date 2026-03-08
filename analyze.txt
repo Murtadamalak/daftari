@@ -1,0 +1,252 @@
+Analyzing daftar - Copy - Copy...                               
+
+   info - Angle brackets will be interpreted as HTML - lib\src\core\providers\invoice_detail_provider.dart:13:58 - unintended_html_in_doc_comment
+warning - The declaration '_adminShellNavigatorKey' isn't referenced - lib\src\core\router\app_router.dart:27:7 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:141:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:187:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:203:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:349:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:463:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\theme\app_theme.dart:480:43 - deprecated_member_use
+warning - The declaration '_cairoBoldUrl' isn't referenced - lib\src\core\utils\pdf_invoice_generator.dart:26:7 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\glass_container.dart:41:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\glass_container.dart:55:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\glass_container.dart:59:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\soft_card.dart:38:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\soft_card.dart:45:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\core\widgets\soft_card.dart:50:39 - deprecated_member_use
+   info - 'StateNotifierProviderRef' is deprecated and shouldn't be used. will be removed in 3.0.0. Use Ref instead - lib\src\features\subscription\data\subscription_provider.dart:22:9 - deprecated_member_use
+  error - The named parameter 'settings' is required, but there's no corresponding argument - lib\src\features\subscription\data\subscription_provider.dart:36:43 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - lib\src\features\subscription\data\subscription_provider.dart:36:54 - extra_positional_arguments_could_be_named
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\features\subscription\data\subscription_provider.dart:46:45 - argument_type_not_assignable
+  error - The named parameter 'id' is required, but there's no corresponding argument - lib\src\features\subscription\data\subscription_provider.dart:106:43 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 4 found - lib\src\features\subscription\data\subscription_provider.dart:107:9 - extra_positional_arguments_could_be_named
+warning - The type argument(s) of the function 'rpc' can't be inferred - lib\src\features\subscription\data\subscription_service.dart:13:40 - inference_failure_on_function_invocation
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\features\subscription\data\subscription_service.dart:20:52 - argument_type_not_assignable
+warning - The type argument(s) of the function 'rpc' can't be inferred - lib\src\features\subscription\data\subscription_service.dart:24:49 - inference_failure_on_function_invocation
+warning - The type argument(s) of the function 'rpc' can't be inferred - lib\src\features\subscription\data\subscription_service.dart:26:50 - inference_failure_on_function_invocation
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\subscription\data\subscription_service.dart:34:32 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\subscription\data\subscription_service.dart:35:33 - argument_type_not_assignable
+   info - Don't invoke 'print' in production code - lib\src\features\subscription\data\subscription_service.dart:42:7 - avoid_print
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\data\subscription_service.dart:53:19 - argument_type_not_assignable
+   info - Don't invoke 'print' in production code - lib\src\features\subscription\data\subscription_service.dart:58:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\src\features\subscription\data\subscription_service.dart:104:7 - avoid_print
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\domain\subscription_models.dart:38:13 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\domain\subscription_models.dart:39:22 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\subscription\domain\subscription_models.dart:40:22 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'bool'.  - lib\src\features\subscription\domain\subscription_models.dart:41:17 - argument_type_not_assignable
+warning - The type argument(s) of 'Map' can't be inferred - lib\src\features\subscription\domain\subscription_models.dart:60:49 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'Map' can't be inferred - lib\src\features\subscription\domain\subscription_models.dart:61:40 - inference_failure_on_collection_literal
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\domain\subscription_models.dart:63:23 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\domain\subscription_models.dart:64:22 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\subscription\domain\subscription_models.dart:65:21 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'int'.  - lib\src\features\subscription\domain\subscription_models.dart:66:20 - argument_type_not_assignable
+warning - The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred - lib\src\features\subscription\presentation\payment_submission_screen.dart:63:11 - inference_failure_on_instance_creation
+   info - The imported package 'lottie' isn't a dependency of the importing package - lib\src\features\subscription\presentation\payment_success_screen.dart:3:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:lottie/lottie.dart' - lib\src\features\subscription\presentation\payment_success_screen.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../domain/subscription_models.dart' - lib\src\features\subscription\presentation\subscription_plans_screen.dart:5:8 - uri_does_not_exist
+  error - The name 'SubscriptionPlan' isn't a type, so it can't be used as a type argument - lib\src\features\subscription\presentation\subscription_plans_screen.dart:24:14 - non_type_as_type_argument
+  error - The name 'SubscriptionPlan' isn't a class - lib\src\features\subscription\presentation\subscription_plans_screen.dart:25:11 - creation_with_non_type
+warning - The type argument(s) of 'List' can't be inferred - lib\src\features\subscription\presentation\subscription_plans_screen.dart:31:24 - inference_failure_on_collection_literal
+  error - The name 'SubscriptionPlan' isn't a class - lib\src\features\subscription\presentation\subscription_plans_screen.dart:33:11 - creation_with_non_type
+warning - The type argument(s) of 'List' can't be inferred - lib\src\features\subscription\presentation\subscription_plans_screen.dart:44:24 - inference_failure_on_collection_literal
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\subscription_plans_screen.dart:151:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\subscription_plans_screen.dart:187:54 - deprecated_member_use
+warning - The type of f can't be inferred; a type must be explicitly provided - lib\src\features\subscription\presentation\subscription_plans_screen.dart:225:42 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\presentation\subscription_plans_screen.dart:234:52 - argument_type_not_assignable
+warning - The type of f can't be inferred; a type must be explicitly provided - lib\src\features\subscription\presentation\subscription_plans_screen.dart:242:42 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\presentation\subscription_plans_screen.dart:251:52 - argument_type_not_assignable
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\src\features\subscription\presentation\subscription_plans_screen.dart:297:31 - inference_failure_on_function_invocation
+warning - The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred - lib\src\features\subscription\presentation\subscription_plans_screen.dart:333:39 - inference_failure_on_instance_creation
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\subscription_plans_screen.dart:362:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\subscription_plans_screen.dart:364:38 - deprecated_member_use
+  error - Target of URI doesn't exist: '../data/subscription_provider.dart' - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:5:8 - uri_does_not_exist
+warning - The type argument(s) of the function 'watch' can't be inferred - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:14:29 - inference_failure_on_function_invocation
+  error - Undefined name 'paymentConfigProvider' - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:14:35 - undefined_identifier
+  error - The element type 'dynamic' can't be assigned to the list type 'Widget' - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:47:11 - list_element_type_not_assignable
+warning - The type of config can't be inferred; a type must be explicitly provided - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:55:20 - inference_failure_on_untyped_parameter
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:79:36 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:89:76 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\features\subscription\presentation\widgets\payment_instructions_bottom_sheet.dart:113:32 - argument_type_not_assignable
+  error - Target of URI doesn't exist: '../data/subscription_provider.dart' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../presentation/subscription_plans_screen.dart' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:6:8 - uri_does_not_exist
+  error - Undefined name 'showConfettiProvider' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:33:22 - undefined_identifier
+warning - The type argument(s) of the function 'read' can't be inferred - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:38:15 - inference_failure_on_function_invocation
+  error - Undefined name 'showConfettiProvider' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:38:20 - undefined_identifier
+warning - The type argument(s) of the function 'watch' can't be inferred - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:43:24 - inference_failure_on_function_invocation
+  error - Undefined name 'subscriptionProvider' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:43:30 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:73:40 - deprecated_member_use
+  error - A negation operand must have a static type of 'bool' - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:86:47 - non_bool_negation_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:89:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:112:42 - deprecated_member_use
+warning - The type argument(s) of the constructor 'MaterialPageRoute' can't be inferred - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:179:7 - inference_failure_on_instance_creation
+  error - The name 'SubscriptionPlansScreen' isn't a class - lib\src\features\subscription\presentation\widgets\subscription_status_widget.dart:180:31 - creation_with_non_type
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:125:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:146:56 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\screens\admin\admin_dashboard_screen.dart:177:55 - argument_type_not_assignable
+   info - Unnecessary use of 'toList' in a spread - lib\src\screens\admin\admin_dashboard_screen.dart:177:61 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:204:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:209:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:262:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:265:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:302:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:305:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:328:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:335:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:345:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:346:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:366:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:385:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:421:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:422:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:435:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:471:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:505:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:508:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:525:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:579:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:582:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_dashboard_screen.dart:588:63 - deprecated_member_use
+warning - The type argument(s) of the function 'rpc' can't be inferred - lib\src\screens\admin\admin_requests_screen.dart:40:23 - inference_failure_on_function_invocation
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_requests_screen.dart:46:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_requests_screen.dart:52:28 - use_build_context_synchronously
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Object'.  - lib\src\screens\admin\admin_requests_screen.dart:98:21 - argument_type_not_assignable
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_requests_screen.dart:99:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_requests_screen.dart:103:30 - use_build_context_synchronously
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\src\screens\admin\admin_requests_screen.dart:111:5 - inference_failure_on_function_invocation
+   info - Statements in an if should be enclosed in a block - lib\src\screens\admin\admin_requests_screen.dart:136:7 - curly_braces_in_flow_control_structures
+warning - The type argument(s) of 'Map' can't be inferred - lib\src\screens\admin\admin_requests_screen.dart:147:46 - inference_failure_on_collection_literal
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_requests_screen.dart:162:26 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_requests_screen.dart:194:57 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\screens\admin\admin_requests_screen.dart:203:50 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\screens\admin\admin_requests_screen.dart:213:52 - argument_type_not_assignable
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_settings_screen.dart:67:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\src\screens\admin\admin_settings_screen.dart:69:28 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_shell_screen.dart:75:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_shell_screen.dart:78:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_shell_screen.dart:96:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_shell_screen.dart:145:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_shell_screen.dart:169:35 - deprecated_member_use
+  error - The operands of the operator '&&' must be assignable to 'bool' - lib\src\screens\admin\admin_users_screen.dart:218:43 - non_bool_operand
+warning - The type argument(s) of the function 'showModalBottomSheet' can't be inferred - lib\src\screens\admin\admin_users_screen.dart:225:5 - inference_failure_on_function_invocation
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:245:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:256:39 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:261:25 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:276:27 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:283:27 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:299:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:301:51 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:344:54 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:358:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:360:62 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:396:50 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:408:49 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:434:37 - argument_type_not_assignable
+  error - The operands of the operator '&&' must be assignable to 'bool' - lib\src\screens\admin\admin_users_screen.dart:507:27 - non_bool_operand
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:527:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:529:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:530:44 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'Map<String, dynamic>'.  - lib\src\screens\admin\admin_users_screen.dart:539:55 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:550:51 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:555:37 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\admin\admin_users_screen.dart:575:45 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:589:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:609:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:639:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:642:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:658:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:671:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:677:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:753:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:756:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:835:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\admin\admin_users_screen.dart:839:50 - deprecated_member_use
+warning - Unused import: 'package:go_router/go_router.dart' - lib\src\screens\auth\login_screen.dart:7:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:130:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:133:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:160:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:331:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:470:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\auth\login_screen.dart:479:33 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\src\screens\comprehensive_reports_screen.dart:110:11 - curly_braces_in_flow_control_structures
+   info - Use interpolation to compose strings and values - lib\src\screens\comprehensive_reports_screen.dart:286:25 - prefer_interpolation_to_compose_strings
+   info - Statements in an if should be enclosed in a block - lib\src\screens\comprehensive_reports_screen.dart:348:9 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\comprehensive_reports_screen.dart:370:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\comprehensive_reports_screen.dart:372:41 - deprecated_member_use
+warning - The value of the local variable 'theme' isn't used - lib\src\screens\create_invoice_screen.dart:49:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:301:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:302:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:320:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:321:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:337:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:422:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:556:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:564:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:801:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:808:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:981:24 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:983:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:1065:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:1243:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:1326:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\create_invoice_screen.dart:1501:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customer_debts_screen.dart:71:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customer_debts_screen.dart:93:45 - deprecated_member_use
+warning - The type argument(s) of the function 'showDialog' can't be inferred - lib\src\screens\customer_debts_screen.dart:256:11 - inference_failure_on_function_invocation
+   info - Statements in an if should be enclosed in a block - lib\src\screens\customer_debts_screen.dart:289:21 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customers_screen.dart:82:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customers_screen.dart:95:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customers_screen.dart:152:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customers_screen.dart:164:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\customers_screen.dart:228:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoice_details_screen.dart:197:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoice_details_screen.dart:233:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoice_details_screen.dart:238:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoice_details_screen.dart:541:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoice_details_screen.dart:543:41 - deprecated_member_use
+warning - Unused import: '../core/widgets/soft_card.dart' - lib\src\screens\invoices_screen.dart:7:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoices_screen.dart:50:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoices_screen.dart:319:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\invoices_screen.dart:341:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:90:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:150:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:153:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:179:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:229:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:323:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:324:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:326:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:327:28 - deprecated_member_use
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'IconData'.  - lib\src\screens\main_shell_screen.dart:349:27 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'IconData'.  - lib\src\screens\main_shell_screen.dart:350:33 - argument_type_not_assignable
+  error - The argument type 'dynamic' can't be assigned to the parameter type 'String'.  - lib\src\screens\main_shell_screen.dart:351:28 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\main_shell_screen.dart:396:39 - deprecated_member_use
+warning - The value of the local variable 'theme' isn't used - lib\src\screens\products_screen.dart:30:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\products_screen.dart:44:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\products_screen.dart:157:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:157:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:168:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:189:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:230:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:254:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:268:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:284:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:287:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:311:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:416:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:429:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:438:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:468:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:506:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:524:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:633:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:718:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:720:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:724:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\reports_screen.dart:729:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\settings_screen.dart:347:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\settings_screen.dart:464:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\settings_screen.dart:469:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\settings_screen.dart:725:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\screens\subscription_screen.dart:223:43 - deprecated_member_use
+

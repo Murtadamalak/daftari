@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Home as HomeIcon, Users, Package, FileText, Settings } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
                     </Routes>
                 </main>
             </div>
+            <Analytics />
         </Router>
     );
 }

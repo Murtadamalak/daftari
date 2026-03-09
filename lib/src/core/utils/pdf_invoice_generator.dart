@@ -1,5 +1,6 @@
 import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart'; // Added for rootBundle
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -21,10 +22,8 @@ const _copyright = '© 2026 جميع الحقوق محفوظة ';
 const _telegramUrl = 'https://t.me/art8ms';
 const _qrCaption = 'امسح الرمز للتواصل المباشر';
 
-const _almaraiRegUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf';
-const _almaraiBoldUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf';
+const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
+const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PDF Generator
@@ -38,30 +37,10 @@ class PdfInvoiceGenerator {
   static String _fmtQty(double v) =>
       v == v.truncate() ? v.toInt().toString() : v.toStringAsFixed(2);
 
-  /// Downloads a font file from [url] and caches it in the temp directory.
-  /// Returns null if download fails.
-  static Future<pw.Font?> _loadFontFromNetwork(
-      String url, String fileName) async {
-    try {
-      final cacheDir = await getTemporaryDirectory();
-      final cacheFile = File('${cacheDir.path}/$fileName');
-
-      // Use cached file if it exists
-      if (!await cacheFile.exists()) {
-        final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(url));
-        final response = await request.close();
-        final bytes = await response
-            .fold<List<int>>([], (prev, chunk) => prev..addAll(chunk));
-        await cacheFile.writeAsBytes(bytes);
-        client.close();
-      }
-
-      final data = cacheFile.readAsBytesSync();
-      return pw.Font.ttf(data.buffer.asByteData());
-    } catch (_) {
-      return null; // fall back to built-in font
-    }
+  /// Loads a font from the application assets.
+  static Future<pw.Font> _loadFontFromAssets(String path) async {
+    final data = await rootBundle.load(path);
+    return pw.Font.ttf(data);
   }
 
   /// Generates the invoice PDF and shares it via share_plus.
@@ -76,15 +55,8 @@ class PdfInvoiceGenerator {
   }) async {
     final pdf = pw.Document();
 
-    // ── Try to load Almarai font (network / cached TTF) ────────────
-    final regFont =
-        await _loadFontFromNetwork(_almaraiRegUrl, 'almarai_reg.ttf');
-    final boldFont =
-        await _loadFontFromNetwork(_almaraiBoldUrl, 'almarai_bold.ttf');
-
-    // Built-in fallback (Helvetica is always available)
-    final fontReg = regFont ?? pw.Font.helvetica();
-    final fontBold = boldFont ?? fontReg;
+    final fontReg = await _loadFontFromAssets(_cairoRegPath);
+    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
 
     final baseStyle = pw.TextStyle(font: fontReg, fontSize: 11);
     final boldStyle = pw.TextStyle(font: fontBold, fontSize: 11);

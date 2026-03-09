@@ -1,16 +1,15 @@
 import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
-// Google Fonts TTF URLs for almarai
-const _almaraiRegUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf';
-const _almaraiBoldUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf';
+// Font paths
+const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
+const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
 
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
@@ -23,28 +22,10 @@ class PdfPaymentReceiptGenerator {
   static final _amtFmt = NumberFormat('#,##0', 'en');
   static String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
 
-  /// Downloads a font file from [url] and caches it in the temp directory.
-  static Future<pw.Font?> _loadFontFromNetwork(
-      String url, String fileName) async {
-    try {
-      final cacheDir = await getTemporaryDirectory();
-      final cacheFile = File('${cacheDir.path}/$fileName');
-
-      if (!await cacheFile.exists()) {
-        final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(url));
-        final response = await request.close();
-        final bytes = await response
-            .fold<List<int>>([], (prev, chunk) => prev..addAll(chunk));
-        await cacheFile.writeAsBytes(bytes);
-        client.close();
-      }
-
-      final data = cacheFile.readAsBytesSync();
-      return pw.Font.ttf(data.buffer.asByteData());
-    } catch (_) {
-      return null;
-    }
+  /// Loads a font from assets.
+  static Future<pw.Font> _loadFontFromAssets(String path) async {
+    final data = await rootBundle.load(path);
+    return pw.Font.ttf(data);
   }
 
   /// Generates the payment receipt PDF and shares it.
@@ -59,12 +40,8 @@ class PdfPaymentReceiptGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final regFont =
-        await _loadFontFromNetwork(_almaraiRegUrl, 'almarai_reg.ttf');
-    final boldFont =
-        await _loadFontFromNetwork(_almaraiBoldUrl, 'almarai_bold.ttf');
-    final fontReg = regFont ?? pw.Font.helvetica();
-    final fontBold = boldFont ?? fontReg;
+    final fontReg = await _loadFontFromAssets(_cairoRegPath);
+    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
 
     pw.ImageProvider? logoImage;
     if (shopLogoPath != null) {

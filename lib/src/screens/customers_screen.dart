@@ -255,6 +255,7 @@ class _DebtCard extends ConsumerWidget {
       onTap: () {
         context.push('/customers/details/${customer.id}');
       },
+      onLongPress: () => _editCustomer(context, ref, customer),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -426,6 +427,68 @@ class _DebtCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _editCustomer(
+      BuildContext context, WidgetRef ref, CustomerModel customer) async {
+    final nameCtrl = TextEditingController(text: customer.name);
+    final phoneCtrl = TextEditingController(text: customer.phone ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('تعديل بيانات الزبون'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'اسم الزبون',
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: phoneCtrl,
+              decoration: const InputDecoration(
+                labelText: 'رقم الهاتف',
+                prefixIcon: Icon(Icons.phone),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('حفظ التعديلات'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      final newName = nameCtrl.text.trim();
+      final newPhone = phoneCtrl.text.trim();
+
+      if (newName.isNotEmpty) {
+        final repo = ref.read(customerRepositoryProvider);
+        await repo.upsertCustomer(
+          id: customer.id,
+          name: newName,
+          phone: newPhone.isEmpty ? null : newPhone,
+          totalDebt: customer.totalDebt,
+        );
+        ref.invalidate(debtSearchDataProvider);
+      }
+    }
+    nameCtrl.dispose();
+    phoneCtrl.dispose();
   }
 
   Future<void> _confirmDeleteCustomer(

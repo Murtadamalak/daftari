@@ -62,37 +62,17 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
           Positioned.fill(
             child: MobileScanner(
               fit: BoxFit.cover,
+              controller: MobileScannerController(
+                formats: [BarcodeFormat.all],
+              ),
               onDetect: _onDetect,
             ),
           ),
 
-          // ── Dimmed Overlay with transparent scanning area ──
+          // ── Simple Overlay ──
           Positioned.fill(
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.5),
-                BlendMode.srcOut,
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
-                      backgroundBlendMode: BlendMode.dstOut,
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: scanAreaSize,
-                      height: scanAreaSize * 0.6,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: Container(
+              color: Colors.black.withOpacity(0.3),
             ),
           ),
 
@@ -104,6 +84,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.primaryLight, width: 3),
                 borderRadius: BorderRadius.circular(16),
+                color: Colors.transparent,
               ),
               child: Stack(
                 children: [

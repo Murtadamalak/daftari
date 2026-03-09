@@ -1,5 +1,6 @@
 import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,15 +10,14 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 
-// Google Fonts TTF URLs for almarai
-const _almaraiRegUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf';
+// Font paths
+const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
+const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
+
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
 const _devPhone = '07876007620 - 07813938267';
 const _copyright = '© 2026 جميع الحقوق محفوظة ';
-const _almaraiBoldUrl =
-    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf';
 
 class PdfReportGenerator {
   PdfReportGenerator._();
@@ -27,27 +27,10 @@ class PdfReportGenerator {
   static String _fmtQty(double v) =>
       v == v.truncate() ? v.toInt().toString() : v.toStringAsFixed(2);
 
-  static Future<pw.Font?> _loadFontFromNetwork(
-      String url, String fileName) async {
-    try {
-      final cacheDir = await getTemporaryDirectory();
-      final cacheFile = File('${cacheDir.path}/$fileName');
-
-      if (!await cacheFile.exists()) {
-        final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(url));
-        final response = await request.close();
-        final bytes = await response
-            .fold<List<int>>([], (prev, chunk) => prev..addAll(chunk));
-        await cacheFile.writeAsBytes(bytes);
-        client.close();
-      }
-
-      final data = cacheFile.readAsBytesSync();
-      return pw.Font.ttf(data.buffer.asByteData());
-    } catch (_) {
-      return null;
-    }
+  /// Loads a font from assets.
+  static Future<pw.Font> _loadFontFromAssets(String path) async {
+    final data = await rootBundle.load(path);
+    return pw.Font.ttf(data);
   }
 
   static Future<void> generateAndShare({
@@ -62,12 +45,8 @@ class PdfReportGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final regFont =
-        await _loadFontFromNetwork(_almaraiRegUrl, 'almarai_reg.ttf');
-    final boldFont =
-        await _loadFontFromNetwork(_almaraiBoldUrl, 'almarai_bold.ttf');
-    final fontReg = regFont ?? pw.Font.helvetica();
-    final fontBold = boldFont ?? fontReg;
+    final fontReg = await _loadFontFromAssets(_cairoRegPath);
+    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
 
     final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
     final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);

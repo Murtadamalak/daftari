@@ -7,13 +7,19 @@ class WhatsAppLauncher {
     required String phone,
     required String customerName,
     required String products,
-    required String remainingBalance,
+    required String totalDebt,
+    required String date,
+    required String shopName,
   }) async {
     final message = '''
+ $shopName
+ $date
+
 السلام عليكم أخي $customerName المحترم،
-نود تذكيركم بتسديد القسط المستحق بذمتكم لهذا اليوم عن:
+نود تذكيركم بالديون المترتبة في ذمتكم عن المشتريات التالية:
 ($products)
-المبلغ المتبقي الكلي: $remainingBalance
+
+المبلغ الكلي المتبقي: $totalDebt
 شكراً لتعاونكم معنا 🙏
 ''';
     await _launchWhatsApp(phone, message);
@@ -28,7 +34,7 @@ class WhatsAppLauncher {
     final message = '''
 زبوننا العزيز $customerName،
 تم استلام مبلغ ($amountPaid) د.ع من حسابكم بنجاح.
-المبلغ المتبقي في ذمتكم الآن هو ($remainingBalance) د.ع.
+المبلغ المتبقي في ذمتكم الآن هو ($remainingBalance).
 شكراً لتعاملكم معنا 🙏
 ''';
     await _launchWhatsApp(phone, message);

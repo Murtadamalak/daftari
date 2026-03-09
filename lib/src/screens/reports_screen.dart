@@ -22,12 +22,18 @@ class ReportsScreen extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text('لوحة التحكم',
-            style: GoogleFonts.cairo(
+            style: GoogleFonts.almarai(
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
-                color: Theme.of(context).colorScheme.onSurface)),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : AppColors.primary)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(left: 8),
@@ -35,14 +41,17 @@ class ReportsScreen extends ConsumerWidget {
               icon: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: 0.5),
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : AppColors.primary)
+                      .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(Icons.refresh_outlined,
-                    color: Theme.of(context).colorScheme.primary, size: 18),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : AppColors.primary,
+                    size: 18),
               ),
               tooltip: 'تحديث',
               onPressed: () => ref.invalidate(dashboardStatsProvider),
@@ -50,11 +59,24 @@ class ReportsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: statsAsync.when(
-        loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => _ErrorView(error: e.toString()),
-        data: (stats) => _DashboardBody(stats: stats),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [const Color(0xFF0A1612), const Color(0xFF13211D)]
+                : [const Color(0xFFF7F5F0), const Color(0xFFEEEBE1)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: statsAsync.when(
+          loading: () => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (e, _) => _ErrorView(error: e.toString()),
+          data: (stats) => _DashboardBody(stats: stats),
+        ),
       ),
     );
   }
@@ -64,72 +86,112 @@ class ReportsScreen extends ConsumerWidget {
 // Dashboard Body
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DashboardBody extends StatelessWidget {
+class _DashboardBody extends ConsumerWidget {
   const _DashboardBody({required this.stats});
   final DashboardStats stats;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 900;
+
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () async {},
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-        children: [
-          // ── Greeting ────────────────────────────────────────────────────────
-          _GreetingHeader(stats: stats),
-          const SizedBox(height: 20),
+      onRefresh: () async => ref.invalidate(dashboardStatsProvider),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              isWide ? 32 : 16,
+              MediaQuery.of(context).padding.top +
+                  70, // Clear transparent AppBar
+              isWide ? 32 : 16,
+              40,
+            ),
+            children: [
+              // ── Greeting ────────────────────────────────────────────────────────
+              _GreetingHeader(stats: stats),
+              const SizedBox(height: 20),
 
-          // ── KPI Cards ───────────────────────────────────────────────────────
-          _SectionTitle(title: 'نظرة عامة', icon: Icons.dashboard_outlined),
-          const SizedBox(height: 12),
-          _KpiGrid(stats: stats),
-          const SizedBox(height: 20),
+              // ── KPI Cards ───────────────────────────────────────────────────────
+              _SectionTitle(title: 'نظرة عامة', icon: Icons.dashboard_outlined),
+              const SizedBox(height: 12),
+              _KpiGrid(stats: stats),
+              const SizedBox(height: 20),
 
-          // ── Reports Button ────────────────────────────────────────────────
-          _ReportsButton(onTap: () => context.push('/reports/comprehensive')),
-          const SizedBox(height: 24),
+              // ── Reports Button ────────────────────────────────────────────────
+              _ReportsButton(
+                  onTap: () => context.push('/reports/comprehensive')),
+              const SizedBox(height: 24),
 
-          // ── Unpaid Invoices ──────────────────────────────────────────────────
-          _SectionTitle(
-            title: 'الديون النشطة',
-            icon: Icons.warning_amber_rounded,
-            iconColor: AppColors.danger,
-            badge: stats.unpaidCount > 0 ? '${stats.unpaidCount}' : null,
-            badgeColor: AppColors.danger,
+              if (isWide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildUnpaidSection()),
+                    const SizedBox(width: 32),
+                    Expanded(child: _buildTodaySection()),
+                  ],
+                )
+              else ...[
+                _buildUnpaidSection(),
+                const SizedBox(height: 24),
+                _buildTodaySection(),
+              ],
+            ],
           ),
-          const SizedBox(height: 12),
-          if (stats.unpaidInvoices.isEmpty)
-            _EmptyCard(
-              icon: Icons.check_circle_outline,
-              message: 'لا توجد ديون مطلوبة 🎉',
-              color: AppColors.success,
-            )
-          else
-            _InvoiceList(invoices: stats.unpaidInvoices, showDebt: true),
-
-          const SizedBox(height: 24),
-
-          // ── Today's Activity ─────────────────────────────────────────────────
-          _SectionTitle(
-            title: 'نشاط اليوم',
-            icon: Icons.today_outlined,
-            badge: stats.todayInvoices.isNotEmpty
-                ? '${stats.todayInvoices.length}'
-                : null,
-            badgeColor: AppColors.primary,
-          ),
-          const SizedBox(height: 12),
-          if (stats.todayInvoices.isEmpty)
-            _EmptyCard(
-              icon: Icons.receipt_long_outlined,
-              message: 'لم يتم تسجيل أي فواتير اليوم',
-              color: AppColors.textDisabled,
-            )
-          else
-            _InvoiceList(invoices: stats.todayInvoices, showDebt: false),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildUnpaidSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: 'الديون النشطة',
+          icon: Icons.warning_amber_rounded,
+          iconColor: AppColors.danger,
+          badge: stats.unpaidCount > 0 ? '${stats.unpaidCount}' : null,
+          badgeColor: AppColors.danger,
+        ),
+        const SizedBox(height: 12),
+        if (stats.unpaidInvoices.isEmpty)
+          _EmptyCard(
+            icon: Icons.check_circle_outline,
+            message: 'لا توجد ديون مطلوبة 🎉',
+            color: AppColors.success,
+          )
+        else
+          _InvoiceList(invoices: stats.unpaidInvoices, showDebt: true),
+      ],
+    );
+  }
+
+  Widget _buildTodaySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: 'نشاط اليوم',
+          icon: Icons.today_outlined,
+          badge: stats.todayInvoices.isNotEmpty
+              ? '${stats.todayInvoices.length}'
+              : null,
+          badgeColor: AppColors.primary,
+        ),
+        const SizedBox(height: 12),
+        if (stats.todayInvoices.isEmpty)
+          _EmptyCard(
+            icon: Icons.receipt_long_outlined,
+            message: 'لم يتم تسجيل أي فواتير اليوم',
+            color: AppColors.textDisabled,
+          )
+        else
+          _InvoiceList(invoices: stats.todayInvoices, showDebt: false),
+      ],
     );
   }
 }
@@ -181,14 +243,14 @@ class _ReportsButton extends StatelessWidget {
                 children: [
                   Text(
                     'سجل التقارير والأرباح',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w700),
                   ),
                   Text(
                     'فترات مخصصة • PDF مشاركة',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                         color: Colors.white.withOpacity(0.75), fontSize: 11),
                   ),
                 ],
@@ -230,9 +292,9 @@ class _GreetingHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: const Color(0xFF083830).withOpacity(0.4),
             blurRadius: 20,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -244,7 +306,7 @@ class _GreetingHeader extends StatelessWidget {
               children: [
                 Text(
                   _greeting,
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -253,7 +315,7 @@ class _GreetingHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   DateFormat('EEEE، d MMMM yyyy', 'ar').format(DateTime.now()),
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     color: Colors.white.withOpacity(0.75),
                     fontSize: 12,
                   ),
@@ -310,7 +372,7 @@ class _HeaderStat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
             color: Colors.white.withOpacity(0.65),
             fontSize: 10,
           ),
@@ -318,7 +380,7 @@ class _HeaderStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
             color: Colors.white,
             fontSize: 13,
             fontWeight: FontWeight.w800,
@@ -375,17 +437,31 @@ class _KpiGrid extends StatelessWidget {
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.65,
-      ),
-      itemCount: cards.length,
-      itemBuilder: (_, i) => _KpiCard(data: cards[i]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = 2;
+        double ratio = 1.65;
+        if (constraints.maxWidth > 900) {
+          crossAxisCount = 4;
+          ratio = 2.2;
+        } else if (constraints.maxWidth > 600) {
+          crossAxisCount = 2;
+          ratio = 2.0;
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: ratio,
+          ),
+          itemCount: cards.length,
+          itemBuilder: (_, i) => _KpiCard(data: cards[i]),
+        );
+      },
     );
   }
 }
@@ -413,65 +489,99 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: data.bgColor,
+        color: isDark
+            ? data.color.withOpacity(0.1)
+            : data.bgColor.withOpacity(0.9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: data.color.withOpacity(0.15), width: 1),
+        border: Border.all(
+          color: data.color.withOpacity(isDark ? 0.3 : 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: data.color.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(data.icon, color: data.color, size: 18),
+            // Subtle indicator circle
+            Positioned(
+              top: -20,
+              left: -20,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: data.color.withOpacity(0.05),
+                  shape: BoxShape.circle,
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: data.color.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(data.icon, color: data.color, size: 20),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: data.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          data.sub,
+                          style: GoogleFonts.almarai(
+                            fontSize: 10,
+                            color: data.color,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    data.sub,
-                    style: GoogleFonts.cairo(
-                      fontSize: 9,
-                      color: data.color,
-                      fontWeight: FontWeight.w600,
+                  const Spacer(),
+                  Text(
+                    data.value,
+                    style: GoogleFonts.almarai(
+                      color: isDark ? Colors.white : data.color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
                     ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              data.value,
-              style: GoogleFonts.cairo(
-                color: data.color,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              data.title,
-              style: GoogleFonts.cairo(
-                color: data.color.withOpacity(0.7),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                  const SizedBox(height: 2),
+                  Text(
+                    data.title,
+                    style: GoogleFonts.almarai(
+                      color:
+                          isDark ? Colors.white70 : data.color.withOpacity(0.8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -515,7 +625,7 @@ class _SectionTitle extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: Theme.of(context).colorScheme.onSurface),
@@ -530,7 +640,7 @@ class _SectionTitle extends StatelessWidget {
             ),
             child: Text(
               badge!,
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: badgeColor ?? AppColors.danger,
@@ -626,7 +736,7 @@ class _InvoiceRow extends StatelessWidget {
                         children: [
                           Text(
                             'فاتورة ${invoice.formattedNum}',
-                            style: GoogleFonts.cairo(
+                            style: GoogleFonts.almarai(
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
                               color: Theme.of(context).colorScheme.onSurface,
@@ -642,7 +752,7 @@ class _InvoiceRow extends StatelessWidget {
                             ),
                             child: Text(
                               statusLabel,
-                              style: GoogleFonts.cairo(
+                              style: GoogleFonts.almarai(
                                   fontSize: 9,
                                   color: statusColor,
                                   fontWeight: FontWeight.w700),
@@ -659,7 +769,7 @@ class _InvoiceRow extends StatelessWidget {
                           Expanded(
                             child: Text(
                               invoice.customerName,
-                              style: GoogleFonts.cairo(
+                              style: GoogleFonts.almarai(
                                   fontSize: 11, color: AppColors.textSecondary),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -676,7 +786,7 @@ class _InvoiceRow extends StatelessWidget {
                   children: [
                     Text(
                       showDebt ? _fmt(invoice.debt) : _fmt(invoice.grandTotal),
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontWeight: FontWeight.w800,
                         fontSize: 13,
                         color: amountColor,
@@ -685,7 +795,7 @@ class _InvoiceRow extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       _dateFmt.format(invoice.date),
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                           fontSize: 10,
                           color: Theme.of(context)
                               .colorScheme
@@ -740,7 +850,7 @@ class _EmptyCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             message,
-            style: GoogleFonts.cairo(
+            style: GoogleFonts.almarai(
               color: color.withOpacity(0.75),
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -780,7 +890,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'تعذّر تحميل البيانات',
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary),
@@ -788,7 +898,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               error,
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                   fontSize: 12, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),

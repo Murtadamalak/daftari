@@ -9,9 +9,15 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 
-// Google Fonts TTF URLs for Cairo
-const _cairoRegUrl =
-    'https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf';
+// Google Fonts TTF URLs for almarai
+const _almaraiRegUrl =
+    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf';
+const _devCredit =
+    'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
+const _devPhone = '07876007620 - 07813938267';
+const _copyright = '© 2026 جميع الحقوق محفوظة ';
+const _almaraiBoldUrl =
+    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf';
 
 class PdfReportGenerator {
   PdfReportGenerator._();
@@ -56,14 +62,17 @@ class PdfReportGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final cairoFont = await _loadFontFromNetwork(_cairoRegUrl, 'cairo_vf.ttf');
-    final cairoReg = cairoFont ?? pw.Font.helvetica();
-    final cairoBold = cairoFont ?? pw.Font.helveticaBold();
+    final regFont =
+        await _loadFontFromNetwork(_almaraiRegUrl, 'almarai_reg.ttf');
+    final boldFont =
+        await _loadFontFromNetwork(_almaraiBoldUrl, 'almarai_bold.ttf');
+    final fontReg = regFont ?? pw.Font.helvetica();
+    final fontBold = boldFont ?? fontReg;
 
-    final baseStyle = pw.TextStyle(font: cairoReg, fontSize: 10);
-    final boldStyle = pw.TextStyle(font: cairoBold, fontSize: 10);
+    final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
+    final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);
     final titleStyle = pw.TextStyle(
-        font: cairoBold,
+        font: fontBold,
         fontSize: 16,
         color: const PdfColor.fromInt(0xFF1A3C6E));
 
@@ -85,6 +94,25 @@ class PdfReportGenerator {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         textDirection: pw.TextDirection.rtl,
+        header: (pw.Context ctx) => pw.SizedBox(height: 20),
+        footer: (pw.Context ctx) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 10),
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
+          ),
+          child: pw.Column(
+            children: [
+              pw.Text(_devCredit,
+                  style: pw.TextStyle(font: fontBold, fontSize: 8),
+                  textDirection: pw.TextDirection.rtl),
+              pw.SizedBox(height: 2),
+              pw.Text('هاتف: $_devPhone | $_copyright',
+                  style: pw.TextStyle(font: fontReg, fontSize: 7),
+                  textDirection: pw.TextDirection.rtl),
+            ],
+          ),
+        ),
         build: (pw.Context ctx) {
           return [
             // ── Header ──────────────────────────────────────────────────────────
@@ -117,11 +145,11 @@ class PdfReportGenerator {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 _summaryCard('المبيعات الكلية', _fmt(totalSales),
-                    PdfColors.blue800, cairoReg, cairoBold),
+                    PdfColors.blue800, fontReg, fontBold),
                 _summaryCard('الإيرادات المحصلة', _fmt(totalPaid),
-                    PdfColors.green700, cairoReg, cairoBold),
+                    PdfColors.green700, fontReg, fontBold),
                 _summaryCard('الديون المتبقية', _fmt(totalDebt),
-                    PdfColors.red700, cairoReg, cairoBold),
+                    PdfColors.red700, fontReg, fontBold),
               ],
             ),
             pw.SizedBox(height: 24),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,12 +25,14 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _ownerCtrl = TextEditingController();
   bool _loaded = false;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
+    _ownerCtrl.dispose();
     super.dispose();
   }
 
@@ -59,6 +62,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (!_loaded) {
           _nameCtrl.text = settings.shopName;
           _phoneCtrl.text = settings.shopPhone;
+          _ownerCtrl.text = settings.ownerName;
           _loaded = true;
         }
 
@@ -90,6 +94,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _SettingsCard(
                 child: Column(
                   children: [
+                    TextField(
+                      controller: _ownerCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'اسم صاحب المحل (الاسم الكامل)',
+                        prefixIcon: Icon(Icons.person_outline),
+                        hintText: 'أدخل الاسم الثلاثي',
+                      ),
+                      onChanged: (v) =>
+                          ref.read(settingsProvider.notifier).setOwnerName(v),
+                    ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _nameCtrl,
                       decoration: const InputDecoration(
@@ -193,7 +208,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 24),
 
               // ── About App ──────────────────────────────────────────────────
-              _SectionHeader(title: 'حول التطبيق', icon: Icons.info_outlined),
+              _SectionHeader(
+                  title: 'حول التطبيق وحسابي', icon: Icons.info_outlined),
               const SizedBox(height: 16),
               _SettingsCard(
                 child: Column(
@@ -201,6 +217,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _InfoRow(label: 'الإصدار', value: '1.0.0'),
                     const Divider(height: 1),
                     _InfoRow(label: 'التطبيق', value: 'نظام دفتري'),
+                    const Divider(height: 1),
+                    _InfoRow(
+                      label: 'اخر تسجيل دخول',
+                      value: authState.user?.lastSignInAt != null
+                          ? DateFormat('yyyy/MM/dd  hh:mm a', 'ar').format(
+                              DateTime.parse(authState.user!.lastSignInAt!)
+                                  .toLocal())
+                          : 'غير متوفر',
+                    ),
                   ],
                 ),
               ),
@@ -238,11 +263,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('مكتب فن للتصميم والبرمجة',
-                                  style: GoogleFonts.cairo(
+                                  style: GoogleFonts.almarai(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700)),
                               Text('مرتضى علاء',
-                                  style: GoogleFonts.cairo(
+                                  style: GoogleFonts.almarai(
                                       fontSize: 12,
                                       color: AppColors.textSecondary)),
                             ],
@@ -274,7 +299,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: const Icon(Icons.logout, color: Colors.white),
                   label: Text(
                     'تسجيل الخروج',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -309,14 +334,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('تسجيل الخروج', style: GoogleFonts.cairo()),
+        title: Text('تسجيل الخروج', style: GoogleFonts.almarai()),
         content: Text('هل أنت متأكد أنك تريد تسجيل الخروج؟',
-            style: GoogleFonts.cairo()),
+            style: GoogleFonts.almarai()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('إلغاء',
-                style: GoogleFonts.cairo(color: AppColors.textSecondary)),
+                style: GoogleFonts.almarai(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
@@ -330,7 +355,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               ref.read(authProvider.notifier).logout();
             },
-            child: Text('خروج', style: GoogleFonts.cairo(color: Colors.white)),
+            child:
+                Text('خروج', style: GoogleFonts.almarai(color: Colors.white)),
           ),
         ],
       ),
@@ -386,7 +412,7 @@ class _LogoSection extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Text(
                             'أضف شعاراً',
-                            style: GoogleFonts.cairo(
+                            style: GoogleFonts.almarai(
                               fontSize: 12,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -459,7 +485,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           title,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: AppColors.primary,
@@ -529,7 +555,7 @@ class _ThemeModeOption extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: GoogleFonts.cairo(
+        style: GoogleFonts.almarai(
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
           color: isSelected
               ? AppColors.primary
@@ -567,10 +593,10 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                   fontSize: 14, color: AppColors.textSecondary)),
           Text(value,
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: valueColor)),
@@ -621,7 +647,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
             // ── Office name ──
             Text(
               'مكتب فن للتصميم والبرمجة',
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
                 color: AppColors.primary,
@@ -633,7 +659,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
 
             Text(
               'المبرمج: مرتضى علاء',
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -649,7 +675,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
               ),
               child: Text(
                 'نظام دفتري لإدارة الحسابات',
-                style: GoogleFonts.cairo(
+                style: GoogleFonts.almarai(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -664,7 +690,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
             // ── Contact buttons ──
             Text(
               'تواصل معنا',
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textSecondary,
@@ -705,7 +731,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'إغلاق',
-                style: GoogleFonts.cairo(fontWeight: FontWeight.w600),
+                style: GoogleFonts.almarai(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -742,7 +768,7 @@ class _ContactButton extends StatelessWidget {
         icon: Icon(icon, size: 18, color: color),
         label: Text(
           label,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
               fontSize: 13, fontWeight: FontWeight.w600, color: color),
         ),
         style: OutlinedButton.styleFrom(

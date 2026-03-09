@@ -6,7 +6,7 @@ export default function Settings() {
     const [loading, setLoading] = useState(true);
     const [config, setConfig] = useState({
         payment_info: { zain_cash_number: '', account_holder: '' },
-        pricing: { monthly: 5000, yearly: 40000 },
+        pricing: { monthly: 10000, yearly: 99000 },
         welcome_message: { title: '', body: '' },
         support: { whatsapp: '' }
     });

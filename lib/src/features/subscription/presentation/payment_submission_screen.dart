@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../data/subscription_provider.dart';
 import 'payment_success_screen.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class PaymentSubmissionScreen extends ConsumerStatefulWidget {
   final String planType;
 
@@ -99,13 +101,13 @@ class _PaymentSubmissionScreenState
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: AppColors.primary,
           elevation: 0,
           title: Text(
             'تأكيد طلب التفعيل',
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.almarai(
                 fontWeight: FontWeight.bold, color: Colors.white),
           ),
           centerTitle: true,
@@ -118,15 +120,15 @@ class _PaymentSubmissionScreenState
             children: [
               Text(
                 'رقم عملية زين كاش (اختياري)',
-                style: GoogleFonts.tajawal(color: Colors.grey[400]),
+                style: GoogleFonts.almarai(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _transferNumController,
-                style: GoogleFonts.tajawal(color: Colors.white),
+                style: GoogleFonts.almarai(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: const Color(0xFF1E293B),
+                  fillColor: Colors.white,
                   hintText: 'مثال: 1042345678',
                   hintStyle: GoogleFonts.tajawal(color: Colors.grey[600]),
                   border: OutlineInputBorder(
@@ -139,7 +141,8 @@ class _PaymentSubmissionScreenState
               const SizedBox(height: 24),
               Text(
                 'وصل الدفع (مطلوب)',
-                style: GoogleFonts.tajawal(color: Colors.white),
+                style: GoogleFonts.almarai(
+                    color: AppColors.textPrimary, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               GestureDetector(
@@ -148,12 +151,12 @@ class _PaymentSubmissionScreenState
                   width: double.infinity,
                   height: 200,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: _selectedImage == null
-                          ? Colors.transparent
-                          : const Color(0xFF22C55E),
+                          ? AppColors.border
+                          : AppColors.success,
                       width: 2,
                     ),
                   ),
@@ -246,7 +249,7 @@ class _PaymentSubmissionScreenState
                         )
                       : Text(
                           'أرسل الطلب',
-                          style: GoogleFonts.tajawal(
+                          style: GoogleFonts.almarai(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,

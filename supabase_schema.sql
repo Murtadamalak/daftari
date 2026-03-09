@@ -67,7 +67,7 @@ CREATE TABLE public.app_config (
 -- Initial Config Seed
 INSERT INTO public.app_config (key, value) VALUES 
 ('payment_info', '{"zain_cash_number": "07700000000", "account_holder": "اسم صاحب الحساب"}'),
-('pricing', '{"monthly": 5000, "yearly": 40000}'),
+('pricing', '{"monthly": 10000, "yearly": 99000}'),
 ('welcome_message', '{"title": "أهلاً بك!", "body": "شكراً لاستخدامك تطبيق مدير الديون."}');
 
 -- 7. Free Tier Usage Table

@@ -58,40 +58,40 @@ class AppColors {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Typography helpers — Cairo font for excellent Arabic readability
+// Typography helpers — almarai font for excellent Arabic readability
 // ─────────────────────────────────────────────────────────────────────────────
 
 TextTheme _buildTextTheme(Color primary, Color secondary) {
-  return GoogleFonts.cairoTextTheme().copyWith(
-    displayLarge: GoogleFonts.cairo(
+  return GoogleFonts.almaraiTextTheme().copyWith(
+    displayLarge: GoogleFonts.almarai(
         fontSize: 32, fontWeight: FontWeight.w900, color: primary),
-    displayMedium: GoogleFonts.cairo(
+    displayMedium: GoogleFonts.almarai(
         fontSize: 26, fontWeight: FontWeight.w800, color: primary),
-    displaySmall: GoogleFonts.cairo(
+    displaySmall: GoogleFonts.almarai(
         fontSize: 22, fontWeight: FontWeight.w700, color: primary),
-    headlineLarge: GoogleFonts.cairo(
+    headlineLarge: GoogleFonts.almarai(
         fontSize: 20, fontWeight: FontWeight.w800, color: primary),
-    headlineMedium: GoogleFonts.cairo(
+    headlineMedium: GoogleFonts.almarai(
         fontSize: 18, fontWeight: FontWeight.w700, color: primary),
-    headlineSmall: GoogleFonts.cairo(
+    headlineSmall: GoogleFonts.almarai(
         fontSize: 16, fontWeight: FontWeight.w700, color: primary),
-    titleLarge: GoogleFonts.cairo(
+    titleLarge: GoogleFonts.almarai(
         fontSize: 17, fontWeight: FontWeight.w700, color: primary),
-    titleMedium: GoogleFonts.cairo(
+    titleMedium: GoogleFonts.almarai(
         fontSize: 15, fontWeight: FontWeight.w700, color: primary),
-    titleSmall: GoogleFonts.cairo(
+    titleSmall: GoogleFonts.almarai(
         fontSize: 13, fontWeight: FontWeight.w600, color: primary),
-    bodyLarge: GoogleFonts.cairo(
+    bodyLarge: GoogleFonts.almarai(
         fontSize: 15, fontWeight: FontWeight.w500, color: secondary),
-    bodyMedium: GoogleFonts.cairo(
+    bodyMedium: GoogleFonts.almarai(
         fontSize: 13, fontWeight: FontWeight.w500, color: secondary),
-    bodySmall: GoogleFonts.cairo(
+    bodySmall: GoogleFonts.almarai(
         fontSize: 11, fontWeight: FontWeight.w400, color: secondary),
-    labelLarge: GoogleFonts.cairo(
+    labelLarge: GoogleFonts.almarai(
         fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 0.1),
-    labelMedium: GoogleFonts.cairo(
+    labelMedium: GoogleFonts.almarai(
         fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.1),
-    labelSmall: GoogleFonts.cairo(
+    labelSmall: GoogleFonts.almarai(
         fontSize: 10, fontWeight: FontWeight.w500, letterSpacing: 0.2),
   );
 }
@@ -140,7 +140,7 @@ class AppTheme {
         scrolledUnderElevation: 1,
         shadowColor: AppColors.border.withOpacity(0.5),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: GoogleFonts.cairo(
+        titleTextStyle: GoogleFonts.almarai(
           fontSize: 18,
           fontWeight: FontWeight.w800,
           color: AppColors.textPrimary,
@@ -160,12 +160,12 @@ class AppTheme {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.cairo(
+            return GoogleFonts.almarai(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: AppColors.primary);
           }
-          return GoogleFonts.cairo(
+          return GoogleFonts.almarai(
               fontSize: 11,
               fontWeight: FontWeight.w500,
               color: AppColors.textDisabled);
@@ -214,15 +214,15 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.danger, width: 2),
         ),
-        hintStyle: GoogleFonts.cairo(
+        hintStyle: GoogleFonts.almarai(
             fontSize: 14,
             color: AppColors.textDisabled,
             fontWeight: FontWeight.w400),
-        labelStyle: GoogleFonts.cairo(
+        labelStyle: GoogleFonts.almarai(
             fontSize: 13,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500),
-        floatingLabelStyle: GoogleFonts.cairo(
+        floatingLabelStyle: GoogleFonts.almarai(
             fontSize: 12,
             color: AppColors.primary,
             fontWeight: FontWeight.w700),
@@ -238,8 +238,8 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 52),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 15, fontWeight: FontWeight.w700),
           elevation: 0,
         ),
       ),
@@ -252,8 +252,8 @@ class AppTheme {
           minimumSize: const Size(0, 46),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w700),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 14, fontWeight: FontWeight.w700),
           elevation: 0,
         ),
       ),
@@ -266,8 +266,8 @@ class AppTheme {
           side: const BorderSide(color: AppColors.primary, width: 1.5),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
 
@@ -275,8 +275,8 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          textStyle:
-              GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
 
@@ -292,8 +292,8 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
         selectedColor: AppColors.primarySurface,
-        labelStyle:
-            GoogleFonts.cairo(fontSize: 13, fontWeight: FontWeight.w500),
+        labelStyle: GoogleFonts.almarai(
+            fontSize: 13, fontWeight: FontWeight.w500),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
       ),
@@ -317,7 +317,7 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.primaryDark,
-        contentTextStyle: GoogleFonts.cairo(
+        contentTextStyle: GoogleFonts.almarai(
             color: AppColors.white, fontSize: 14, fontWeight: FontWeight.w500),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 6,
@@ -348,12 +348,12 @@ class AppTheme {
         elevation: 8,
         shadowColor: Colors.black.withOpacity(0.08),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: GoogleFonts.cairo(
+        titleTextStyle: GoogleFonts.almarai(
           fontSize: 17,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
-        contentTextStyle: GoogleFonts.cairo(
+        contentTextStyle: GoogleFonts.almarai(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
@@ -380,8 +380,8 @@ class AppTheme {
               s.contains(WidgetState.selected)
                   ? AppColors.white
                   : AppColors.textSecondary),
-          textStyle: WidgetStateProperty.all(
-              GoogleFonts.cairo(fontSize: 13, fontWeight: FontWeight.w600)),
+          textStyle: WidgetStateProperty.all(GoogleFonts.almarai(
+              fontSize: 13, fontWeight: FontWeight.w600)),
         ),
       ),
     );
@@ -424,7 +424,7 @@ class AppTheme {
         scrolledUnderElevation: 1,
         shadowColor: Colors.black26,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: GoogleFonts.cairo(
+        titleTextStyle: GoogleFonts.almarai(
           fontSize: 18,
           fontWeight: FontWeight.w800,
           color: AppColors.darkTextPrimary,
@@ -441,10 +441,10 @@ class AppTheme {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         labelTextStyle: WidgetStateProperty.resolveWith((s) {
           if (s.contains(WidgetState.selected)) {
-            return GoogleFonts.cairo(
+            return GoogleFonts.almarai(
                 fontSize: 12, fontWeight: FontWeight.w700, color: darkPrimary);
           }
-          return GoogleFonts.cairo(
+          return GoogleFonts.almarai(
               fontSize: 11,
               fontWeight: FontWeight.w400,
               color: AppColors.darkTextSecondary);
@@ -492,13 +492,13 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.dangerLight, width: 2),
         ),
-        hintStyle: GoogleFonts.cairo(
+        hintStyle: GoogleFonts.almarai(
             fontSize: 14,
             color: AppColors.darkTextSecondary,
             fontWeight: FontWeight.w400),
-        labelStyle:
-            GoogleFonts.cairo(fontSize: 13, color: AppColors.darkTextSecondary),
-        floatingLabelStyle: GoogleFonts.cairo(
+        labelStyle: GoogleFonts.almarai(
+            fontSize: 13, color: AppColors.darkTextSecondary),
+        floatingLabelStyle: GoogleFonts.almarai(
             fontSize: 12, color: darkPrimary, fontWeight: FontWeight.w700),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -508,8 +508,8 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 52),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 15, fontWeight: FontWeight.w700),
           elevation: 0,
         ),
       ),
@@ -520,8 +520,8 @@ class AppTheme {
           minimumSize: const Size(0, 46),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w700),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 14, fontWeight: FontWeight.w700),
           elevation: 0,
         ),
       ),
@@ -532,8 +532,8 @@ class AppTheme {
           side: const BorderSide(color: darkPrimary, width: 1.5),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle:
-              GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.almarai(
+              fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -545,7 +545,7 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.darkSurface2,
-        contentTextStyle: GoogleFonts.cairo(
+        contentTextStyle: GoogleFonts.almarai(
             color: AppColors.darkTextPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500),
@@ -562,12 +562,12 @@ class AppTheme {
         backgroundColor: AppColors.darkSurface,
         elevation: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: GoogleFonts.cairo(
+        titleTextStyle: GoogleFonts.almarai(
           fontSize: 17,
           fontWeight: FontWeight.w700,
           color: AppColors.darkTextPrimary,
         ),
-        contentTextStyle: GoogleFonts.cairo(
+        contentTextStyle: GoogleFonts.almarai(
           fontSize: 14,
           color: AppColors.darkTextSecondary,
         ),

@@ -10,6 +10,9 @@ class AppAuthState {
   final String? subStatus; // e.g. 'active', 'pending', 'expired'
   final String? planType; // e.g. 'free', 'monthly', 'yearly'
   final String? endDate; // e.g. '2026-03-06T14:47:10...'
+  final String? fullName;
+  final String? shopName;
+  final String? phone;
   final bool isLoading; // added loading state
   const AppAuthState({
     this.role = AuthRole.initial,
@@ -17,6 +20,9 @@ class AppAuthState {
     this.subStatus,
     this.planType,
     this.endDate,
+    this.fullName,
+    this.shopName,
+    this.phone,
     this.isLoading = true,
   });
 }
@@ -64,6 +70,9 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
             subStatus: subStatus,
             planType: planType,
             endDate: endDate,
+            fullName: user.userMetadata?['full_name'] as String?,
+            shopName: user.userMetadata?['shop_name'] as String?,
+            phone: user.userMetadata?['phone'] as String?,
             isLoading: false,
           );
         } catch (_) {
@@ -101,6 +110,23 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('rememberMe');
     await Supabase.instance.client.auth.signOut();
+  }
+
+  Future<void> updateProfile({
+    String? fullName,
+    String? shopName,
+    String? phone,
+  }) async {
+    final attributes = UserAttributes(
+      data: {
+        if (fullName != null) 'full_name': fullName,
+        if (shopName != null) 'shop_name': shopName,
+        if (phone != null) 'phone': phone,
+      },
+    );
+    await Supabase.instance.client.auth.updateUser(attributes);
+    // Refresh state manually or wait for listener
+    refreshStatus();
   }
 
   void refreshStatus() {

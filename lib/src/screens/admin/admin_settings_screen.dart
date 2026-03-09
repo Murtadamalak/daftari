@@ -48,8 +48,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         'account_holder': _accountHolderController.text.trim()
       };
       final pricing = {
-        'monthly': int.tryParse(_monthlyPriceController.text.trim()) ?? 5000,
-        'yearly': int.tryParse(_yearlyPriceController.text.trim()) ?? 40000,
+        'monthly': int.tryParse(_monthlyPriceController.text.trim()) ?? 10000,
+        'yearly': int.tryParse(_yearlyPriceController.text.trim()) ?? 99000,
       };
 
       await _supabase.from('app_config').upsert({

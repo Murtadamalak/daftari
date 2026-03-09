@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../core/providers/app_providers.dart';
+import '../core/providers/settings_provider.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/utils/whatsapp_launcher.dart';
 import '../data/repositories/customer_repository.dart';
-import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/widgets/refresh_action_button.dart';
 
@@ -84,7 +84,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
     final customersAsync = ref.watch(customersWithDebtProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('سجل الديون (المساجين)'),
+        title: const Text('سجل الديون (الزبائن)'),
         centerTitle: true,
         actions: [
           RefreshActionButton(
@@ -102,7 +102,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${list.length} مسجون',
+                    '${list.length} زبون',
                     style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white,
@@ -160,7 +160,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'لا توجد ديون مطابقة',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -204,7 +204,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                   children: [
                     Text(
                       'مجموع الديون المطلوبة',
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white.withOpacity(0.9),
@@ -213,7 +213,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                     const SizedBox(height: 8),
                     Text(
                       _fmt(totalDebt),
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
@@ -294,7 +294,7 @@ class _DebtCard extends ConsumerWidget {
                 children: [
                   Text(
                     customer.name,
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -308,24 +308,38 @@ class _DebtCard extends ConsumerWidget {
                             .getUnpaidByCustomer(customer.id);
                         if (invoices.isEmpty) return;
 
-                        String productsStr = 'مشتريات سابقة';
-                        try {
-                          final List<InvoiceItemModel> items = await ref
-                              .read(invoiceRepositoryProvider)
-                              .getItemsByInvoiceId(invoices.first.id);
-                          if (items.isNotEmpty) {
-                            productsStr = items.first.productName;
-                            if (items.length > 1) {
-                              productsStr += ' وغيرها';
+                        // Collect all products from all invoices
+                        final allItems = <String>{};
+                        for (final inv in invoices) {
+                          try {
+                            final items = await ref
+                                .read(invoiceRepositoryProvider)
+                                .getItemsByInvoiceId(inv.id);
+                            for (final it in items) {
+                              allItems.add(it.productName);
                             }
-                          }
-                        } catch (_) {}
+                          } catch (_) {}
+                        }
+
+                        String productsStr = allItems.join('، ');
+                        if (productsStr.length > 200) {
+                          productsStr = '${productsStr.substring(0, 197)}...';
+                        }
+                        if (productsStr.isEmpty) productsStr = 'مشتريات سابقة';
+
+                        final AppSettings? settings =
+                            ref.read(settingsProvider).valueOrNull;
+                        final String shopName = settings?.shopName ?? 'دفتري';
+                        final String todayDate = DateFormat('yyyy/MM/dd', 'ar')
+                            .format(DateTime.now());
 
                         await WhatsAppLauncher.sendReminder(
                           phone: customer.phone!,
                           customerName: customer.name,
                           products: productsStr,
-                          remainingBalance: _fmt(customer.totalDebt),
+                          totalDebt: _fmt(customer.totalDebt),
+                          date: todayDate,
+                          shopName: shopName,
                         );
                       },
                       child: Container(
@@ -344,8 +358,8 @@ class _DebtCard extends ConsumerWidget {
                                 color: Color(0xFF25D366), size: 16),
                             const SizedBox(width: 8),
                             Text(
-                              'إرسال تذكير واتساب',
-                              style: GoogleFonts.cairo(
+                              'تذكير',
+                              style: GoogleFonts.almarai(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF25D366),
@@ -364,17 +378,29 @@ class _DebtCard extends ConsumerWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  'المبلغ المطلوب',
-                  style: GoogleFonts.cairo(
-                    fontSize: 11,
-                    color: AppColors.danger,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline,
+                          color: Colors.red, size: 20),
+                      onPressed: () =>
+                          _confirmDeleteCustomer(context, ref, customer),
+                      tooltip: 'حذف الزبون',
+                    ),
+                    Text(
+                      'المبلغ المطلوب',
+                      style: GoogleFonts.almarai(
+                        fontSize: 11,
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   _fmt(customer.totalDebt),
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppColors.danger,
@@ -400,5 +426,34 @@ class _DebtCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteCustomer(
+      BuildContext context, WidgetRef ref, CustomerModel customer) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الزبون'),
+        content: Text(
+            'هل أنت متأكد من حذف الزبون "${customer.name}"؟ سيتم حذف جميع بياناته المرتبطة ولن تظهر ديونه.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف الآن'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final repo = ref.read(customerRepositoryProvider);
+      await repo.deleteCustomer(customer.id);
+      ref.invalidate(debtSearchDataProvider);
+    }
   }
 }

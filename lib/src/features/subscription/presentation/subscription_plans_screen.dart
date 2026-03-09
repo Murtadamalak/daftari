@@ -7,6 +7,7 @@ import '../data/subscription_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import 'payment_submission_screen.dart';
 import 'widgets/payment_instructions_bottom_sheet.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SubscriptionPlansScreen extends ConsumerStatefulWidget {
   const SubscriptionPlansScreen({super.key, this.isWall = false});
@@ -25,7 +26,7 @@ class _SubscriptionPlansScreenState
     const SubscriptionPlan(
       type: 'monthly',
       title: 'باقة شهرية',
-      price: '5,000 دينار / شهر',
+      price: '10,000 دينار / شهر',
       subtitle: 'اشتراك شهري مرن',
       features: ['زبائن لا محدود', 'فواتير لا محدودة', 'إشعارات تنبيه'],
       missingFeatures: [],
@@ -33,8 +34,8 @@ class _SubscriptionPlansScreenState
     const SubscriptionPlan(
       type: 'yearly',
       title: 'باقة سنوية',
-      price: '40,000 دينار / سنة',
-      subtitle: 'وفّرت اربعة اشهر!',
+      price: '99,000 دينار / سنة',
+      subtitle: 'وفّرت أكثر من شهرين!',
       features: [
         'زبائن لا محدود',
         'فواتير لا محدودة',
@@ -62,7 +63,7 @@ class _SubscriptionPlansScreenState
               : null, // Hide back button if it's a wall
           title: Text(
             'تفعيل التطبيق',
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.almarai(
                 fontWeight: FontWeight.bold, color: Colors.white),
           ),
           centerTitle: true,
@@ -136,13 +137,13 @@ class _SubscriptionPlansScreenState
                             duration: const Duration(milliseconds: 300),
                             margin: const EdgeInsets.only(bottom: 20),
                             decoration: BoxDecoration(
-                              color: _getPlanColor(plan.type, isSelected),
-                              borderRadius: BorderRadius.circular(16),
+                              gradient: _getPlanGradient(plan.type, isSelected),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF6366F1)
-                                    : Colors.transparent,
-                                width: 2,
+                                    ? AppColors.accent
+                                    : Colors.white.withValues(alpha: 0.1),
+                                width: isSelected ? 2.5 : 1,
                               ),
                               boxShadow: isSelected
                                   ? [
@@ -421,14 +422,37 @@ class _SubscriptionPlansScreenState
     );
   }
 
-  Color _getPlanColor(String type, bool isSelected) {
+  Gradient _getPlanGradient(String type, bool isSelected) {
     if (type == 'free') {
-      return const Color(0xFF1E293B);
+      return LinearGradient(
+        colors: [const Color(0xFF1E293B), const Color(0xFF334155)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (type == 'monthly') {
-      return const Color(0xFF4C1D95).withValues(alpha: isSelected ? 0.9 : 0.6);
+      return LinearGradient(
+        colors: isSelected
+            ? [AppColors.primary, AppColors.primaryLight]
+            : [
+                AppColors.primary.withOpacity(0.4),
+                AppColors.primaryDark.withOpacity(0.4)
+              ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (type == 'yearly') {
-      return const Color(0xFFB45309).withValues(alpha: isSelected ? 0.9 : 0.6);
+      return LinearGradient(
+        colors: isSelected
+            ? [AppColors.accent, const Color(0xFFB45309)]
+            : [
+                AppColors.accent.withOpacity(0.4),
+                const Color(0xFFB45309).withOpacity(0.4)
+              ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     }
-    return const Color(0xFF1E293B);
+    return LinearGradient(
+        colors: [const Color(0xFF1E293B), const Color(0xFF1E293B)]);
   }
 }

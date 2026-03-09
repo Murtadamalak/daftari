@@ -46,7 +46,7 @@ class AdminShellScreen extends ConsumerWidget {
               child: Center(
                 child: Text(
                   'د',
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
@@ -57,7 +57,7 @@ class AdminShellScreen extends ConsumerWidget {
             const SizedBox(width: 8),
             Text(
               'لوحة الإدارة',
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
                 color: Colors.white,
@@ -187,7 +187,7 @@ class _AdminNavBar extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         item.label,
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           fontSize: 10,
                           fontWeight:
                               isSelected ? FontWeight.w700 : FontWeight.w400,

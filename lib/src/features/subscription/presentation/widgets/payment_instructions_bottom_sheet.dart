@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../data/subscription_provider.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class PaymentInstructionsBottomSheet extends ConsumerWidget {
   final String planType;
@@ -15,7 +16,7 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
+        color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.all(24),
@@ -37,10 +38,10 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
           Text(
             'طريقة الدفع',
             textAlign: TextAlign.center,
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.almarai(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 24),
@@ -63,9 +64,9 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[800]!),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Column(
                       children: [
@@ -139,10 +140,10 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
                             ),
                             Text(
                               '$amount دينار',
-                              style: GoogleFonts.tajawal(
+                              style: GoogleFonts.almarai(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFFEF4444),
+                                color: AppColors.danger,
                               ),
                             ),
                           ],
@@ -178,7 +179,7 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
               },
               child: Text(
                 'حسناً، فهمت',
-                style: GoogleFonts.tajawal(
+                style: GoogleFonts.almarai(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -202,12 +203,12 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
               height: 24,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
-                color: Color(0xFF6366F1),
+                color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
               child: Text(
                 '${index + 1}',
-                style: GoogleFonts.tajawal(
+                style: GoogleFonts.almarai(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -218,9 +219,9 @@ class PaymentInstructionsBottomSheet extends ConsumerWidget {
             Expanded(
               child: Text(
                 steps[index],
-                style: GoogleFonts.tajawal(
+                style: GoogleFonts.almarai(
                   fontSize: 14,
-                  color: Colors.grey[300],
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),

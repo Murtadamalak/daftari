@@ -155,7 +155,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                   child: Center(
                     child: Text(
                       'د',
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -166,7 +166,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 const SizedBox(height: 14),
                 Text(
                   'دفتري',
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -174,7 +174,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 ),
                 Text(
                   'نظام المبيعات والديون',
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     fontSize: 11,
                     color: Colors.white.withOpacity(0.7),
                   ),
@@ -240,7 +240,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 tab.label,
-                                style: GoogleFonts.cairo(
+                                style: GoogleFonts.almarai(
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w500,
@@ -284,7 +284,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 const SizedBox(width: 6),
                 Text(
                   'دفتري — نظام إدارة المبيعات',
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     fontSize: 10,
                     color: isDark
                         ? AppColors.darkTextSecondary
@@ -413,7 +413,7 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               label,
-              style: GoogleFonts.cairo(
+              style: GoogleFonts.almarai(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                 color: isSelected ? primary : muted,

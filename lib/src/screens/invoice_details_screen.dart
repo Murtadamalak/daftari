@@ -1,22 +1,26 @@
 import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoice_detail_provider.dart';
+import '../core/providers/invoices_provider.dart';
 import '../core/providers/settings_provider.dart';
 import '../core/utils/app_snackbar.dart';
 import '../core/utils/pdf_invoice_generator.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/utils/whatsapp_launcher.dart';
+import '../core/theme/app_theme.dart';
 
 class InvoiceDetailsScreen extends ConsumerWidget {
   const InvoiceDetailsScreen({super.key, required this.invoiceId});
@@ -43,12 +47,17 @@ class InvoiceDetailsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: GoogleFonts.almarai(
             fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
         actions: [
           detail.when(
             data: (d) => Row(
               children: [
+                IconButton(
+                  tooltip: 'حذف الفاتورة',
+                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                  onPressed: () => _confirmDelete(context, ref, d.invoice),
+                ),
                 IconButton(
                   tooltip: 'تصدير PDF',
                   icon: const Icon(Icons.picture_as_pdf_outlined),
@@ -94,41 +103,59 @@ class InvoiceDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   // ─── Action buttons ───
+                  // ─── Main Action Row ──────────────────────────────────────────────
                   Row(
                     children: [
+                      // 1. WhatsApp Button
                       Expanded(
-                        child: FilledButton.icon(
-                          icon: const Icon(Icons.picture_as_pdf_outlined),
-                          label: const Text('تصدير PDF'),
+                        child: _ActionBtn(
+                          icon: FontAwesomeIcons.whatsapp,
+                          label: 'واتساب',
+                          color: const Color(0xFF25D366),
+                          onPressed: () =>
+                              _sendInvoiceWhatsApp(context, ref, d),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // 2. Print/PDF Button
+                      Expanded(
+                        child: _ActionBtn(
+                          icon: Icons.print_outlined,
+                          label: 'طبع / PDF',
+                          color: const Color(0xFF6366F1),
                           onPressed: () => _exportPdf(context, ref, d),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
+                      // 3. Share Image Button
                       Expanded(
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.share_outlined),
-                          label: const Text('مشاركة صورة'),
+                        child: _ActionBtn(
+                          icon: Icons.share_outlined,
+                          label: 'مشاركة صوره',
+                          color: Colors.orange,
                           onPressed: () => _shareImage(context),
                         ),
                       ),
                     ],
                   ),
+
                   if (d.invoice.debt > 0) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    // 4. Pay Button (Big & Prominent)
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF25D366),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: AppColors.danger,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(16)),
+                          elevation: 4,
                         ),
-                        icon: const FaIcon(FontAwesomeIcons.whatsapp,
-                            color: Colors.white, size: 20),
-                        label: const Text('تسديد الدين وإرسال واتساب',
+                        icon: const Icon(Icons.payments_outlined, size: 24),
+                        label: const Text('تسديد هذا الدين',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             )),
                         onPressed: () =>
@@ -136,6 +163,20 @@ class InvoiceDetailsScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 16),
+
+                  // Delete button at bottom
+                  TextButton.icon(
+                    style:
+                        TextButton.styleFrom(foregroundColor: Colors.white70),
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    label: const Text('حذف هذه الفاتورة نهائياً'),
+                    onPressed: () => _confirmDelete(context, ref, d.invoice),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -143,6 +184,68 @@ class InvoiceDetailsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _sendInvoiceWhatsApp(
+      BuildContext context, WidgetRef ref, InvoiceDetail d) async {
+    final phone = d.invoice.customerPhone;
+    if (phone == null || phone.isEmpty) {
+      if (context.mounted) {
+        AppSnackBar.error(context, 'لا يوجد رقم هاتف للعميل');
+      }
+      return;
+    }
+
+    try {
+      final invRepo = ref.read(invoiceRepositoryProvider);
+      final custRepo = ref.read(customerRepositoryProvider);
+      final customerId = d.invoice.customerId;
+
+      Set<String> allItems = <String>{};
+      double totalDebtVal = d.invoice.debt;
+
+      if (customerId != null && customerId.isNotEmpty) {
+        // Fetch all unpaid invoices for this customer to sum up everything
+        final allUnpaid = await invRepo.getUnpaidByCustomer(customerId);
+        final customer = await custRepo.getById(customerId);
+
+        for (final inv in allUnpaid) {
+          final items = await invRepo.getItemsByInvoiceId(inv.id);
+          for (final it in items) {
+            allItems.add(it.productName);
+          }
+        }
+        if (customer != null) {
+          totalDebtVal = customer.totalDebt;
+        }
+      }
+
+      // Fallback: If no other items found (or no customerId), use current invoice's items
+      if (allItems.isEmpty) {
+        allItems = d.items.map((e) => e.productName).toSet();
+      }
+
+      String productsStr = allItems.join(' - ');
+      if (productsStr.length > 250) {
+        productsStr = '${productsStr.substring(0, 247)}...';
+      }
+      if (productsStr.isEmpty) productsStr = 'مشتريات متنوعة';
+
+      final settings = ref.read(settingsProvider).valueOrNull;
+
+      await WhatsAppLauncher.sendReminder(
+        phone: phone,
+        customerName: d.invoice.customerName,
+        products: productsStr,
+        totalDebt: NumberFormat('#,###').format(totalDebtVal),
+        date: DateFormat('yyyy/MM/dd').format(DateTime.now()),
+        shopName: settings?.shopName ?? d.invoice.shopName,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.error(context, 'خطأ في إرسال واتساب: $e');
+      }
+    }
   }
 
   // ─── Share as image ──────────────────────────────────────────────────────────
@@ -191,10 +294,48 @@ class InvoiceDetailsScreen extends ConsumerWidget {
         items: d.items,
         invoiceId: d.invoice.formattedNum,
         shopName: settings?.shopName,
+        ownerName: settings?.ownerName,
+        shopPhone: settings?.shopPhone,
         shopLogoPath: settings?.logoPath,
       );
     } catch (e) {
       if (context.mounted) AppSnackBar.error(context, 'فشل تصدير PDF: $e');
+    }
+  }
+
+  Future<void> _confirmDelete(
+      BuildContext context, WidgetRef ref, InvoiceModel invoice) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الفاتورة'),
+        content: const Text(
+            'هل أنت متأكد من حذف هذه الفاتورة؟ سيتم مسح البيانات ولا يمكن التراجع.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف الآن'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await ref.read(invoiceRepositoryProvider).deleteInvoice(invoice.id);
+        if (context.mounted) {
+          AppSnackBar.success(context, 'تم حذف الفاتورة بنجاح');
+          context.pop(); // Go back to list
+        }
+        ref.invalidate(allInvoicesProvider);
+      } catch (e) {
+        if (context.mounted) AppSnackBar.error(context, 'فشل الحذف: $e');
+      }
     }
   }
 
@@ -340,7 +481,19 @@ class _ReceiptCard extends StatelessWidget {
                     letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 4),
+                if (invoice.ownerName != null)
+                  Text(
+                    'بإدارة: ${invoice.ownerName}',
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.9), fontSize: 13),
+                  ),
+                if (invoice.shopPhone != null)
+                  Text(
+                    'هاتف: ${invoice.shopPhone}',
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.8), fontSize: 12),
+                  ),
+                const SizedBox(height: 8),
                 Text(
                   'فاتورة رقم: ${invoice.formattedNum}',
                   style: TextStyle(
@@ -474,7 +627,7 @@ class _ReceiptCard extends StatelessWidget {
                   fontSize: 16,
                 ),
                 const SizedBox(height: 6),
-                _TotalRow(label: 'المبلغ المدفوع', value: invoice.paid),
+                _TotalRow(label: 'المبلغ المدفوع', value: invoice.currentPaid),
                 if (invoice.debt > 0)
                   _TotalRow(
                     label: 'المبلغ المتبقي (دين)',
@@ -523,22 +676,55 @@ class _ReceiptCard extends StatelessWidget {
               ),
             ),
 
-          // ── Footer ───────────────────────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color:
+                  isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
               borderRadius:
-                  const BorderRadius.vertical(bottom: Radius.circular(16)),
+                  const BorderRadius.vertical(bottom: Radius.circular(24)),
+              border: Border(
+                top: BorderSide(
+                    color: isDark ? Colors.white12 : Colors.grey.shade200),
+              ),
             ),
             padding: const EdgeInsets.all(16),
-            child: const Center(
-              child: Text(
-                'شكراً لتعاملكم معنا 🙏',
-                style: TextStyle(
-                    fontSize: 13,
+            child: Column(
+              children: [
+                const Text(
+                  'شكراً لتعاملكم معنا 🙏',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic),
+                ),
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(
+                  'برمجة وتطوير: مرتضى علاء | مكتب فن للتصميم والبرمجة',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.almarai(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white70 : Colors.grey.shade800,
+                  ),
+                ),
+                Text(
+                  'هاتف: 07876007620 - 07813938267',
+                  style: GoogleFonts.almarai(
+                    fontSize: 9,
                     color: Colors.grey,
-                    fontStyle: FontStyle.italic),
-              ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '© 2026 جميع الحقوق محفوظة ',
+                  style: GoogleFonts.almarai(
+                    fontSize: 8,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -685,6 +871,51 @@ class _StatusBadge extends StatelessWidget {
       child: Text(labels[status] ?? status,
           style: const TextStyle(
               color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+class _ActionBtn extends StatelessWidget {
+  const _ActionBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(icon, color: color, size: 22),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: GoogleFonts.almarai(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

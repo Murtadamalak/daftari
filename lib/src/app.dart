@@ -15,7 +15,7 @@ class DaftarApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'دفتر - مدير الديون',
+      title: 'دفتري - نظام إدارة المبيعات والديون',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

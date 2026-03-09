@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../core/providers/app_providers.dart';
 import '../core/providers/invoices_provider.dart';
 import '../data/repositories/invoice_repository.dart';
 import '../core/widgets/refresh_action_button.dart';
@@ -305,14 +306,14 @@ class _SearchAndFilterBar extends StatelessWidget {
 // Invoice Card
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _InvoiceCard extends StatelessWidget {
+class _InvoiceCard extends ConsumerWidget {
   const _InvoiceCard({required this.invoice, required this.onTap});
 
   final InvoiceModel invoice;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final statusInfo = _statusInfo(invoice);
 
@@ -331,40 +332,59 @@ class _InvoiceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Row 1: Invoice ID + Status Badge ──────────────────────────
+              // ── Row 1: Invoice ID + Status Badge + Delete ──────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Invoice number
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.receipt_long_outlined,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'فاتورة #${invoice.formattedNum}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Actions
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.receipt_long_outlined,
-                          size: 20,
-                          color: theme.colorScheme.primary,
-                        ),
+                      _StatusBadge(
+                        label: statusInfo.label,
+                        color: statusInfo.color,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'فاتورة #${invoice.formattedNum}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.red, size: 20),
+                        onPressed: () =>
+                            _confirmDeleteInvoice(context, ref, invoice),
+                        tooltip: 'حذف',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
-                  ),
-                  // Status badge
-                  _StatusBadge(
-                    label: statusInfo.label,
-                    color: statusInfo.color,
                   ),
                 ],
               ),
@@ -440,6 +460,34 @@ class _InvoiceCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteInvoice(
+      BuildContext context, WidgetRef ref, InvoiceModel invoice) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الفاتورة'),
+        content:
+            Text('هل أنت متأكد من حذف فاتورة رقم ${invoice.formattedNum}؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(invoiceRepositoryProvider).deleteInvoice(invoice.id);
+      ref.invalidate(allInvoicesProvider);
+    }
   }
 
   ({String label, Color color}) _statusInfo(InvoiceModel invoice) {

@@ -51,6 +51,8 @@ class InvoiceModel {
   final String? note;
   final String status;
   final String shopName;
+  final String? shopPhone;
+  final String? ownerName;
   final String? shopLogoPath;
 
   const InvoiceModel({
@@ -69,6 +71,8 @@ class InvoiceModel {
     this.note,
     required this.status,
     required this.shopName,
+    this.shopPhone,
+    this.ownerName,
     this.shopLogoPath,
   });
 
@@ -77,6 +81,9 @@ class InvoiceModel {
     final nStr = num.toString().padLeft(4, '0');
     return '$prefix-$nStr';
   }
+
+  /// The true total paid to date for this invoice (calculated from debt)
+  double get currentPaid => grandTotal - debt;
 
   factory InvoiceModel.fromJson(Map<String, dynamic> j) {
     double toDouble(String key) {
@@ -105,6 +112,8 @@ class InvoiceModel {
       note: j['note'] as String?,
       status: j['status'] as String? ?? 'paid',
       shopName: j['shop_name'] as String? ?? '',
+      shopPhone: j['shop_phone'] as String?,
+      ownerName: j['owner_name'] as String?,
       shopLogoPath: j['shop_logo_path'] as String?,
     );
   }
@@ -228,6 +237,8 @@ class InvoiceRepository {
     String? note,
     required String status,
     required String shopName,
+    String? shopPhone,
+    String? ownerName,
     String? shopLogoPath,
     required List<Map<String, dynamic>> items,
     double? additionalDebt,
@@ -253,6 +264,8 @@ class InvoiceRepository {
       'note': note,
       'status': status,
       'shop_name': shopName,
+      'shop_phone': shopPhone,
+      'owner_name': ownerName,
       'shop_logo_path': shopLogoPath,
     };
     final insertedInv =
@@ -301,13 +314,11 @@ class InvoiceRepository {
     if (inv == null) throw StateError('Invoice not found');
 
     final newDebt = inv.debt - amountPaid;
-    final newPaid = inv.paid + amountPaid;
     final newStatus = newDebt <= 0.01 ? 'paid' : 'partial';
 
     await _db
         .from('user_invoices')
         .update({
-          'paid': newPaid,
           'debt': newDebt < 0 ? 0 : newDebt,
           'status': newStatus,
         })
@@ -330,6 +341,8 @@ class InvoiceRepository {
       amountPaid,
       'تسديد دين للفاتورة ${inv.id}',
       inv.shopName,
+      inv.shopPhone,
+      inv.ownerName,
       inv.shopLogoPath,
     );
   }
@@ -351,11 +364,15 @@ class InvoiceRepository {
     final unpaid = await getUnpaidByCustomer(customerId);
     double remaining = amountPaid;
     String? shopName;
+    String? shopPhone;
+    String? ownerName;
     String? shopLogoPath;
 
     for (var inv in unpaid) {
       if (remaining <= 0) break;
       shopName ??= inv.shopName;
+      shopPhone ??= inv.shopPhone;
+      ownerName ??= inv.ownerName;
       shopLogoPath ??= inv.shopLogoPath;
       final apply = remaining >= inv.debt ? inv.debt : remaining;
       final newDebt = inv.debt - apply;
@@ -363,7 +380,6 @@ class InvoiceRepository {
       await _db
           .from('user_invoices')
           .update({
-            'paid': inv.paid + apply,
             'debt': newDebt < 0 ? 0 : newDebt,
             'status': newStatus,
           })
@@ -380,6 +396,8 @@ class InvoiceRepository {
       amountPaid,
       'دفعة تسديد من الدين الكلي',
       shopName ?? 'مبيعات المحل',
+      shopPhone,
+      ownerName,
       shopLogoPath,
     );
   }
@@ -393,6 +411,8 @@ class InvoiceRepository {
     double amount,
     String note,
     String shopName,
+    String? shopPhone,
+    String? ownerName,
     String? shopLogoPath,
   ) async {
     final receiptNum = await _nextInvoiceNumber();
@@ -414,6 +434,8 @@ class InvoiceRepository {
       'note': note,
       'status': 'paid',
       'shop_name': shopName,
+      'shop_phone': shopPhone,
+      'owner_name': ownerName,
       'shop_logo_path': shopLogoPath,
     });
   }

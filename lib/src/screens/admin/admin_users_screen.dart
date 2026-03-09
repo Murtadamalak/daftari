@@ -113,14 +113,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         backgroundColor: _surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(title,
-            style: GoogleFonts.cairo(
+            style: GoogleFonts.almarai(
                 color: _textMain, fontWeight: FontWeight.w700)),
         content: Text(content,
-            style: GoogleFonts.cairo(color: _textMuted, fontSize: 13)),
+            style: GoogleFonts.almarai(color: _textMuted, fontSize: 13)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: GoogleFonts.cairo(color: _textMuted)),
+            child: Text('إلغاء', style: GoogleFonts.almarai(color: _textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -129,7 +129,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     borderRadius: BorderRadius.circular(8))),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(confirmLabel,
-                style: GoogleFonts.cairo(color: Colors.white)),
+                style: GoogleFonts.almarai(color: Colors.white)),
           ),
         ],
       ),
@@ -264,7 +264,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     child: Center(
                       child: Text(
                         fullName.isNotEmpty ? fullName[0] : 'م',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: _primary,
                           fontWeight: FontWeight.w800,
                           fontSize: 20,
@@ -279,14 +279,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       children: [
                         Text(
                           fullName,
-                          style: GoogleFonts.cairo(
+                          style: GoogleFonts.almarai(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: _textMain),
                         ),
                         Text(
                           shopName,
-                          style: GoogleFonts.cairo(
+                          style: GoogleFonts.almarai(
                               color: _textMuted, fontSize: 12),
                         ),
                       ],
@@ -311,7 +311,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'رقم العميل: $cId',
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         color: _gold,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
@@ -354,7 +354,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('الأيام المتبقية',
-                            style: GoogleFonts.cairo(
+                            style: GoogleFonts.almarai(
                                 color: _textMuted, fontSize: 13)),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -366,7 +366,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           ),
                           child: Text(
                             '$days يوم',
-                            style: GoogleFonts.cairo(
+                            style: GoogleFonts.almarai(
                               color: dColor,
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
@@ -382,7 +382,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
               Text(
                 'إجراءات',
-                style: GoogleFonts.cairo(
+                style: GoogleFonts.almarai(
                     color: _textMuted,
                     fontWeight: FontWeight.w700,
                     fontSize: 12),
@@ -448,7 +448,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   void _showSnack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: GoogleFonts.cairo(color: Colors.white)),
+      content: Text(msg, style: GoogleFonts.almarai(color: Colors.white)),
       backgroundColor: color,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -480,10 +480,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
               onChanged: (v) => setState(() => _search = v),
-              style: GoogleFonts.cairo(color: _textMain, fontSize: 13),
+              style: GoogleFonts.almarai(color: _textMain, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'بحث بالاسم أو الهاتف...',
-                hintStyle: GoogleFonts.cairo(color: _textMuted, fontSize: 13),
+                hintStyle: GoogleFonts.almarai(color: _textMuted, fontSize: 13),
                 prefixIcon:
                     const Icon(Icons.search, color: _textMuted, size: 18),
                 filled: true,
@@ -566,7 +566,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 child: Center(
                                   child: Text(
                                     fullName.isNotEmpty ? fullName[0] : 'م',
-                                    style: GoogleFonts.cairo(
+                                    style: GoogleFonts.almarai(
                                       color: _primary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 16,
@@ -586,7 +586,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                         Expanded(
                                           child: Text(
                                             fullName,
-                                            style: GoogleFonts.cairo(
+                                            style: GoogleFonts.almarai(
                                               color: _textMain,
                                               fontWeight: FontWeight.w700,
                                               fontSize: 13,
@@ -604,7 +604,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                                   BorderRadius.circular(6),
                                             ),
                                             child: Text('معلّق',
-                                                style: GoogleFonts.cairo(
+                                                style: GoogleFonts.almarai(
                                                     color: _warning,
                                                     fontSize: 9,
                                                     fontWeight:
@@ -624,7 +624,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                                 BorderRadius.circular(4),
                                           ),
                                           child: Text('#$cId',
-                                              style: GoogleFonts.cairo(
+                                              style: GoogleFonts.almarai(
                                                 color: _gold,
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w700,
@@ -633,7 +633,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                         const SizedBox(width: 6),
                                         Text(
                                           (userMap['phone'] as String?) ?? '—',
-                                          style: GoogleFonts.cairo(
+                                          style: GoogleFonts.almarai(
                                               color: _textMuted, fontSize: 11),
                                         ),
                                       ],
@@ -659,7 +659,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                     children: [
                                       Text(
                                         '$days',
-                                        style: GoogleFonts.cairo(
+                                        style: GoogleFonts.almarai(
                                           color: dColor,
                                           fontWeight: FontWeight.w900,
                                           fontSize: 16,
@@ -667,7 +667,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                       ),
                                       Text(
                                         'يوم',
-                                        style: GoogleFonts.cairo(
+                                        style: GoogleFonts.almarai(
                                           color: dColor.withOpacity(0.7),
                                           fontSize: 8,
                                         ),
@@ -686,7 +686,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                   ),
                                   child: Text(
                                     'منتهي',
-                                    style: GoogleFonts.cairo(
+                                    style: GoogleFonts.almarai(
                                       color: _danger.withOpacity(0.7),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
@@ -716,7 +716,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         onPressed: _showActivateByCustomerDialog,
         icon: const Icon(Icons.flash_on),
         label: Text('تفعيل أيام',
-            style: GoogleFonts.cairo(fontWeight: FontWeight.w800, color: _bg)),
+            style: GoogleFonts.almarai(fontWeight: FontWeight.w800, color: _bg)),
       ),
     );
   }
@@ -734,9 +734,9 @@ class _InfoRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.cairo(color: _textMuted, fontSize: 13)),
+        Text(label, style: GoogleFonts.almarai(color: _textMuted, fontSize: 13)),
         Text(value,
-            style: GoogleFonts.cairo(
+            style: GoogleFonts.almarai(
                 color: _textMain, fontWeight: FontWeight.w700, fontSize: 13)),
       ],
     );
@@ -775,7 +775,7 @@ class _ActionBtn extends StatelessWidget {
         icon: Icon(icon, size: 16),
         label: Text(label,
             style:
-                GoogleFonts.cairo(fontWeight: FontWeight.w700, fontSize: 12)),
+                GoogleFonts.almarai(fontWeight: FontWeight.w700, fontSize: 12)),
       ),
     );
   }
@@ -798,12 +798,12 @@ class _AdminDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(title,
           style:
-              GoogleFonts.cairo(color: _textMain, fontWeight: FontWeight.w700)),
+              GoogleFonts.almarai(color: _textMain, fontWeight: FontWeight.w700)),
       content: child,
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('إلغاء', style: GoogleFonts.cairo(color: _textMuted)),
+          child: Text('إلغاء', style: GoogleFonts.almarai(color: _textMuted)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -815,7 +815,7 @@ class _AdminDialog extends StatelessWidget {
           onPressed: onConfirm,
           child: Text('تفعيل',
               style:
-                  GoogleFonts.cairo(fontWeight: FontWeight.w700, color: _bg)),
+                  GoogleFonts.almarai(fontWeight: FontWeight.w700, color: _bg)),
         ),
       ],
     );
@@ -837,10 +837,10 @@ class _AdminTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: GoogleFonts.cairo(color: _textMain, fontSize: 14),
+      style: GoogleFonts.almarai(color: _textMain, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.cairo(color: _textMuted),
+        labelStyle: GoogleFonts.almarai(color: _textMuted),
         filled: true,
         fillColor: _bg,
         border: OutlineInputBorder(

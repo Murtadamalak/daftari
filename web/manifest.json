@@ -1,11 +1,11 @@
 {
-    "name": "daftar_debt_manager",
-    "short_name": "daftar_debt_manager",
+    "name": "دفتري - نظام المبيعات والديون",
+    "short_name": "دفتري",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F5F0",
+    "theme_color": "#0D4C3F",
+    "description": "نظام ذكي لإدارة مبيعاتك وديونك.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

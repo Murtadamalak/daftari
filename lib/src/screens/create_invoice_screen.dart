@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../core/providers/settings_provider.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoice_creation_provider.dart';
 import '../core/providers/products_provider.dart';
@@ -180,6 +182,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final invoiceNotifier = ref.read(invoiceCreationProvider.notifier);
       final invoiceState = ref.read(invoiceCreationProvider);
       final repo = ref.read(invoiceRepositoryProvider);
+      final settings =
+          ref.read(settingsProvider).valueOrNull ?? const AppSettings();
 
       double paid = 0, debt = 0;
       String status = 'paid';
@@ -228,7 +232,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         debt: debt,
         payType: invoiceState.paymentMethod.name,
         status: status,
-        shopName: 'دفتري',
+        shopName: settings.shopName,
+        shopPhone: settings.shopPhone,
+        ownerName: settings.ownerName,
+        shopLogoPath: settings.logoPath,
         items: items,
         additionalDebt: additionalDebt,
       );
@@ -443,14 +450,46 @@ class _BottomActionBar extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CustomerStep extends ConsumerWidget {
+  const _CustomerStep();
+
+  Future<void> _pickCustomer(BuildContext context, WidgetRef ref) async {
+    final customers = await ref.read(_customersStreamProvider.future);
+    if (!context.mounted) return;
+
+    final result = await showModalBottomSheet<CustomerModel>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CustomerSearchPicker(customers: customers),
+    );
+    if (result != null) {
+      ref.read(invoiceCreationProvider.notifier).setCustomer(result);
+    }
+  }
+
+  Future<void> _showAddCustomerDialog(
+      BuildContext context, WidgetRef ref) async {
+    final result = await showDialog<CustomerModel>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _AddCustomerDialog(),
+    );
+    if (result != null) {
+      ref.invalidate(_customersStreamProvider);
+      await ref.read(_customersStreamProvider.future);
+
+      if (context.mounted) {
+        ref.read(invoiceCreationProvider.notifier).setCustomer(result);
+        AppSnackBar.success(context, 'تمت إضافة ${result.name} بنجاح ✓');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final invoiceNotifier = ref.read(invoiceCreationProvider.notifier);
     final invoiceState = ref.watch(invoiceCreationProvider);
     final isCashOnly = invoiceState.customer == null;
-
-    // Live stream of customers
-    final customersAsync = ref.watch(_customersStreamProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -465,63 +504,46 @@ class _CustomerStep extends ConsumerWidget {
           onTap: () => invoiceNotifier.setCustomer(null),
         ),
 
-        const SizedBox(height: 20),
-
-        // ── Divider ────────────────────────────────────────────────────────
-        Row(children: [
-          Expanded(child: Divider(color: Colors.grey.shade300)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text('أو اختر زبوناً مسجّلاً',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
-          ),
-          Expanded(child: Divider(color: Colors.grey.shade300)),
-        ]),
-
         const SizedBox(height: 16),
 
-        // ── Customer picker row ────────────────────────────────────────────
-        customersAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text('خطأ: $e'),
-          data: (customers) => _CustomerPickerRow(
-            customers: customers,
-            selected: invoiceState.customer,
-            onSelect: invoiceNotifier.setCustomer,
-            onAddNew: () => _showAddCustomerDialog(context, ref),
-          ),
+        // ── Selection Buttons ──────────────────────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.person_search_outlined,
+                label: 'بحث عن زبون',
+                color: AppColors.primary,
+                onTap: () => _pickCustomer(context, ref),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.person_add_outlined,
+                label: 'إضافة زبون',
+                color: const Color(0xFF8B5CF6),
+                onTap: () => _showAddCustomerDialog(context, ref),
+              ),
+            ),
+          ],
         ),
 
-        // ── Selected customer card ────────────────────────────────────────
+        // ── Selected customer info ────────────────────────────────────────
         if (invoiceState.customer != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, right: 4),
+            child: Text('الزبون المختار:',
+                style: GoogleFonts.almarai(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textSecondary)),
+          ),
           _CustomerInfoCard(customer: invoiceState.customer!),
         ],
       ],
     );
-  }
-
-  Future<void> _showAddCustomerDialog(
-      BuildContext context, WidgetRef ref) async {
-    final result = await showDialog<CustomerModel>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const _AddCustomerDialog(),
-    );
-    if (result != null) {
-      // ── IMPORTANT: refresh the customers list FIRST so the dropdown
-      //    includes the new customer before we set it as the selected value.
-      //    Without this the DropdownButtonFormField assertion fires because
-      //    `value` is not found in its `items` list.
-      ref.invalidate(_customersStreamProvider);
-      // Wait for the fresh list to be available
-      await ref.read(_customersStreamProvider.future);
-
-      if (context.mounted) {
-        ref.read(invoiceCreationProvider.notifier).setCustomer(result);
-        AppSnackBar.success(context, 'تمت إضافة ${result.name} بنجاح ✓');
-      }
-    }
   }
 }
 
@@ -592,101 +614,225 @@ class _QuickOptionCard extends StatelessWidget {
 
 // ── Customer Picker Row ──────────────────────────────────────────────────────
 
-class _CustomerPickerRow extends StatelessWidget {
-  const _CustomerPickerRow({
-    required this.customers,
-    required this.selected,
-    required this.onSelect,
-    required this.onAddNew,
-  });
+// ── Customer Search Picker Bottom Sheet ──────────────────────────────────────
+
+class _CustomerSearchPicker extends StatefulWidget {
+  const _CustomerSearchPicker({required this.customers});
   final List<CustomerModel> customers;
-  final CustomerModel? selected;
-  final ValueChanged<CustomerModel?> onSelect;
-  final VoidCallback onAddNew;
+
+  @override
+  State<_CustomerSearchPicker> createState() => _CustomerSearchPickerState();
+}
+
+class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Dropdown
-        Expanded(
-          child: customers.isEmpty
-              ? Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+    final filtered = _query.isEmpty
+        ? widget.customers
+        : widget.customers.where((c) {
+            final q = _query.toLowerCase();
+            return c.name.toLowerCase().contains(q) ||
+                (c.phone != null && c.phone!.contains(q));
+          }).toList();
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, -5))
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header Handle
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 50,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
                   child: Text(
-                    'لا يوجد زبائن بعد — اضغط + لإضافة أول',
-                    style:
-                        TextStyle(color: AppColors.textDisabled, fontSize: 13),
-                    textAlign: TextAlign.center,
+                    'اختر زبوناً',
+                    style: GoogleFonts.almarai(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )
-              : DropdownButtonFormField<CustomerModel>(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.person_search_outlined),
-                    labelText: 'اختر زبوناً',
-                  ),
-                  value: selected,
-                  isExpanded: true,
-                  items: customers.map((c) {
-                    return DropdownMenuItem(
-                      value: c,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              child: Text(c.name,
-                                  overflow: TextOverflow.ellipsis)),
-                          if (c.totalDebt > 0)
-                            Text(
-                              'دين: ${NumberFormat('#,###').format(c.totalDebt)}',
-                              style: const TextStyle(
-                                  color: AppColors.danger, fontSize: 11),
-                            ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: onSelect,
                 ),
-        ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
 
-        const SizedBox(width: 10),
-
-        // ── Add New button ──
-        Tooltip(
-          message: 'إضافة زبون جديد',
-          child: InkWell(
-            onTap: onAddNew,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              height: 54,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary, width: 1.5),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person_add_outlined,
-                      color: AppColors.primary, size: 20),
-                  SizedBox(width: 6),
-                  Text('+جديد',
-                      style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                ],
+          // Search Field
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            child: TextField(
+              autofocus: true,
+              onChanged: (v) => setState(() => _query = v),
+              decoration: InputDecoration(
+                hintText: 'بحث باسم الزبون أو رقم الهاتف...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
+
+          const SizedBox(height: 10),
+
+          // Search Results
+          Expanded(
+            child: filtered.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_search,
+                            size: 64, color: Colors.grey.withOpacity(0.5)),
+                        const SizedBox(height: 16),
+                        Text('لا توجد نتائج',
+                            style: TextStyle(color: Colors.grey.shade500)),
+                      ],
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(20),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.1,
+                    ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) {
+                      final c = filtered[i];
+                      return _CustomerGridItem(
+                        customer: c,
+                        onTap: () => Navigator.pop(context, c),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerGridItem extends StatelessWidget {
+  const _CustomerGridItem({required this.customer, required this.onTap});
+  final CustomerModel customer;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDebt = customer.totalDebt > 0;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: hasDebt
+                ? AppColors.danger.withOpacity(0.3)
+                : AppColors.border.withOpacity(0.5),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (hasDebt ? AppColors.danger : AppColors.primary)
+                    .withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person,
+                color: hasDebt ? AppColors.danger : AppColors.primary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              customer.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.almarai(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (hasDebt) ...[
+              const SizedBox(height: 4),
+              Text(
+                NumberFormat('#,###').format(customer.totalDebt),
+                style: GoogleFonts.almarai(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.danger,
+                ),
+              ),
+              Text(
+                'دين مستحق',
+                style: GoogleFonts.almarai(
+                  fontSize: 10,
+                  color: AppColors.danger.withOpacity(0.8),
+                ),
+              ),
+            ] else
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'لا يوجد ديون',
+                  style: GoogleFonts.almarai(
+                    fontSize: 10,
+                    color: Colors.green,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

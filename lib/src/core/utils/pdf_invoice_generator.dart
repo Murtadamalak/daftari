@@ -17,12 +17,14 @@ const _ctaText = 'هل أعجبك تنظيم هذا الوصل؟ صمم تطبي
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
 const _devPhone = '07876007620 - 07813938267';
+const _copyright = '© 2026 جميع الحقوق محفوظة ';
 const _telegramUrl = 'https://t.me/art8ms';
 const _qrCaption = 'امسح الرمز للتواصل المباشر';
 
-// Google Fonts TTF URLs for Cairo
-const _cairoRegUrl =
-    'https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf';
+const _almaraiRegUrl =
+    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf';
+const _almaraiBoldUrl =
+    'https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PDF Generator
@@ -68,22 +70,27 @@ class PdfInvoiceGenerator {
     required List<InvoiceItemModel> items,
     required String invoiceId,
     String? shopName,
+    String? ownerName,
+    String? shopPhone,
     String? shopLogoPath,
   }) async {
     final pdf = pw.Document();
 
-    // ── Try to load Cairo font (network / cached TTF) ────────────────────────
-    final cairoFont = await _loadFontFromNetwork(_cairoRegUrl, 'cairo_vf.ttf');
+    // ── Try to load Almarai font (network / cached TTF) ────────────
+    final regFont =
+        await _loadFontFromNetwork(_almaraiRegUrl, 'almarai_reg.ttf');
+    final boldFont =
+        await _loadFontFromNetwork(_almaraiBoldUrl, 'almarai_bold.ttf');
 
     // Built-in fallback (Helvetica is always available)
-    final cairoReg = cairoFont ?? pw.Font.helvetica();
-    final cairoBold = cairoFont ?? pw.Font.helveticaBold();
+    final fontReg = regFont ?? pw.Font.helvetica();
+    final fontBold = boldFont ?? fontReg;
 
-    final baseStyle = pw.TextStyle(font: cairoReg, fontSize: 11);
-    final boldStyle = pw.TextStyle(font: cairoBold, fontSize: 11);
+    final baseStyle = pw.TextStyle(font: fontReg, fontSize: 11);
+    final boldStyle = pw.TextStyle(font: fontBold, fontSize: 11);
     final smallStyle =
-        pw.TextStyle(font: cairoReg, fontSize: 9, color: PdfColors.grey600);
-    final smallBoldStyle = pw.TextStyle(font: cairoBold, fontSize: 9);
+        pw.TextStyle(font: fontReg, fontSize: 9, color: PdfColors.grey600);
+    final smallBoldStyle = pw.TextStyle(font: fontBold, fontSize: 9);
 
     // ── Logo (optional) ──────────────────────────────────────────────────────
     pw.ImageProvider? logoImage;
@@ -155,7 +162,7 @@ class PdfInvoiceGenerator {
                           child: pw.Text(
                             'د',
                             style: pw.TextStyle(
-                              font: cairoBold,
+                              font: fontBold,
                               fontSize: 24,
                               color: const PdfColor.fromInt(0xFF1A3C6E),
                             ),
@@ -173,19 +180,43 @@ class PdfInvoiceGenerator {
                           pw.Text(
                             shopName ?? invoice.shopName,
                             style: pw.TextStyle(
-                              font: cairoBold,
+                              font: fontBold,
                               fontSize: 18,
                               color: PdfColors.white,
                             ),
                             textDirection: pw.TextDirection.rtl,
                           ),
+                          if ((ownerName ?? invoice.ownerName) != null) ...[
+                            pw.SizedBox(height: 2),
+                            pw.Text(
+                              'بإدارة: ${ownerName ?? invoice.ownerName}',
+                              style: pw.TextStyle(
+                                font: fontReg,
+                                fontSize: 10,
+                                color: const PdfColor(0.8, 0.8, 1.0),
+                              ),
+                              textDirection: pw.TextDirection.rtl,
+                            ),
+                          ],
+                          if ((shopPhone ?? invoice.shopPhone) != null) ...[
+                            pw.SizedBox(height: 2),
+                            pw.Text(
+                              'هاتف: ${shopPhone ?? invoice.shopPhone}',
+                              style: pw.TextStyle(
+                                font: fontReg,
+                                fontSize: 10,
+                                color: const PdfColor(0.8, 0.8, 1.0),
+                              ),
+                              textDirection: pw.TextDirection.rtl,
+                            ),
+                          ],
                           pw.SizedBox(height: 4),
                           pw.Text(
                             _appName,
                             style: pw.TextStyle(
-                              font: cairoReg,
-                              fontSize: 10,
-                              color: const PdfColor(0.9, 0.9, 1.0),
+                              font: fontReg,
+                              fontSize: 9,
+                              color: const PdfColor(0.7, 0.7, 0.9),
                             ),
                             textDirection: pw.TextDirection.rtl,
                           ),
@@ -213,9 +244,9 @@ class PdfInvoiceGenerator {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     _pdfLabelValue('رقم الفاتورة', invoice.formattedNum,
-                        cairoReg, cairoBold),
-                    _pdfLabelValue('التاريخ', dateStr, cairoReg, cairoBold),
-                    _pdfStatusBadge(statusLabel, statusColor, cairoBold),
+                        fontReg, fontBold),
+                    _pdfLabelValue('التاريخ', dateStr, fontReg, fontBold),
+                    _pdfStatusBadge(statusLabel, statusColor, fontBold),
                   ],
                 ),
               ),
@@ -263,7 +294,7 @@ class PdfInvoiceGenerator {
                                   vertical: 7, horizontal: 6),
                               child: pw.Text(h,
                                   style: pw.TextStyle(
-                                    font: cairoBold,
+                                    font: fontBold,
                                     fontSize: 10,
                                     color: PdfColors.white,
                                   ),
@@ -329,7 +360,7 @@ class PdfInvoiceGenerator {
                       pw.Text(
                         'ملاحظات:',
                         style: pw.TextStyle(
-                            font: cairoBold,
+                            font: fontBold,
                             fontSize: 10,
                             color: PdfColors.grey800),
                         textDirection: pw.TextDirection.rtl,
@@ -338,9 +369,7 @@ class PdfInvoiceGenerator {
                       pw.Text(
                         invoice.note!,
                         style: pw.TextStyle(
-                            font: cairoReg,
-                            fontSize: 9,
-                            color: PdfColors.black),
+                            font: fontReg, fontSize: 9, color: PdfColors.black),
                         textDirection: pw.TextDirection.rtl,
                       ),
                     ],
@@ -362,22 +391,22 @@ class PdfInvoiceGenerator {
                 child: pw.Column(
                   children: [
                     _pdfTotalRow('الإجمالي الفرعي', _fmt(invoice.subtotal),
-                        cairoReg, cairoBold),
+                        fontReg, fontBold),
                     if (invoice.discount > 0)
                       _pdfTotalRow('الخصم', '- ${_fmt(invoice.discount)}',
-                          cairoReg, cairoBold,
+                          fontReg, fontBold,
                           valueColor: PdfColors.orange700),
                     pw.Divider(color: PdfColors.grey400, height: 12),
                     _pdfTotalRow('الإجمالي النهائي', _fmt(invoice.grandTotal),
-                        cairoReg, cairoBold,
+                        fontReg, fontBold,
                         isBold: true, big: true),
                     pw.SizedBox(height: 4),
-                    _pdfTotalRow('المبلغ المدفوع', _fmt(invoice.paid), cairoReg,
-                        cairoBold,
+                    _pdfTotalRow('المبلغ المدفوع', _fmt(invoice.currentPaid),
+                        fontReg, fontBold,
                         valueColor: PdfColors.green700),
                     if (invoice.debt > 0)
-                      _pdfTotalRow('المتبقي (دين)', _fmt(invoice.debt),
-                          cairoReg, cairoBold,
+                      _pdfTotalRow('المتبقي (دين)', _fmt(invoice.debt), fontReg,
+                          fontBold,
                           valueColor: PdfColors.red700, isBold: true),
                   ],
                 ),
@@ -392,7 +421,7 @@ class PdfInvoiceGenerator {
                 child: pw.Text(
                   'شكراً لتعاملكم معنا 🙏',
                   style: pw.TextStyle(
-                      font: cairoReg, fontSize: 13, color: PdfColors.grey600),
+                      font: fontReg, fontSize: 13, color: PdfColors.grey600),
                   textDirection: pw.TextDirection.rtl,
                 ),
               ),
@@ -425,7 +454,7 @@ class PdfInvoiceGenerator {
                           child: pw.Text(
                             _ctaText,
                             style: pw.TextStyle(
-                              font: cairoBold,
+                              font: fontBold,
                               fontSize: 10,
                               color: const PdfColor.fromInt(0xFF1A3C6E),
                             ),
@@ -444,6 +473,12 @@ class PdfInvoiceGenerator {
                         pw.Text(
                           _devPhone,
                           style: smallStyle,
+                        ),
+                        pw.SizedBox(height: 4),
+                        pw.Text(
+                          _copyright,
+                          style: smallStyle.copyWith(fontSize: 7),
+                          textDirection: pw.TextDirection.rtl,
                         ),
                       ],
                     ),
@@ -465,7 +500,7 @@ class PdfInvoiceGenerator {
                       pw.Text(
                         _qrCaption,
                         style: pw.TextStyle(
-                          font: cairoReg,
+                          font: fontReg,
                           fontSize: 7,
                           color: PdfColors.grey600,
                         ),

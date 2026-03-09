@@ -131,7 +131,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const SizedBox(width: 10),
                   Text(
                     'الاشتراكات النشطة',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -148,7 +148,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                       child: Text(
                         '${_recentSubs.length}',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           fontSize: 11,
                           color: const Color(0xFF4DB896),
                           fontWeight: FontWeight.w700,
@@ -221,7 +221,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 Text(
                   greeting,
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     color: const Color(0xFF4DB896),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -230,7 +230,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 4),
                 RichText(
                   text: TextSpan(
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -239,14 +239,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const TextSpan(text: 'أهلاً بيك '),
                       TextSpan(
                         text: 'سيدي ',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: const Color(0xFFD8A84A),
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                       TextSpan(
                         text: _adminName,
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: const Color(0xFFD8A84A),
                           fontWeight: FontWeight.w900,
                           fontSize: 22,
@@ -274,7 +274,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const SizedBox(width: 5),
                       Text(
                         'مدير النظام',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: const Color(0xFFD8A84A),
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -286,7 +286,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 12),
                 Text(
                   DateFormat('EEEE، d MMMM yyyy', 'ar').format(DateTime.now()),
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     color: const Color(0xFF8AADA5),
                     fontSize: 11,
                   ),
@@ -374,7 +374,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const Spacer(),
               Text(
                 c.value,
-                style: GoogleFonts.cairo(
+                style: GoogleFonts.almarai(
                   color: c.color,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -382,7 +382,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               Text(
                 c.title,
-                style: GoogleFonts.cairo(
+                style: GoogleFonts.almarai(
                   color: c.color.withOpacity(0.7),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
@@ -445,7 +445,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Center(
                 child: Text(
                   name.isNotEmpty ? name[0] : 'م',
-                  style: GoogleFonts.cairo(
+                  style: GoogleFonts.almarai(
                     color: const Color(0xFF4DB896),
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
@@ -462,7 +462,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   Text(
                     name,
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
@@ -480,7 +480,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                         child: Text(
                           'باقة $planLabel',
-                          style: GoogleFonts.cairo(
+                          style: GoogleFonts.almarai(
                             color: const Color(0xFFD8A84A),
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -490,7 +490,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const SizedBox(width: 6),
                       Text(
                         'حتى $endDate',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: const Color(0xFF8AADA5),
                           fontSize: 10,
                         ),
@@ -520,7 +520,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       Text(
                         '$daysLeft',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: dColor,
                           fontWeight: FontWeight.w900,
                           fontSize: 18,
@@ -528,7 +528,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                       Text(
                         'يوم',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           color: dColor.withOpacity(0.7),
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
@@ -541,7 +541,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 if (daysLeft <= 3)
                   Text(
                     '⚠️ ينتهي قريباً',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                       color: const Color(0xFFDC2626),
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
@@ -596,7 +596,7 @@ class _EmptyCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             message,
-            style: GoogleFonts.cairo(
+            style: GoogleFonts.almarai(
               color: const Color(0xFF8AADA5),
               fontSize: 13,
               fontWeight: FontWeight.w500,

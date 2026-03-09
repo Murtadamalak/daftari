@@ -49,7 +49,10 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionStatus?> {
     final cached = prefs.getString('cached_subscription_status');
     if (cached != null) {
       try {
-        state = SubscriptionStatus.fromJson(json.decode(cached));
+        final decoded = json.decode(cached);
+        if (decoded is Map<String, dynamic>) {
+          state = SubscriptionStatus.fromJson(decoded);
+        }
       } catch (_) {}
     }
 

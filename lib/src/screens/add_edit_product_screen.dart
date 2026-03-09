@@ -30,7 +30,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
   final _stockController = TextEditingController();
   final _barcodeController = TextEditingController();
 
-  static const _units = ['كيلو', 'حبة', 'علبة', 'لتر', 'كرتون'];
+  static const _units = ['قطعة', 'كيلو', 'حبة', 'علبة', 'لتر', 'كرتون'];
 
   ProductModel? _product;
   bool _isLoading = true;
@@ -124,6 +124,37 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     }
   }
 
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف المنتج'),
+        content: const Text(
+            'هل أنت متأكد من حذف هذا المنتج؟ سيتم مسح البيانات ولا يمكن التراجع.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف الآن'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final repo = ref.read(productRepositoryProvider);
+      await repo.deleteProduct(_product!.id);
+      ref.invalidate(productsProvider);
+      if (mounted) {
+        context.pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -140,6 +171,14 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد'),
+        actions: [
+          if (_isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              tooltip: 'حذف المنتج',
+              onPressed: _confirmDelete,
+            ),
+        ],
       ),
       body: Form(
         key: _formKey,

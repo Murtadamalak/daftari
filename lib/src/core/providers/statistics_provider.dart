@@ -38,14 +38,43 @@ final dashboardStatsProvider =
   final List<InvoiceModel> unpaidInvoices = [];
   final List<InvoiceModel> todayInvoices = [];
 
+  // ── Accurate Collection-based Sales logic ──────────────────────────────
+  // We want to count:
+  // 1. Every 'تسديد دين' (Debt Payment) record on the day it occurred.
+  // 2. The INITIAL payment of every regular invoice on the day it was created.
+  // To get the Initial payment of an old invoice (which might have been updated),
+  // we subtract all debt payments linked to it.
+
+  final invoicePmtsSum = <String, double>{};
   for (final inv in invoices) {
+    if (inv.payType == 'تسديد دين') {
+      if (inv.note != null && inv.note!.startsWith('تسديد دين للفاتورة ')) {
+        final origId = inv.note!.replaceAll('تسديد دين للفاتورة ', '');
+        invoicePmtsSum[origId] = (invoicePmtsSum[origId] ?? 0) + inv.paid;
+      }
+    }
+  }
+
+  for (final inv in invoices) {
+    double cashIn = 0;
+    if (inv.payType == 'تسديد دين') {
+      cashIn = inv.paid;
+    } else {
+      // Regular invoice: count the initial pay only.
+      // If the invoice was updated in the past (before we stopped updating paid),
+      // we subtract those payments to get the original.
+      cashIn = inv.paid - (invoicePmtsSum[inv.id] ?? 0);
+    }
+
     if (!inv.date.isBefore(todayStart)) {
-      todaySales += inv.grandTotal;
-      todayInvoices.add(inv);
+      todaySales += cashIn;
+      if (inv.payType != 'تسديد دين') todayInvoices.add(inv);
     }
     if (!inv.date.isBefore(monthStart)) {
-      monthSales += inv.grandTotal;
+      monthSales += cashIn;
     }
+
+    // Debt and unpaid counts
     if (inv.debt > 0) {
       totalDebt += inv.debt;
     }

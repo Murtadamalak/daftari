@@ -134,7 +134,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Center(
                         child: Text(
                           'د',
-                          style: GoogleFonts.cairo(
+                          style: GoogleFonts.almarai(
                             fontSize: 44,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -145,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 24),
                     Text(
                       'دفتري',
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontSize: 36,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -154,7 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'نظام إدارة المبيعات والديون',
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.75),
                       ),
@@ -205,7 +205,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             child: Center(
                               child: Text('د',
-                                  style: GoogleFonts.cairo(
+                                  style: GoogleFonts.almarai(
                                       fontSize: 34,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white)),
@@ -218,7 +218,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // Title
                       Text(
                         _isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: isDark
@@ -232,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _isLogin
                             ? 'أدخل بياناتك للوصول إلى حسابك'
                             : 'أنشئ حسابك مجاناً وابدأ الآن',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           fontSize: 13,
                           color: isDark
                               ? AppColors.darkTextSecondary
@@ -305,7 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(width: 10),
                             Text(
                               'تذكرني (البقاء متصلاً)',
-                              style: GoogleFonts.cairo(
+                              style: GoogleFonts.almarai(
                                 fontSize: 13,
                                 color: isDark
                                     ? AppColors.darkTextSecondary
@@ -337,7 +337,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
-                                  style: GoogleFonts.cairo(
+                                  style: GoogleFonts.almarai(
                                     color: AppColors.danger,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -361,7 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       color: Colors.white, strokeWidth: 2.5))
                               : Text(
                                   _isLogin ? 'دخول' : 'إنشاء الحساب',
-                                  style: GoogleFonts.cairo(
+                                  style: GoogleFonts.almarai(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700),
                                 ),
@@ -376,7 +376,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            style: GoogleFonts.cairo(
+                            style: GoogleFonts.almarai(
                               fontSize: 13,
                               color: isDark
                                   ? AppColors.darkTextSecondary
@@ -390,7 +390,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               TextSpan(
                                 text: _isLogin ? 'سجل الآن' : 'سجل دخول',
-                                style: GoogleFonts.cairo(
+                                style: GoogleFonts.almarai(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w700,
                                   decoration: TextDecoration.underline,
@@ -426,7 +426,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         controller: controller,
         obscureText: isPassword && _obscurePassword,
         keyboardType: keyboardType,
-        style: GoogleFonts.cairo(
+        style: GoogleFonts.almarai(
           color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           fontSize: 14,
         ),
@@ -474,7 +474,7 @@ class _FeatureRow extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           text,
-          style: GoogleFonts.cairo(
+          style: GoogleFonts.almarai(
             color: Colors.white.withOpacity(0.85),
             fontSize: 13,
           ),

@@ -80,38 +80,46 @@ class ComprehensiveReportNotifier
     state = const AsyncValue.loading();
     try {
       final repo = _ref.read(invoiceRepositoryProvider);
-      final invoices =
-          await repo.getByDateRange(_currentRange.start, _currentRange.end);
+      final allInvoices = await repo.getAllInvoices();
+      final invoicesInSelectedRange = allInvoices.where((inv) {
+        return !inv.date.isBefore(_currentRange.start) &&
+            !inv.date.isAfter(_currentRange.end);
+      }).toList();
 
-      final invoiceIds = invoices.map((e) => e.id).toList();
-      final items = await repo.getItemsByInvoiceIds(invoiceIds);
+      final invoiceIdsInSelectedRange =
+          invoicesInSelectedRange.map((e) => e.id).toList();
+      final items = await repo.getItemsByInvoiceIds(invoiceIdsInSelectedRange);
 
       double sales = 0;
       double paid = 0;
-      double debt = 0;
+      double debtValue = 0;
       double discount = 0;
 
-      final paymentsForOriginals = <String, double>{};
-      for (final inv in invoices) {
+      // 1. Build a global map of all debt payments for ANY invoice
+      final invoicePmtsSum = <String, double>{};
+      for (final inv in allInvoices) {
         if (inv.payType == 'تسديد دين') {
-          paid += inv.paid;
           if (inv.note != null && inv.note!.startsWith('تسديد دين للفاتورة ')) {
             final origId = inv.note!.replaceAll('تسديد دين للفاتورة ', '');
-            paymentsForOriginals[origId] =
-                (paymentsForOriginals[origId] ?? 0) + inv.paid;
+            invoicePmtsSum[origId] = (invoicePmtsSum[origId] ?? 0) + inv.paid;
           }
         }
       }
 
-      for (final inv in invoices) {
-        if (inv.payType == 'تسديد دين') continue;
-        sales += inv.grandTotal;
-        double effectivePaid = inv.paid;
-        if (paymentsForOriginals.containsKey(inv.id)) {
-          effectivePaid -= paymentsForOriginals[inv.id]!;
+      // 2. Sum up for the selected range
+      for (final inv in invoicesInSelectedRange) {
+        double cashIn = 0;
+        if (inv.payType == 'تسديد دين') {
+          cashIn = inv.paid;
+        } else {
+          // Regular invoice: count the initial pay only.
+          // Correctly handle updated 'paid' values from old transactions.
+          cashIn = inv.paid - (invoicePmtsSum[inv.id] ?? 0);
         }
-        paid += effectivePaid;
-        debt += inv.debt;
+
+        sales += cashIn;
+        paid += cashIn;
+        debtValue += inv.debt;
         discount += inv.discount;
       }
 
@@ -126,11 +134,11 @@ class ComprehensiveReportNotifier
 
       state = AsyncValue.data(ComprehensiveReportData(
         dateRange: _currentRange,
-        invoices: invoices,
+        invoices: invoicesInSelectedRange,
         items: items,
         totalSales: sales,
         totalPaid: paid,
-        totalDebt: debt,
+        totalDebt: debtValue,
         totalDiscount: discount,
         itemQuantities: itemQuantities,
       ));

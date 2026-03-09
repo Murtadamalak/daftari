@@ -20,6 +20,29 @@ class SubscriptionService {
             response.first as Map<String, dynamic>;
         final status = SubscriptionStatus.fromJson(data);
 
+        // --- FALLBACK: If status is not pending, check for any pending payment_requests ---
+        // This handles cases where RLS prevented the user from updating their own
+        // status to 'pending' directly in the subscriptions table.
+        if (status.currentStatus != 'pending') {
+          final pendingReqs = await _supabase
+              .from('payment_requests')
+              .select()
+              .eq('user_id', userId)
+              .eq('status', 'pending')
+              .limit(1);
+
+          if (pendingReqs.isNotEmpty) {
+            return SubscriptionStatus(
+              plan: status.plan,
+              currentStatus: 'pending',
+              daysRemaining: status.daysRemaining,
+              isActive: status.isActive,
+              invoicesRemaining: status.invoicesRemaining,
+              customersRemaining: status.customersRemaining,
+            );
+          }
+        }
+
         // If free, get the free tier limits
         if (status.plan == 'free') {
           final invoicesLimit = await _supabase.rpc<Map<String, dynamic>>(
@@ -107,9 +130,16 @@ class SubscriptionService {
 
       // 3. Update subscription status
       step = 'update_subscription';
-      await _supabase.from('subscriptions').update({
-        'status': 'pending',
-      }).eq('user_id', user.id);
+      try {
+        await _supabase.from('subscriptions').update({
+          'status': 'pending',
+        }).eq('user_id', user.id);
+      } catch (subErr) {
+        // If this fails (e.g. RLS), we don't block the whole process
+        // because the payment request was already inserted successfully.
+        print(
+            'Warning: Could not update subscription status to pending: $subErr');
+      }
     } catch (e) {
       print('Error at step $step: $e');
       String msg = 'حدث خطأ';

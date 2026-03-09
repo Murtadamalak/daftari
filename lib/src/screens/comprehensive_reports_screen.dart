@@ -83,7 +83,7 @@ class _HeaderPresets extends ConsumerWidget {
                     DateFormat('yyyy/MM/dd').format(d.dateRange.start);
                 final end = DateFormat('yyyy/MM/dd').format(d.dateRange.end);
                 return Text('الفترة: من $start إلى $end',
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                         color: AppColors.textSecondary, fontSize: 13));
               },
               orElse: () => const SizedBox.shrink(),
@@ -182,7 +182,7 @@ class _ReportBody extends ConsumerWidget {
           // ── Overview Cards ──
           Text('ملخص الإيرادات والأرباح',
               style:
-                  GoogleFonts.cairo(fontWeight: FontWeight.w700, fontSize: 16)),
+                  GoogleFonts.almarai(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 12),
           GridView.count(
             physics: const NeverScrollableScrollPhysics(),
@@ -219,12 +219,12 @@ class _ReportBody extends ConsumerWidget {
           // ── Top Products ──
           Text('المنتجات المباعة (الكميات)',
               style:
-                  GoogleFonts.cairo(fontWeight: FontWeight.w700, fontSize: 16)),
+                  GoogleFonts.almarai(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 12),
           if (data.itemQuantities.isEmpty)
             Center(
                 child: Text('لم يتم بيع أي منتجات في هذه الفترة.',
-                    style: GoogleFonts.cairo(color: AppColors.textSecondary)))
+                    style: GoogleFonts.almarai(color: AppColors.textSecondary)))
           else
             Card(
               elevation: 0,
@@ -245,12 +245,12 @@ class _ReportBody extends ConsumerWidget {
                   return ListTile(
                     leading: const Icon(Icons.inventory_2_outlined,
                         color: AppColors.primary),
-                    title: Text(e.key, style: GoogleFonts.cairo(fontSize: 14)),
+                    title: Text(e.key, style: GoogleFonts.almarai(fontSize: 14)),
                     trailing: Text(
                       e.value == e.value.truncate()
                           ? e.value.toInt().toString()
                           : e.value.toStringAsFixed(2),
-                      style: GoogleFonts.cairo(
+                      style: GoogleFonts.almarai(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                           color: AppColors.primary),
@@ -264,12 +264,12 @@ class _ReportBody extends ConsumerWidget {
           // ── Invoices ──
           Text('فواتير هذه الفترة (${data.invoices.length})',
               style:
-                  GoogleFonts.cairo(fontWeight: FontWeight.w700, fontSize: 16)),
+                  GoogleFonts.almarai(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 12),
           if (data.invoices.isEmpty)
             Center(
                 child: Text('لا توجد فواتير لتسجيلها.',
-                    style: GoogleFonts.cairo(color: AppColors.textSecondary)))
+                    style: GoogleFonts.almarai(color: AppColors.textSecondary)))
           else
             Card(
               elevation: 0,
@@ -290,10 +290,10 @@ class _ReportBody extends ConsumerWidget {
                   return ListTile(
                     isThreeLine: inv.payType == 'تسديد دين',
                     title: Text(inv.customerName,
-                        style: GoogleFonts.cairo(fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.almarai(fontWeight: FontWeight.w600)),
                     subtitle: Text(
                         'رقم ${inv.formattedNum} - ${DateFormat('yyyy/MM/dd HH:mm').format(inv.date)}${inv.payType == 'تسديد دين' && inv.note != null ? '\n${inv.note}' : ''}',
-                        style: GoogleFonts.cairo(
+                        style: GoogleFonts.almarai(
                           fontSize: 12,
                           color: inv.payType == 'تسديد دين'
                               ? Theme.of(context).colorScheme.primary
@@ -308,7 +308,7 @@ class _ReportBody extends ConsumerWidget {
                       children: [
                         Text(_fmt(inv.grandTotal),
                             style:
-                                GoogleFonts.cairo(fontWeight: FontWeight.w700)),
+                                GoogleFonts.almarai(fontWeight: FontWeight.w700)),
                         Text(
                           inv.payType == 'تسديد دين'
                               ? 'دُفعة مسددة'
@@ -394,7 +394,7 @@ class _StatCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(title,
-                    style: GoogleFonts.cairo(
+                    style: GoogleFonts.almarai(
                         fontSize: 11,
                         color: Theme.of(context)
                             .colorScheme
@@ -409,7 +409,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           FittedBox(
             child: Text(value,
-                style: GoogleFonts.cairo(
+                style: GoogleFonts.almarai(
                     fontSize: 18, color: color, fontWeight: FontWeight.w800)),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../core/providers/app_providers.dart';
 import '../core/providers/products_provider.dart';
 import '../core/widgets/soft_card.dart';
 import '../data/repositories/product_repository.dart';
@@ -133,7 +134,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends ConsumerWidget {
   const _ProductCard({required this.product, required this.onTap});
 
   final ProductModel product;
@@ -142,7 +143,7 @@ class _ProductCard extends StatelessWidget {
   static final _fmt = NumberFormat('#,###');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final hasLowStock =
         product.stock != null && product.stock! < 5 && product.stock! >= 0;
@@ -212,11 +213,49 @@ class _ProductCard extends StatelessWidget {
             ),
           ),
 
-          // ── Chevron ──
-          Icon(Icons.chevron_left, color: theme.colorScheme.outline, size: 20),
+          // ── Actions ──
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    color: Colors.red, size: 20),
+                onPressed: () => _confirmDeleteProduct(context, ref, product),
+                tooltip: 'حذف',
+              ),
+              Icon(Icons.chevron_left,
+                  color: theme.colorScheme.outline, size: 20),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteProduct(
+      BuildContext context, WidgetRef ref, ProductModel product) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف المنتج'),
+        content: Text('هل أنت متأكد من حذف المنتج "${product.name}"؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(productRepositoryProvider).deleteProduct(product.id);
+      ref.invalidate(productsProvider);
+    }
   }
 }
 

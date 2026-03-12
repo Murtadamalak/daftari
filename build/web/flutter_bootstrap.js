@@ -40,9 +40,16 @@ _flutter.buildConfig = {"engineRevision":"ef0cd000916d64fa0c5d09cc809fa7ad244a57
 _flutter.loader.load({
   serviceWorkerSettings: {
 <<<<<<< HEAD
+<<<<<<< Updated upstream
     serviceWorkerVersion: "4262094163"
 =======
     serviceWorkerVersion: "3192292494"
 >>>>>>> d0e6bef (تعديل منتجات\)
+=======
+    serviceWorkerVersion: "3192292494"
+=======
+    serviceWorkerVersion: "4262094163"
+>>>>>>> 53dfc9b8cfe0f6de8955877be1c57fa858bf0b4d
+>>>>>>> Stashed changes
   }
 });

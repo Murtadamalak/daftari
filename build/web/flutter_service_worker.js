@@ -27,14 +27,26 @@ const RESOURCES = {"assets/AssetManifest.bin": "203de61076eb72ba7f9d794184a794c0
 "canvaskit/skwasm.wasm": "39dd80367a4e71582d234948adc521c0",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "flutter.js": "83d881c1dbb6d6bcd6b42e274605b69c",
+<<<<<<< HEAD
 "flutter_bootstrap.js": "2a0a8d8a8eb7e7dbb1a3f1c5b54f2f7c",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
+=======
+"flutter_bootstrap.js": "0a79c1f5a2b5808ba74ca438ec5fa53c",
+"icons/1.png": "ac9a721a12bbc803b44f645561ecb1e1",
+"icons/2.png": "96e752610906ba2a93c65f8abe1645f1",
+"icons/3.png": "c457ef57daa1d16f64b27b786ec2ea3c",
+"icons/4.png": "301a7604d45b3e739efc881eb04896ea",
+"icons/Icon-192.png": "3ff976fdb04d07fcf678aab0015e0b7c",
+"icons/Icon-512.png": "3ff976fdb04d07fcf678aab0015e0b7c",
+"icons/Icon-maskable-192.png": "3ff976fdb04d07fcf678aab0015e0b7c",
+"icons/Icon-maskable-512.png": "3ff976fdb04d07fcf678aab0015e0b7c",
+>>>>>>> d0e6bef (تعديل منتجات\)
 "index.html": "95aea0088429ffde5abab57cefccb869",
 "/": "95aea0088429ffde5abab57cefccb869",
-"main.dart.js": "8e0262381b580a5a40717ec32043f392",
+"main.dart.js": "f1f0c90c954b1c0b6c7634fdccfc2bab",
 "manifest.json": "91b4614410d84a450d2fde71643f375a",
 "version.json": "9f5f193c564bc1c9303bc9692d535dbb"};
 // The application shell files that are downloaded before a service worker can

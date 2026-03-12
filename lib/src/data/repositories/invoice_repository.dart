@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'customer_repository.dart';
+import 'product_repository.dart';
 
 class InvoiceItemModel {
   final String id;
@@ -438,5 +439,137 @@ class InvoiceRepository {
       'owner_name': ownerName,
       'shop_logo_path': shopLogoPath,
     });
+  }
+
+  /// تحديث فاتورة قائمة (مبيعات) مع إعادة توليد البنود وضبط المخزون والديون.
+  ///
+  /// تُستخدم عند فتح الفاتورة في وضع التعديل من التطبيق. تعتمد على مقارنة
+  /// البنود القديمة بالجديدة لتحديث المخزون بناءً على فرق الكميات لكل منتج،
+  /// ثم تحديث مبلغ الدين للزبون حسب الفرق بين الدين القديم والجديد.
+  ///
+  /// ملاحظة: لا يُستخدم هذا التابع مع فواتير "تسديد دين" (pay_type = 'تسديد دين').
+  Future<void> updateCashInvoiceWithItems({
+    required InvoiceModel original,
+    required List<InvoiceItemModel> originalItems,
+    required double subtotal,
+    required double discount,
+    required double grandTotal,
+    required double paid,
+    required double debt,
+    required String status,
+    required String payType,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    // لا نسمح بتعديل فواتير التسديد، فهي ليست مبيعات.
+    if (original.payType == 'تسديد دين') {
+      throw StateError('Editing payment-only invoices is not supported');
+    }
+
+    // 1) احسب فروقات الكمية لكل منتج بالاسم بين البنود القديمة والجديدة
+    final Map<String, double> oldQtyByName = {};
+    for (final it in originalItems) {
+      oldQtyByName.update(
+        it.productName,
+        (v) => v + it.qty,
+        ifAbsent: () => it.qty,
+      );
+    }
+
+    final Map<String, double> newQtyByName = {};
+    for (final it in items) {
+      final name = it['product_name'] as String? ?? '';
+      final qty = (it['qty'] as num?)?.toDouble() ?? 0.0;
+      if (name.isEmpty || qty == 0) continue;
+      newQtyByName.update(
+        name,
+        (v) => v + qty,
+        ifAbsent: () => qty,
+      );
+    }
+
+    final Map<String, double> deltaByName = {};
+    final allNames = <String>{
+      ...oldQtyByName.keys,
+      ...newQtyByName.keys,
+    };
+    for (final name in allNames) {
+      final oldQty = oldQtyByName[name] ?? 0;
+      final newQty = newQtyByName[name] ?? 0;
+      final diff = newQty - oldQty; // + يعني بيع أكثر، - يعني تقليل بيع
+      if (diff.abs() > 0.0001) {
+        deltaByName[name] = diff;
+      }
+    }
+
+    final client = Supabase.instance.client;
+
+    // 2) ضبط المخزون بناءً على الفروقات المحسوبة
+    if (deltaByName.isNotEmpty) {
+      final productRepo = ProductRepository();
+      final allProducts = await productRepo.getAllProducts();
+
+      for (final entry in deltaByName.entries) {
+        final name = entry.key;
+        final diff = entry.value;
+
+        final product = allProducts
+            .where((p) => p.name == name)
+            .cast<ProductModel?>()
+            .firstWhere((p) => p != null, orElse: () => null);
+
+        if (product != null && product.stock != null) {
+          final currentStock = product.stock!;
+          final newStock = currentStock - diff;
+          await client
+              .from('user_products')
+              .update({
+                'stock': newStock < 0 ? 0 : newStock,
+              })
+              .eq('user_id', _userId)
+              .eq('id', product.id);
+        }
+      }
+    }
+
+    // 3) تحديث سجل الفاتورة نفسه
+    await client
+        .from('user_invoices')
+        .update({
+          'subtotal': subtotal,
+          'discount': discount,
+          'grand_total': grandTotal,
+          'paid': paid,
+          'debt': debt,
+          'status': status,
+          'pay_type': payType,
+        })
+        .eq('user_id', _userId)
+        .eq('id', original.id);
+
+    // 4) تحديث دين الزبون إن وجد
+    if (original.customerId != null && (debt - original.debt).abs() > 0.0001) {
+      final custRepo = CustomerRepository();
+      final cust = await custRepo.getById(original.customerId!);
+      if (cust != null) {
+        final newTotalDebt = cust.totalDebt + (debt - original.debt);
+        await custRepo.updateDebt(original.customerId!, newTotalDebt);
+      }
+    }
+
+    // 5) حذف البنود القديمة ثم إدخال البنود الجديدة
+    await client
+        .from('user_invoice_items')
+        .delete()
+        .eq('user_id', _userId)
+        .eq('invoice_id', original.id);
+
+    for (final item in items) {
+      final data = {
+        ...item,
+        'invoice_id': original.id,
+        'user_id': _userId,
+      };
+      await client.from('user_invoice_items').insert(data);
+    }
   }
 }

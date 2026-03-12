@@ -12,6 +12,7 @@ import '../core/utils/app_snackbar.dart';
 import '../core/widgets/glass_container.dart';
 import '../data/repositories/customer_repository.dart';
 import '../data/repositories/product_repository.dart';
+import '../data/repositories/invoice_repository.dart';
 import 'barcode_scanner_screen.dart';
 
 // ─── Number formatter ─────────────────────────────────────────────────────────
@@ -25,7 +26,16 @@ final _customersStreamProvider =
 });
 
 class CreateInvoiceScreen extends ConsumerStatefulWidget {
-  const CreateInvoiceScreen({super.key});
+  const CreateInvoiceScreen({
+    super.key,
+    this.invoiceId,
+  });
+
+  /// If null → إنشاء فاتورة جديدة.
+  /// إذا كان هناك id → تعديل فاتورة نقدية قائمة.
+  final String? invoiceId;
+
+  bool get isEditing => invoiceId != null;
 
   @override
   ConsumerState<CreateInvoiceScreen> createState() =>
@@ -36,6 +46,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   int _currentStep = 0;
   final _discountCtrl = TextEditingController();
   final _receivedCtrl = TextEditingController();
+
+  bool _isSaving = false;
+
+  // بيانات الفاتورة الأصلية عند التعديل (نستخدمها لحساب فروقات المخزون)
+  InvoiceModel? _originalInvoice;
+  List<InvoiceItemModel> _originalItems = const [];
 
   @override
   void dispose() {
@@ -48,13 +64,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   Widget build(BuildContext context) {
     final invoiceState = ref.watch(invoiceCreationProvider);
     final isLastStep = _currentStep == 2;
-    final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: Colors.transparent, // Transparent to show gradient
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('فاتورة جديدة'),
+        title: Text(widget.isEditing ? 'تعديل الفاتورة' : 'فاتورة جديدة'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -97,6 +111,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                               : _PaymentStep(
                                   discountCtrl: _discountCtrl,
                                   receivedCtrl: _receivedCtrl,
+                                  isEditing: widget.isEditing,
+                                  originalInvoice: _originalInvoice,
                                 ),
                     ),
                   ),
@@ -120,6 +136,115 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEditing) {
+      _loadExistingInvoice();
+    }
+  }
+
+  Future<void> _loadExistingInvoice() async {
+    try {
+      final repo = ref.read(invoiceRepositoryProvider);
+      final inv =
+          await repo.getById(widget.invoiceId!); // must exist in normal flow
+      if (inv == null) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          AppSnackBar.error(context, 'تعذّر تحميل الفاتورة');
+        }
+        return;
+      }
+
+      // لا نسمح بتعديل فواتير التسديد فقط (ليست مبيعات)
+      if (inv.payType == 'تسديد دين') {
+        if (mounted) {
+          Navigator.of(context).pop();
+          AppSnackBar.error(
+            context,
+            'لا يمكن تعديل فواتير تسديد الدين، عدّل فاتورة المبيعات الأصلية.',
+          );
+        }
+        return;
+      }
+
+      final items = await repo.getItemsByInvoiceId(inv.id);
+      final productsRepo = ref.read(productRepositoryProvider);
+      final allProducts = await productsRepo.getAllProducts();
+
+      // حوّل عناصر الفاتورة إلى CartItem داخل حالة إنشاء الفاتورة
+      final cartItems = <CartItem>[];
+      for (final it in items) {
+        // نحاول إيجاد المنتج بنفس الاسم للوصول للمخزون ومعرّف المنتج
+        final match = allProducts.firstWhere(
+          (p) => p.name == it.productName,
+          orElse: () => ProductModel(
+            id: '',
+            name: it.productName,
+            unit: it.unit,
+            retailPrice: it.unitPrice,
+            wholesalePrice:
+                it.priceType == 'wholesale' ? it.unitPrice : null,
+            stock: null,
+            createdAt: DateTime.now(),
+          ),
+        );
+        cartItems.add(
+          CartItem(
+            product: match,
+            quantity: it.qty,
+            isWholesale: it.priceType == 'wholesale',
+          ),
+        );
+      }
+
+      final notifier = ref.read(invoiceCreationProvider.notifier);
+      notifier.clear();
+      notifier
+          .setDiscount(inv.discount); // سيُعاد احتساب الإجمالي تلقائياً فيما بعد
+
+      // تعبئة الزبون في حالة التعديل (إن وجد)
+      if (inv.customerId != null) {
+        final custRepo = ref.read(customerRepositoryProvider);
+        final customer = await custRepo.getById(inv.customerId!);
+        if (customer != null) {
+          notifier.setCustomer(customer);
+        }
+      }
+
+      // نضبط طريقة الدفع وحقل "المبلغ المدفوع عند إنشاء الفاتورة" في الحالة
+      if (inv.payType == 'cash') {
+        notifier.setPaymentMethod(PaymentMethod.cash);
+      } else if (inv.payType == 'debt') {
+        notifier.setPaymentMethod(PaymentMethod.debt);
+      } else {
+        notifier.setPaymentMethod(PaymentMethod.partial);
+      }
+      notifier.setReceivedAmount(inv.paid);
+
+      // نحقن العناصر في الحالة
+      for (final c in cartItems) {
+        notifier.addProduct(c.product);
+        notifier.updateQuantity(c.product.id, c.quantity);
+        notifier.togglePriceType(c.product.id, c.isWholesale);
+      }
+
+      _discountCtrl.text =
+          inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
+      _receivedCtrl.text =
+          inv.paid == 0 ? '' : inv.paid.toStringAsFixed(0);
+
+      _originalInvoice = inv;
+      _originalItems = items;
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        AppSnackBar.error(context, 'خطأ أثناء تحميل الفاتورة: $e');
+      }
+    }
+  }
+
   void _onNext() {
     final state = ref.read(invoiceCreationProvider);
     if (_currentStep == 1 && state.items.isEmpty) {
@@ -127,12 +252,32 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       return;
     }
     if (_currentStep == 2) {
-      if (state.paymentMethod == PaymentMethod.partial &&
+      if (!widget.isEditing &&
+          state.paymentMethod == PaymentMethod.partial &&
           (state.receivedAmount == null || state.receivedAmount! <= 0)) {
         _showToast('أدخل المبلغ المستلم');
         return;
       }
-      _saveInvoice();
+      if (widget.isEditing) {
+        final original = _originalInvoice!;
+        final initialPaidOld = original.paid;
+        final extraPaidAfterOld = original.currentPaid - initialPaidOld;
+        final initialPaidNew =
+            state.receivedAmount ?? initialPaidOld;
+        final totalPaidAfterEdit =
+            initialPaidNew + extraPaidAfterOld;
+        final total = state.grandTotal;
+        if (totalPaidAfterEdit > total + 0.01) {
+          _showToast(
+              'المبلغ المدفوع (الدفعة الأولى + التسديدات) لا يمكن أن يكون أكبر من كلفة الفاتورة الكلية.');
+          return;
+        }
+      }
+      if (widget.isEditing) {
+        _saveEditedInvoice();
+      } else {
+        _saveInvoice();
+      }
     } else {
       setState(() => _currentStep += 1);
     }
@@ -171,8 +316,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       Navigator.of(context).pop();
     }
   }
-
-  bool _isSaving = false;
 
   Future<void> _saveInvoice() async {
     if (_isSaving) return;
@@ -269,6 +412,79 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
         _showToast('خطأ أثناء الحفظ: $e');
+      }
+    }
+  }
+
+  /// حفظ التعديلات على فاتورة نقدية قائمة مع ضبط المخزون بدون التأثير على ديون قديمة.
+  Future<void> _saveEditedInvoice() async {
+    if (_isSaving || _originalInvoice == null) return;
+    setState(() => _isSaving = true);
+
+    try {
+      final invoiceState = ref.read(invoiceCreationProvider);
+      final repo = ref.read(invoiceRepositoryProvider);
+
+      // نحسب الإجماليات الجديدة بناءً على حالة الإنشاء الحالية
+      final subtotal = invoiceState.subtotal;
+      final discount = invoiceState.discount;
+      final grandTotal = invoiceState.grandTotal;
+
+      final original = _originalInvoice!;
+      final initialPaidOld = original.paid;
+      final extraPaidAfterOld = original.currentPaid - initialPaidOld;
+      final initialPaidNew =
+          invoiceState.receivedAmount ?? initialPaidOld;
+
+      final paid = initialPaidNew + extraPaidAfterOld;
+      var debt = grandTotal - paid;
+      if (debt < 0) debt = 0;
+
+      String status;
+      String payType = original.payType;
+      if (debt <= 0.01) {
+        status = 'paid';
+      } else if (original.payType == 'debt' && paid <= 0.01) {
+        status = 'unpaid';
+      } else {
+        status = 'partial';
+      }
+
+      // نبني العناصر الجديدة بنفس شكل الإنشاء العادي
+      final items = invoiceState.items.map((item) {
+        return <String, dynamic>{
+          'product_name': item.product.name,
+          'unit': item.product.unit,
+          'qty': item.quantity,
+          'unit_price': item.effectivePrice,
+          'price_type': item.isWholesale ? 'wholesale' : 'retail',
+          'total': item.total,
+        };
+      }).toList();
+
+      await repo.updateCashInvoiceWithItems(
+        original: original,
+        originalItems: _originalItems,
+        subtotal: subtotal,
+        discount: discount,
+        grandTotal: grandTotal,
+        paid: paid,
+        debt: debt,
+        status: status,
+        payType: payType,
+        items: items,
+      );
+
+      ref.read(invoiceCreationProvider.notifier).clear();
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        AppSnackBar.success(context, 'تم حفظ التعديلات على الفاتورة ✓');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        _showToast('خطأ أثناء حفظ التعديل: $e');
       }
     }
   }
@@ -1507,10 +1723,14 @@ class _PaymentStep extends ConsumerWidget {
   const _PaymentStep({
     required this.discountCtrl,
     required this.receivedCtrl,
+    this.isEditing = false,
+    this.originalInvoice,
   });
 
   final TextEditingController discountCtrl;
   final TextEditingController receivedCtrl;
+  final bool isEditing;
+  final InvoiceModel? originalInvoice;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1572,52 +1792,117 @@ class _PaymentStep extends ConsumerWidget {
 
         const SizedBox(height: 20),
 
-        // ── Payment method ──
-        Text('طريقة الدفع', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 10),
+        if (!isEditing) ...[
+          // ── Payment method ──
+          Text('طريقة الدفع', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 10),
 
-        Row(
-          children: PaymentMethod.values.map((method) {
-            final isSelected = invoiceState.paymentMethod == method;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: _PaymentMethodCard(
-                  method: method,
-                  isSelected: isSelected,
-                  onTap: () {
-                    invoiceNotifier.setPaymentMethod(method);
-                    if (method != PaymentMethod.partial) {
-                      invoiceNotifier.setReceivedAmount(null);
-                      receivedCtrl.clear();
-                    }
-                  },
+          Row(
+            children: PaymentMethod.values.map((method) {
+              final isSelected = invoiceState.paymentMethod == method;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _PaymentMethodCard(
+                    method: method,
+                    isSelected: isSelected,
+                    onTap: () {
+                      invoiceNotifier.setPaymentMethod(method);
+                      if (method != PaymentMethod.partial) {
+                        invoiceNotifier.setReceivedAmount(null);
+                        receivedCtrl.clear();
+                      }
+                    },
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
-        ),
-
-        // ── Received amount (partial only) ──
-        if (invoiceState.paymentMethod == PaymentMethod.partial) ...[
-          const SizedBox(height: 16),
-          TextField(
-            controller: receivedCtrl,
-            keyboardType: TextInputType.number,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: 'المبلغ المستلم',
-              prefixIcon: const Icon(Icons.payments_outlined),
-              suffixText: 'IQD',
-              helperText: invoiceState.receivedAmount != null &&
-                      invoiceState.receivedAmount! > 0
-                  ? 'المتبقي: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
-                  : null,
-              helperStyle: const TextStyle(color: Color(0xFFEF4444)),
-            ),
-            onChanged: (val) =>
-                invoiceNotifier.setReceivedAmount(double.tryParse(val)),
+              );
+            }).toList(),
           ),
+
+          // ── Received amount (partial only) ──
+          if (invoiceState.paymentMethod == PaymentMethod.partial) ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: receivedCtrl,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'المبلغ المستلم',
+                prefixIcon: const Icon(Icons.payments_outlined),
+                suffixText: 'IQD',
+                helperText: invoiceState.receivedAmount != null &&
+                        invoiceState.receivedAmount! > 0
+                    ? 'المتبقي: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
+                    : null,
+                helperStyle: const TextStyle(color: Color(0xFFEF4444)),
+              ),
+              onChanged: (val) =>
+                  invoiceNotifier.setReceivedAmount(double.tryParse(val)),
+            ),
+          ],
+        ],
+
+        if (isEditing && originalInvoice != null) ...[
+          const SizedBox(height: 20),
+          Builder(builder: (context) {
+            final initialPaid = originalInvoice!.paid;
+            final extraPaid = originalInvoice!.currentPaid - initialPaid;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'تعديل بيانات الدفع:',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'طريقة الدفع الأصلية: ${originalInvoice!.payType == 'cash' ? 'نقدي' : originalInvoice!.payType == 'debt' ? 'آجل' : 'جزئي'}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'المبالغ المسددة بعد الفاتورة: ${_fmt.format(extraPaid)} IQD (لن تتغيّر من هنا)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: receivedCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'المبلغ المدفوع عند إنشاء الفاتورة',
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                    suffixText: 'IQD',
+                    helperText:
+                        'المدفوع الكلي بعد التسديدات سيكون: ${_fmt.format((double.tryParse(receivedCtrl.text) ?? initialPaid) + extraPaid)} IQD',
+                  ),
+                  onChanged: (val) => invoiceNotifier
+                      .setReceivedAmount(double.tryParse(val)),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'المبلغ المدفوع حتى الآن (بعد كل التسديدات): ${_fmt.format(originalInvoice!.currentPaid)} IQD',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.green),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'المتبقي كدين بعد آخر تسديد: ${_fmt.format(originalInvoice!.debt)} IQD',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.redAccent),
+                ),
+              ],
+            );
+          }),
         ],
       ],
     );

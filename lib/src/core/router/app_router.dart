@@ -223,6 +223,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       );
                     },
                   ),
+                  GoRoute(
+                    path: 'edit/:id',
+                    pageBuilder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return MaterialPage(
+                        key: state.pageKey,
+                        child: CreateInvoiceScreen(invoiceId: id),
+                      );
+                    },
+                  ),
                 ],
               ),
             ],

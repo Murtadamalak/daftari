@@ -3,7 +3,8 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "203de61076eb72ba7f9d794184a794c0",
+const RESOURCES = {"1.png": "5dcef449791fa27946b3d35ad8803796",
+"assets/AssetManifest.bin": "203de61076eb72ba7f9d794184a794c0",
 "assets/AssetManifest.bin.json": "802f1b87339c7e9824b9c82276a55910",
 "assets/AssetManifest.json": "ebdfd65f84bf0aabbd07f71800f47621",
 "assets/assets/fonts/Cairo-Bold.ttf": "5e8d1abc73e3cb2f4e4f28e8f1266810",
@@ -25,19 +26,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "203de61076eb72ba7f9d794184a794c0
 "canvaskit/skwasm.js": "ea559890a088fe28b4ddf70e17e60052",
 "canvaskit/skwasm.js.symbols": "e72c79950c8a8483d826a7f0560573a1",
 "canvaskit/skwasm.wasm": "39dd80367a4e71582d234948adc521c0",
-"favicon.png": "5dcef449791fa27946b3d35ad8803796",
+"favicon.png": "3ff976fdb04d07fcf678aab0015e0b7c",
 "flutter.js": "83d881c1dbb6d6bcd6b42e274605b69c",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-"flutter_bootstrap.js": "2a0a8d8a8eb7e7dbb1a3f1c5b54f2f7c",
-"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
-"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
-"icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-=======
-=======
->>>>>>> Stashed changes
-"flutter_bootstrap.js": "0a79c1f5a2b5808ba74ca438ec5fa53c",
+"flutter_bootstrap.js": "eb244c2cb150573235d784e65d1e47fa",
 "icons/1.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/2.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/3.png": "c457ef57daa1d16f64b27b786ec2ea3c",
@@ -46,17 +37,6 @@ const RESOURCES = {"assets/AssetManifest.bin": "203de61076eb72ba7f9d794184a794c0
 "icons/Icon-512.png": "3ff976fdb04d07fcf678aab0015e0b7c",
 "icons/Icon-maskable-192.png": "3ff976fdb04d07fcf678aab0015e0b7c",
 "icons/Icon-maskable-512.png": "3ff976fdb04d07fcf678aab0015e0b7c",
-<<<<<<< Updated upstream
->>>>>>> d0e6bef (تعديل منتجات\)
-=======
-=======
-"flutter_bootstrap.js": "2a0a8d8a8eb7e7dbb1a3f1c5b54f2f7c",
-"icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
-"icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
-"icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
->>>>>>> 53dfc9b8cfe0f6de8955877be1c57fa858bf0b4d
->>>>>>> Stashed changes
 "index.html": "95aea0088429ffde5abab57cefccb869",
 "/": "95aea0088429ffde5abab57cefccb869",
 "main.dart.js": "f1f0c90c954b1c0b6c7634fdccfc2bab",

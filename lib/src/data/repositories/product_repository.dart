@@ -88,6 +88,17 @@ class ProductRepository {
     double? wholesalePrice,
     double? stock,
   }) async {
+    // If we are editing an existing product, keep a copy of the old data
+    // so we can propagate name/unit changes to all existing invoice items.
+    ProductModel? oldProduct;
+    if (id != null) {
+      try {
+        oldProduct = await getById(id);
+      } catch (_) {
+        oldProduct = null;
+      }
+    }
+
     final data = <String, dynamic>{
       'user_id': _userId,
       'name': name,
@@ -100,7 +111,29 @@ class ProductRepository {
     if (id != null) data['id'] = id;
 
     final res = await _db.from('user_products').upsert(data).select().single();
-    return ProductModel.fromJson(res);
+    final updated = ProductModel.fromJson(res);
+
+    // ── Propagate name/unit changes to existing invoice items ───────────────
+    // Many الشاشات (التقارير، تفاصيل الفاتورة) تعتمد على حقل product_name
+    // المخزون داخل جدول user_invoice_items. حتى تظهر التسمية الجديدة في كل
+    // مكان، نحدّث كل البنود القديمة التي كانت تستخدم الاسم السابق.
+    if (oldProduct != null &&
+        (oldProduct.name != updated.name || oldProduct.unit != updated.unit)) {
+      try {
+        await _db
+            .from('user_invoice_items')
+            .update({
+              'product_name': updated.name,
+              'unit': updated.unit,
+            })
+            .eq('user_id', _userId)
+            .eq('product_name', oldProduct.name);
+      } catch (_) {
+        // نتجاهل أي خطأ هنا حتى لا نفشل حفظ المنتج نفسه
+      }
+    }
+
+    return updated;
   }
 
   Future<void> deleteProduct(String id) async {

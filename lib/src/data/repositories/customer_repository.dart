@@ -83,6 +83,8 @@ class CustomerRepository {
     String? phone,
     double totalDebt = 0,
   }) async {
+    // عند التعديل نحتاج لاحقاً لتحديث جميع الفواتير المرتبطة بنفس الزبون
+    // حتى ينعكس الاسم/الهاتف الجديد في كل مكان (التفاصيل، التقارير، PDF...).
     final data = <String, dynamic>{
       'user_id': _userId,
       'name': name,
@@ -92,7 +94,25 @@ class CustomerRepository {
     if (id != null) data['id'] = id;
 
     final res = await _db.from('user_customers').upsert(data).select().single();
-    return CustomerModel.fromJson(res);
+    final customer = CustomerModel.fromJson(res);
+
+    // ── Propagate name/phone changes to all invoices of this customer ───────
+    if (id != null) {
+      try {
+        await _db
+            .from('user_invoices')
+            .update({
+              'customer_name': name,
+              'customer_phone': phone,
+            })
+            .eq('user_id', _userId)
+            .eq('customer_id', id);
+      } catch (_) {
+        // لو فشل التحديث على الفواتير لا نمنع حفظ الزبون نفسه
+      }
+    }
+
+    return customer;
   }
 
   Future<void> deleteCustomer(String id) async {

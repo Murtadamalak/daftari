@@ -53,6 +53,16 @@ class InvoiceDetailsScreen extends ConsumerWidget {
           detail.when(
             data: (d) => Row(
               children: [
+                // زر تعديل الفاتورة (يُستثنى فقط فواتير تسديد الدين)
+                if (d.invoice.payType != 'تسديد دين')
+                  IconButton(
+                    tooltip: 'تعديل الفاتورة',
+                    icon:
+                        const Icon(Icons.edit_outlined, color: Colors.white),
+                    onPressed: () {
+                      context.push('/invoices/edit/${d.invoice.id}');
+                    },
+                  ),
                 IconButton(
                   tooltip: 'حذف الفاتورة',
                   icon: const Icon(Icons.delete_outline, color: Colors.white),

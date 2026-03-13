@@ -3,6 +3,7 @@ import 'package:universal_io/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,7 @@ import '../core/providers/auth_provider.dart';
 import '../core/theme/app_theme.dart';
 import '../core/utils/app_snackbar.dart';
 import '../core/providers/app_providers.dart';
+import '../core/providers/invoices_provider.dart';
 import '../core/widgets/refresh_action_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -207,6 +209,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // ── Data Management ──────────────────────────────────────────
+              _SectionHeader(
+                  title: 'إدارة البيانات', icon: Icons.storage_outlined),
+              const SizedBox(height: 16),
+              _SettingsCard(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.format_list_numbered_rtl,
+                          color: AppColors.primary),
+                      title: Text(
+                        'إعادة ترقيم الفواتير',
+                        style: GoogleFonts.almarai(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      subtitle: Text(
+                        'سيعيد ترتيب أرقام الفواتير بالتسلسل من 1 حسب التاريخ (يعالج الفراغات في الأرقام)',
+                        style: GoogleFonts.almarai(
+                            fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      onTap: () => _confirmRenumberInvoices(context, ref),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // ── About App ──────────────────────────────────────────────────
               _SectionHeader(
                   title: 'حول التطبيق وحسابي', icon: Icons.info_outlined),
@@ -359,6 +389,175 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text('خروج', style: GoogleFonts.almarai(color: Colors.white)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmRenumberInvoices(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('إعادة ترقيم الفواتير', style: GoogleFonts.almarai()),
+        content: Text(
+          'هل أنت متأكد؟ هذا سيقوم بتحديث أرقام جميع الفواتير لتكون متسلسلة (1, 2, 3...) حسب تاريخ إنشائها. هذا الإجراء مفيد إذا كان هناك فجوات أو أرقام غير مرتبة.',
+          style: GoogleFonts.almarai(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('إلغاء',
+                style: GoogleFonts.almarai(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _handleRenumber(context, ref);
+            },
+            child:
+                Text('تأكيد', style: GoogleFonts.almarai(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleRenumber(BuildContext context, WidgetRef ref) async {
+    try {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 24),
+              Text(
+                'جاري إعادة ترقيم الفواتير...',
+                style: GoogleFonts.almarai(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'يرجى الانتظار، يتم تحديث البيانات',
+                style: GoogleFonts.almarai(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await ref.read(invoiceRepositoryProvider).renumberAllInvoices();
+
+      if (context.mounted) {
+        Navigator.pop(context); // hide loading
+
+        // Refresh data
+        ref.invalidate(allInvoicesProvider);
+        ref.invalidate(invoiceRepositoryProvider);
+
+        // Show success notice
+        _showSuccessNotice(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // hide loading
+        AppSnackBar.error(context, 'حدث خطأ أثناء إعادة الترقيم: $e');
+      }
+    }
+  }
+
+  void _showSuccessNotice(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon with glowing effect
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.12),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.success.withOpacity(0.1),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success,
+                size: 64,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'اكتملت المهمة بنجاح!',
+              style: GoogleFonts.almarai(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'تمت إعادة ترقيم كافة الفواتير والمقبوضات بالتسلسل الصحيح (1, 2, 3...) بناءً على تاريخ إنشائها.',
+              style: GoogleFonts.almarai(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+
+            // Action button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.receipt_long,
+                    size: 20, color: Colors.white),
+                label: Text(
+                  'مشاهدة سجل الفواتير',
+                  style: GoogleFonts.almarai(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.go('/invoices');
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

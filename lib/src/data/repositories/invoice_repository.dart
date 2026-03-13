@@ -223,6 +223,47 @@ class InvoiceRepository {
     return (res['num'] as int) + 1;
   }
 
+  // ── Renumber Invoices ───────────────────────────────────────────────────
+
+  /// إعادة ترقيم جميع الفواتير والمقبوضات بالتسلسل من 1 حسب تاريخ الإنشاء.
+  /// تستخدم لمعالجة الفجوات في الأرقام الناتجة عن الحذف.
+  Future<void> renumberAllInvoices() async {
+    // 1. جلب معرفات وأرقام جميع السجلات مرتبة حسب التاريخ تصاعدياً
+    final res = await _db
+        .from('user_invoices')
+        .select('id, num')
+        .eq('user_id', _userId)
+        .order('date', ascending: true);
+
+    final invoices =
+        (res as List).map((e) => e as Map<String, dynamic>).toList();
+    if (invoices.isEmpty) return;
+
+    // 2. استخدام إزاحة (offset) نضمن بها عدم حدوث تعارض مع القيد UNIQUE(num) أثناء التحديث
+    const offset = 1000000;
+
+    // المرحلة الأولى: إزاحة جميع الأرقام الحالية إلى نطاق بعيد جداً
+    for (final inv in invoices) {
+      final id = inv['id'] as String;
+      final currentNum = inv['num'] as int;
+      await _db
+          .from('user_invoices')
+          .update({'num': currentNum + offset})
+          .eq('id', id)
+          .eq('user_id', _userId);
+    }
+
+    // المرحلة الثانية: وضع الأرقام التسلسلية النهائية من 1 فصاعداً
+    for (int i = 0; i < invoices.length; i++) {
+      final id = invoices[i]['id'] as String;
+      await _db
+          .from('user_invoices')
+          .update({'num': i + 1})
+          .eq('id', id)
+          .eq('user_id', _userId);
+    }
+  }
+
   // ── Create Invoice ────────────────────────────────────────────────────────
 
   Future<(InvoiceModel, List<InvoiceItemModel>)> createInvoice({

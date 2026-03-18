@@ -8,11 +8,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../core/providers/settings_provider.dart';
 import '../core/providers/auth_provider.dart';
 import '../core/theme/app_theme.dart';
 import '../core/utils/app_snackbar.dart';
+import '../core/utils/backup_service.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoices_provider.dart';
 import '../core/widgets/refresh_action_button.dart';
@@ -209,6 +211,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // ── Backup & Restore ─────────────────────────────────────────
+              _SectionHeader(
+                  title: 'النسخ الاحتياطي والاسترداد',
+                  icon: Icons.cloud_sync_outlined),
+              const SizedBox(height: 16),
+              _SettingsCard(
+                child: Column(
+                  children: [
+                    // Export
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.cloud_upload_outlined,
+                            color: Color(0xFF10B981), size: 22),
+                      ),
+                      title: Text(
+                        'إنشاء نسخة احتياطية',
+                        style: GoogleFonts.almarai(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      subtitle: Text(
+                        'تصدير كل البيانات (منتجات، فواتير، زبائن، ديون) إلى ملف JSON',
+                        style: GoogleFonts.almarai(
+                            fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      onTap: () => _handleExport(context),
+                    ),
+                    const Divider(height: 20),
+                    // Restore
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.cloud_download_outlined,
+                            color: Color(0xFF6366F1), size: 22),
+                      ),
+                      title: Text(
+                        'استرداد من نسخة احتياطية',
+                        style: GoogleFonts.almarai(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      subtitle: Text(
+                        'رفع ملف JSON لاستعادة البيانات (سيُستبدل بالبيانات الموجودة)',
+                        style: GoogleFonts.almarai(
+                            fontSize: 12, color: AppColors.danger),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      onTap: () => _confirmRestore(context, ref),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // ── Data Management ──────────────────────────────────────────
               _SectionHeader(
                   title: 'إدارة البيانات', icon: Icons.storage_outlined),
@@ -389,6 +455,286 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text('خروج', style: GoogleFonts.almarai(color: Colors.white)),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Backup export ─────────────────────────────────────────────────────────
+
+  Future<void> _handleExport(BuildContext context) async {
+    // Show loading
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981))),
+            const SizedBox(height: 24),
+            Text(
+              'جاري تجميع البيانات...',
+              style: GoogleFonts.almarai(
+                  fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+            ),
+            const SizedBox(height: 8),
+            Text('يرجى الانتظار',
+                style: GoogleFonts.almarai(
+                    fontSize: 13, color: AppColors.textSecondary)),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await BackupService.exportBackup();
+      if (context.mounted) {
+        Navigator.pop(context); // hide loading
+        _showBackupSuccessDialog(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        AppSnackBar.error(context, 'فشل تصدير النسخة الاحتياطية: $e');
+      }
+    }
+  }
+
+  void _showBackupSuccessDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.cloud_done_outlined,
+                  color: Color(0xFF10B981), size: 60),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'تم إنشاء النسخة الاحتياطية!',
+              style: GoogleFonts.almarai(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF10B981)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'تم تصدير جميع بياناتك (الزبائن، المنتجات، الفواتير، الديون) إلى ملف JSON. احفظ الملف في مكان آمن.',
+              style: GoogleFonts.almarai(
+                  fontSize: 13, color: AppColors.textSecondary, height: 1.6),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('حسناً',
+                    style: GoogleFonts.almarai(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Backup restore ────────────────────────────────────────────────────────
+
+  void _confirmRestore(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded,
+                color: AppColors.danger, size: 26),
+            const SizedBox(width: 10),
+            Text('تحذير مهم', style: GoogleFonts.almarai()),
+          ],
+        ),
+        content: Text(
+          'سيؤدي الاسترداد إلى حذف جميع بياناتك الحالية (الزبائن، المنتجات، الفواتير) واستبدالها ببيانات ملف النسخة الاحتياطية.\n\nهل تريد المتابعة؟',
+          style: GoogleFonts.almarai(height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('إلغاء',
+                style: GoogleFonts.almarai(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _handleRestore(context, ref);
+            },
+            child: Text('متابعة واختيار الملف',
+                style: GoogleFonts.almarai(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
+    try {
+      // 1. اختيار الملف
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+      final fileBytes = result.files.first.bytes;
+      if (fileBytes == null) {
+        if (context.mounted) {
+          AppSnackBar.error(context, 'تعذّر قراءة الملف');
+        }
+        return;
+      }
+
+      // 2. عرض شاشة التحميل
+      if (!context.mounted) return;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1))),
+              const SizedBox(height: 24),
+              Text(
+                'جاري استرداد البيانات...',
+                style: GoogleFonts.almarai(
+                    fontWeight: FontWeight.bold, color: Color(0xFF6366F1)),
+              ),
+              const SizedBox(height: 8),
+              Text('يرجى الانتظار، لا تغلق التطبيق',
+                  style: GoogleFonts.almarai(
+                      fontSize: 12, color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+
+      // 3. تنفيذ الاسترداد
+      final restoreResult =
+          await BackupService.restoreFromBytes(fileBytes, clearFirst: true);
+
+      // 4. تحديث البيانات في الـ UI
+      ref.invalidate(allInvoicesProvider);
+      ref.invalidate(invoiceRepositoryProvider);
+      ref.invalidate(customerRepositoryProvider);
+      ref.invalidate(productRepositoryProvider);
+
+      if (context.mounted) {
+        Navigator.pop(context); // إغلاق شاشة التحميل
+        _showRestoreSuccessDialog(context, restoreResult);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        try {
+          Navigator.pop(context);
+        } catch (_) {}
+        AppSnackBar.error(context,
+            'فشل الاسترداد: ${e.toString().replaceFirst('FormatException: ', '')}');
+      }
+    }
+  }
+
+  void _showRestoreSuccessDialog(BuildContext context, RestoreResult result) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.cloud_done_outlined,
+                  color: Color(0xFF6366F1), size: 60),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'تم الاسترداد بنجاح!',
+              style: GoogleFonts.almarai(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF6366F1)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            _RestoreStat(
+                icon: Icons.people_outline,
+                label: 'الزبائن',
+                count: result.customers),
+            _RestoreStat(
+                icon: Icons.inventory_2_outlined,
+                label: 'المنتجات',
+                count: result.products),
+            _RestoreStat(
+                icon: Icons.receipt_long_outlined,
+                label: 'الفواتير',
+                count: result.invoices),
+            _RestoreStat(
+                icon: Icons.list_alt_outlined,
+                label: 'بنود الفواتير',
+                count: result.invoiceItems),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.go('/invoices');
+                },
+                child: Text('مشاهدة الفواتير',
+                    style: GoogleFonts.almarai(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -944,6 +1290,49 @@ class _AboutDeveloperDialog extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+}
+
+class _RestoreStat extends StatelessWidget {
+  const _RestoreStat({
+    required this.icon,
+    required this.label,
+    required this.count,
+  });
+  final IconData icon;
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF6366F1)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(label,
+                style: GoogleFonts.almarai(
+                    fontSize: 13, color: AppColors.textSecondary)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '$count',
+              style: GoogleFonts.almarai(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF6366F1)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

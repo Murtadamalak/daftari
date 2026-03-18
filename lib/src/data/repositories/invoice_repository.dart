@@ -339,6 +339,62 @@ class InvoiceRepository {
   // ── Delete Invoice ────────────────────────────────────────────────────────
 
   Future<void> deleteInvoice(String id) async {
+    // 1. Fetch invoice and items first to calculate debt and stock changes
+    final inv = await getById(id);
+    if (inv == null) return;
+
+    final items = await getItemsByInvoiceId(id);
+
+    // 2. Update customer debt if applicable
+    if (inv.customerId != null) {
+      final custRepo = CustomerRepository();
+      final cust = await custRepo.getById(inv.customerId!);
+      if (cust != null) {
+        double debtChange = 0;
+        if (inv.payType == 'تسديد دين') {
+          // Deleting a payment means the customer owes that money again
+          debtChange = inv.paid;
+        } else {
+          // Deleting a sales invoice means the customer no longer owes its debt
+          debtChange = -inv.debt;
+        }
+
+        if (debtChange.abs() > 0.0001) {
+          await custRepo.updateDebt(
+              inv.customerId!, cust.totalDebt + debtChange);
+        }
+      }
+    }
+
+    // 3. Restore stock (only for sales invoices)
+    if (inv.payType != 'تسديد دين' && items.isNotEmpty) {
+      final productRepo = ProductRepository();
+      final allProducts = await productRepo.getAllProducts();
+
+      for (final item in items) {
+        // Try to find product by name (matching repository logic)
+        final product =
+            allProducts.where((p) => p.name == item.productName).firstOrNull;
+
+        if (product != null && product.stock != null) {
+          final newStock = product.stock! + item.qty;
+          await _db
+              .from('user_products')
+              .update({'stock': newStock})
+              .eq('user_id', _userId)
+              .eq('id', product.id);
+        }
+      }
+    }
+
+    // 4. Delete items and the invoice itself
+    // Delete items first to be safe, then the invoice
+    await _db
+        .from('user_invoice_items')
+        .delete()
+        .eq('user_id', _userId)
+        .eq('invoice_id', id);
+
     await _db
         .from('user_invoices')
         .delete()
@@ -492,6 +548,9 @@ class InvoiceRepository {
   Future<void> updateCashInvoiceWithItems({
     required InvoiceModel original,
     required List<InvoiceItemModel> originalItems,
+    String? customerId,
+    required String customerName,
+    String? customerPhone,
     required double subtotal,
     required double discount,
     required double grandTotal,
@@ -576,6 +635,9 @@ class InvoiceRepository {
     await client
         .from('user_invoices')
         .update({
+          'customer_id': customerId,
+          'customer_name': customerName,
+          'customer_phone': customerPhone,
           'subtotal': subtotal,
           'discount': discount,
           'grand_total': grandTotal,
@@ -587,13 +649,35 @@ class InvoiceRepository {
         .eq('user_id', _userId)
         .eq('id', original.id);
 
-    // 4) تحديث دين الزبون إن وجد
-    if (original.customerId != null && (debt - original.debt).abs() > 0.0001) {
-      final custRepo = CustomerRepository();
-      final cust = await custRepo.getById(original.customerId!);
-      if (cust != null) {
-        final newTotalDebt = cust.totalDebt + (debt - original.debt);
-        await custRepo.updateDebt(original.customerId!, newTotalDebt);
+    // 4) تحديث ديون الزبون (القديم والجديد إن وجد)
+    final custRepo = CustomerRepository();
+
+    if (original.customerId == customerId) {
+      // نفس الزبون، نحدث الفرق فقط
+      if (original.customerId != null &&
+          (debt - original.debt).abs() > 0.0001) {
+        final cust = await custRepo.getById(original.customerId!);
+        if (cust != null) {
+          final newTotalDebt = cust.totalDebt + (debt - original.debt);
+          await custRepo.updateDebt(original.customerId!, newTotalDebt);
+        }
+      }
+    } else {
+      // تغيير الزبون!
+      // أ) حذف الدين القديم من الزبون القديم
+      if (original.customerId != null) {
+        final oldCust = await custRepo.getById(original.customerId!);
+        if (oldCust != null) {
+          await custRepo.updateDebt(
+              original.customerId!, oldCust.totalDebt - original.debt);
+        }
+      }
+      // ب) إضافة الدين الجديد للزبون الجديد
+      if (customerId != null) {
+        final newCust = await custRepo.getById(customerId);
+        if (newCust != null) {
+          await custRepo.updateDebt(customerId, newCust.totalDebt + debt);
+        }
       }
     }
 

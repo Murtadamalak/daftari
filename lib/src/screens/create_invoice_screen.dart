@@ -184,8 +184,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             name: it.productName,
             unit: it.unit,
             retailPrice: it.unitPrice,
-            wholesalePrice:
-                it.priceType == 'wholesale' ? it.unitPrice : null,
+            wholesalePrice: it.priceType == 'wholesale' ? it.unitPrice : null,
             stock: null,
             createdAt: DateTime.now(),
           ),
@@ -201,8 +200,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       final notifier = ref.read(invoiceCreationProvider.notifier);
       notifier.clear();
-      notifier
-          .setDiscount(inv.discount); // سيُعاد احتساب الإجمالي تلقائياً فيما بعد
+      notifier.setDiscount(
+          inv.discount); // سيُعاد احتساب الإجمالي تلقائياً فيما بعد
 
       // تعبئة الزبون في حالة التعديل (إن وجد)
       if (inv.customerId != null) {
@@ -232,8 +231,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       _discountCtrl.text =
           inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
-      _receivedCtrl.text =
-          inv.paid == 0 ? '' : inv.paid.toStringAsFixed(0);
+      _receivedCtrl.text = inv.paid == 0 ? '' : inv.paid.toStringAsFixed(0);
 
       _originalInvoice = inv;
       _originalItems = items;
@@ -262,10 +260,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         final original = _originalInvoice!;
         final initialPaidOld = original.paid;
         final extraPaidAfterOld = original.currentPaid - initialPaidOld;
-        final initialPaidNew =
-            state.receivedAmount ?? initialPaidOld;
-        final totalPaidAfterEdit =
-            initialPaidNew + extraPaidAfterOld;
+        final initialPaidNew = state.receivedAmount ?? initialPaidOld;
+        final totalPaidAfterEdit = initialPaidNew + extraPaidAfterOld;
         final total = state.grandTotal;
         if (totalPaidAfterEdit > total + 0.01) {
           _showToast(
@@ -433,8 +429,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final original = _originalInvoice!;
       final initialPaidOld = original.paid;
       final extraPaidAfterOld = original.currentPaid - initialPaidOld;
-      final initialPaidNew =
-          invoiceState.receivedAmount ?? initialPaidOld;
+      final initialPaidNew = invoiceState.receivedAmount ?? initialPaidOld;
 
       final paid = initialPaidNew + extraPaidAfterOld;
       var debt = grandTotal - paid;
@@ -465,6 +460,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       await repo.updateCashInvoiceWithItems(
         original: original,
         originalItems: _originalItems,
+        customerId: invoiceState.customer?.id,
+        customerName: invoiceState.customer?.name ?? 'زبون نقدي',
+        customerPhone: invoiceState.customer?.phone,
         subtotal: subtotal,
         discount: discount,
         grandTotal: grandTotal,
@@ -1881,8 +1879,8 @@ class _PaymentStep extends ConsumerWidget {
                     helperText:
                         'المدفوع الكلي بعد التسديدات سيكون: ${_fmt.format((double.tryParse(receivedCtrl.text) ?? initialPaid) + extraPaid)} IQD',
                   ),
-                  onChanged: (val) => invoiceNotifier
-                      .setReceivedAmount(double.tryParse(val)),
+                  onChanged: (val) =>
+                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
                 ),
                 const SizedBox(height: 8),
                 Text(

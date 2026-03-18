@@ -8,7 +8,9 @@ import '../core/providers/settings_provider.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/utils/whatsapp_launcher.dart';
+import '../core/utils/pdf_debt_report_generator.dart';
 import '../data/repositories/customer_repository.dart';
+import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/widgets/refresh_action_button.dart';
 
@@ -89,6 +91,15 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         actions: [
           RefreshActionButton(
             onPressed: () => ref.invalidate(debtSearchDataProvider),
+          ),
+          // Print Report Button
+          IconButton(
+            icon: const Icon(Icons.print_outlined),
+            onPressed: () async {
+              // Workaround for Flutter Web mouse_tracker crash with tooltips/dialogs
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+              if (context.mounted) _handlePrintReport(context, ref);
+            },
           ),
           customersAsync.when(
             data: (list) => Padding(
@@ -241,6 +252,99 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         },
       ),
     );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Print Report
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Future<void> _handlePrintReport(BuildContext context, WidgetRef ref) async {
+    // 1. اختيار الشهر
+    final now = DateTime.now();
+    DateTime selectedMonth = DateTime(now.year, now.month);
+
+    final chosen = await showDialog<DateTime>(
+      context: context,
+      builder: (ctx) => _MonthPickerDialog(initial: selectedMonth),
+    );
+    if (chosen == null || !context.mounted) return;
+    selectedMonth = chosen;
+
+    // Workaround for Flutter Web: wait a frame before showing the next dialog
+    // to prevent MouseTracker assertion crashes after popping the previous dialog.
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!context.mounted) return;
+
+    // 2. عرض مؤشر التحميل
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(AppColors.primary)),
+            const SizedBox(height: 24),
+            Text('جاري إعداد التقرير...',
+                style: GoogleFonts.almarai(
+                    fontWeight: FontWeight.bold, color: AppColors.primary)),
+            const SizedBox(height: 8),
+            Text('يرجى الانتظار',
+                style: GoogleFonts.almarai(
+                    fontSize: 12, color: AppColors.textSecondary)),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // 3. جلب البيانات
+      final custRepo = ref.read(customerRepositoryProvider);
+      final invRepo = ref.read(invoiceRepositoryProvider);
+
+      final allCustomers = await custRepo.getAllCustomers();
+      final allInvoices = await invRepo.getAllInvoices();
+
+      // جلب جميع بنود الفواتير
+      final allIds = allInvoices.map((i) => i.id).toList();
+      final allItems = allIds.isEmpty
+          ? <InvoiceItemModel>[]
+          : await invRepo.getItemsByInvoiceIds(allIds);
+
+      // 4. بناء الملخص
+      final settings = ref.read(settingsProvider).valueOrNull;
+      final summary = await PdfDebtReportGenerator.buildSummary(
+        customers: allCustomers,
+        allInvoices: allInvoices,
+        allItems: allItems,
+        forMonth: selectedMonth,
+      );
+
+      // 5. توليد PDF ومشاركته
+      await PdfDebtReportGenerator.generateAndShare(
+        summary: summary,
+        shopName: settings?.shopName,
+        ownerName: settings?.ownerName,
+        shopPhone: settings?.shopPhone,
+        shopLogoPath: settings?.logoPath,
+      );
+
+      if (context.mounted) Navigator.pop(context);
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('فشل إنشاء التقرير: $e', style: GoogleFonts.almarai()),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -518,5 +622,154 @@ class _DebtCard extends ConsumerWidget {
       await repo.deleteCustomer(customer.id);
       ref.invalidate(debtSearchDataProvider);
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Month Picker Dialog
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MonthPickerDialog extends StatefulWidget {
+  const _MonthPickerDialog({required this.initial});
+  final DateTime initial;
+
+  @override
+  State<_MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
+
+class _MonthPickerDialogState extends State<_MonthPickerDialog> {
+  late int _year;
+  late int _month;
+
+  static const _monthNames = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _year = widget.initial.year;
+    _month = widget.initial.month;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text(
+        'اختر الشهر للتقرير',
+        style: GoogleFonts.almarai(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      content: SizedBox(
+        width: 320,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Year selector
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () => setState(() => _year--),
+                ),
+                Text(
+                  '$_year',
+                  style: GoogleFonts.almarai(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: _year < DateTime.now().year
+                      ? () => setState(() => _year++)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Month grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2.2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: 12,
+              itemBuilder: (ctx, i) {
+                final m = i + 1;
+                final isSelected = m == _month;
+                final isFuture =
+                    _year == DateTime.now().year && m > DateTime.now().month;
+                return GestureDetector(
+                  onTap: isFuture ? null : () => setState(() => _month = m),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isFuture
+                              ? Colors.grey.shade100
+                              : AppColors.primary.withOpacity(0.1)),
+                      borderRadius: BorderRadius.circular(10),
+                      border: isSelected
+                          ? Border.all(color: AppColors.primary, width: 2)
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _monthNames[i],
+                        style: GoogleFonts.almarai(
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w400,
+                          color: isSelected
+                              ? Colors.white
+                              : (isFuture
+                                  ? Colors.grey.shade400
+                                  : AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      actions: [
+        OutlinedButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('إلغاء', style: GoogleFonts.almarai()),
+        ),
+        FilledButton.icon(
+          icon: const Icon(Icons.print_outlined, size: 18),
+          label: Text(
+            'طباعة ${_monthNames[_month - 1]} $_year',
+            style: GoogleFonts.almarai(fontWeight: FontWeight.bold),
+          ),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
+          ),
+          onPressed: () => Navigator.pop(context, DateTime(_year, _month)),
+        ),
+      ],
+    );
   }
 }

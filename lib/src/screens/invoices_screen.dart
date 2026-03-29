@@ -30,6 +30,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     final colorScheme = theme.colorScheme;
     final filteredAsync = ref.watch(filteredInvoicesProvider);
     final selectedStatus = ref.watch(invoiceStatusFilterProvider);
+    final sortField = ref.watch(invoiceSortFieldProvider);
+    final sortAscending = ref.watch(invoiceSortAscendingProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
@@ -75,10 +77,23 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           _SearchAndFilterBar(
             controller: _searchController,
             selectedStatus: selectedStatus,
+            sortField: sortField,
+            sortAscending: sortAscending,
             onSearchChanged: (val) =>
                 ref.read(invoiceSearchQueryProvider.notifier).state = val,
             onFilterChanged: (filter) =>
                 ref.read(invoiceStatusFilterProvider.notifier).state = filter,
+            onSortFieldChanged: (field) {
+              final current = ref.read(invoiceSortFieldProvider);
+              if (current == field) {
+                // Toggle direction if same field tapped
+                ref.read(invoiceSortAscendingProvider.notifier).state =
+                    !ref.read(invoiceSortAscendingProvider);
+              } else {
+                ref.read(invoiceSortFieldProvider.notifier).state = field;
+                ref.read(invoiceSortAscendingProvider.notifier).state = true;
+              }
+            },
           ),
 
           // ─── Invoices List ──────────────────────────────────────────────────
@@ -140,14 +155,20 @@ class _SearchAndFilterBar extends StatelessWidget {
   const _SearchAndFilterBar({
     required this.controller,
     required this.selectedStatus,
+    required this.sortField,
+    required this.sortAscending,
     required this.onSearchChanged,
     required this.onFilterChanged,
+    required this.onSortFieldChanged,
   });
 
   final TextEditingController controller;
   final InvoiceStatusFilter selectedStatus;
+  final InvoiceSortField sortField;
+  final bool sortAscending;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<InvoiceStatusFilter> onFilterChanged;
+  final ValueChanged<InvoiceSortField> onSortFieldChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -224,9 +245,96 @@ class _SearchAndFilterBar extends StatelessWidget {
                 ),
               ),
 
+              // ── Sort Row ──────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sort_rounded,
+                        size: 14, color: Color(0xFF9CA3AF)),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'ترتيب:',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: InvoiceSortField.values.map((field) {
+                            final isSelected = sortField == field;
+                            final primary =
+                                Theme.of(context).colorScheme.primary;
+                            return GestureDetector(
+                              onTap: () => onSortFieldChanged(field),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                margin: const EdgeInsets.only(right: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? primary.withValues(alpha: 0.12)
+                                      : const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? primary.withValues(alpha: 0.4)
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      field.label,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? primary
+                                            : const Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const SizedBox(width: 4),
+                                      AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        child: Icon(
+                                          sortAscending
+                                              ? Icons.arrow_upward_rounded
+                                              : Icons.arrow_downward_rounded,
+                                          key: ValueKey(sortAscending),
+                                          size: 12,
+                                          color: primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
               // Elegant Tabs
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: InvoiceStatusFilter.values.map((filter) {

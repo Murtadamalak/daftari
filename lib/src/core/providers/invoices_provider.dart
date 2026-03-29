@@ -37,11 +37,36 @@ enum InvoiceStatusFilter {
   }
 }
 
+// ─── Sort Enums ───────────────────────────────────────────────────────────────
+
+enum InvoiceSortField {
+  invoiceNumber,
+  customerName,
+  amount,
+  date;
+
+  String get label {
+    switch (this) {
+      case InvoiceSortField.invoiceNumber:
+        return 'رقم الفاتورة';
+      case InvoiceSortField.customerName:
+        return 'اسم الزبون';
+      case InvoiceSortField.amount:
+        return 'المبلغ';
+      case InvoiceSortField.date:
+        return 'التاريخ';
+    }
+  }
+}
+
 // ─── State Providers ──────────────────────────────────────────────────────────
 
 final invoiceSearchQueryProvider = StateProvider<String>((ref) => '');
 final invoiceStatusFilterProvider =
     StateProvider<InvoiceStatusFilter>((ref) => InvoiceStatusFilter.all);
+final invoiceSortFieldProvider =
+    StateProvider<InvoiceSortField>((ref) => InvoiceSortField.invoiceNumber);
+final invoiceSortAscendingProvider = StateProvider<bool>((ref) => false);
 
 // ─── Data Provider ────────────────────────────────────────────────────────────
 
@@ -52,15 +77,17 @@ final allInvoicesProvider =
   return repo.getAllInvoices();
 });
 
-/// Filtered invoices applying search + status filter.
+/// Filtered + sorted invoices.
 final filteredInvoicesProvider =
     Provider.autoDispose<AsyncValue<List<InvoiceModel>>>((ref) {
   final invoicesAsync = ref.watch(allInvoicesProvider);
   final query = ref.watch(invoiceSearchQueryProvider).trim().toLowerCase();
   final statusFilter = ref.watch(invoiceStatusFilterProvider);
+  final sortField = ref.watch(invoiceSortFieldProvider);
+  final ascending = ref.watch(invoiceSortAscendingProvider);
 
   return invoicesAsync.whenData((invoices) {
-    return invoices.where((inv) {
+    final filtered = invoices.where((inv) {
       final passesStatus = statusFilter == InvoiceStatusFilter.all ||
           inv.status == statusFilter.dbValue;
       final passesSearch = query.isEmpty ||
@@ -68,5 +95,26 @@ final filteredInvoicesProvider =
           inv.customerName.toLowerCase().contains(query);
       return passesStatus && passesSearch;
     }).toList();
+
+    filtered.sort((a, b) {
+      int cmp;
+      switch (sortField) {
+        case InvoiceSortField.invoiceNumber:
+          cmp = a.num.compareTo(b.num);
+          break;
+        case InvoiceSortField.customerName:
+          cmp = a.customerName.compareTo(b.customerName);
+          break;
+        case InvoiceSortField.amount:
+          cmp = a.grandTotal.compareTo(b.grandTotal);
+          break;
+        case InvoiceSortField.date:
+          cmp = a.date.compareTo(b.date);
+          break;
+      }
+      return ascending ? cmp : -cmp;
+    });
+
+    return filtered;
   });
 });

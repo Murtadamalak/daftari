@@ -1,6 +1,7 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -38,11 +39,7 @@ class InvoiceDetailsScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent, // rely on body container gradient
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: detail.when(
-          data: (d) => Text('فاتورة رقم ${d.invoice.formattedNum}'),
-          loading: () => const Text('جاري التحميل...'),
-          error: (_, __) => const Text('خطأ'),
-        ),
+        title: const AppBarLogo(),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -88,9 +85,10 @@ class InvoiceDetailsScreen extends ConsumerWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
+            // Use the app brand gradient (from #098677 to a lighter teal)
             colors: Theme.of(context).brightness == Brightness.dark
-                ? [const Color(0xFF0F172A), const Color(0xFF1E1B4B)]
-                : [const Color(0xFF4F46E5), const Color(0xFF818CF8)],
+                ? [const Color(0xFF063D35), const Color(0xFF0A5B52)]
+                : [const Color(0xFF098677), const Color(0xFF36B69C)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -132,7 +130,8 @@ class InvoiceDetailsScreen extends ConsumerWidget {
                         child: _ActionBtn(
                           icon: Icons.print_outlined,
                           label: 'طبع / PDF',
-                          color: const Color(0xFF6366F1),
+                          // use brand color for main action
+                          color: const Color(0xFF098677),
                           onPressed: () => _exportPdf(context, ref, d),
                         ),
                       ),
@@ -473,46 +472,87 @@ class _ReceiptCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF4F46E5), const Color(0xFF312E81)]
-                    : [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
+                    ? [const Color(0xFF063D35), const Color(0xFF0A5B52)]
+                    : [const Color(0xFF098677), const Color(0xFF36B69C)],
               ),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  invoice.shopName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
+                // Header top row - title and status
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Status badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.white30, width: 1),
+                      ),
+                      child: Text(
+                        invoice.status == 'paid'
+                            ? '✓ مدفوع'
+                            : invoice.status == 'partial'
+                                ? '◐ جزئي'
+                                : '✕ غير مدفوع',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            letterSpacing: 0.4),
+                      ),
+                    ),
+                    // Shop name
+                    Expanded(
+                      child: Text(
+                        invoice.shopName,
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 6),
+                // Shop details
                 if (invoice.ownerName != null)
                   Text(
                     'بإدارة: ${invoice.ownerName}',
+                    textAlign: TextAlign.end,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.9), fontSize: 13),
+                        color: Colors.white.withOpacity(0.9), fontSize: 12),
                   ),
                 if (invoice.shopPhone != null)
                   Text(
                     'هاتف: ${invoice.shopPhone}',
+                    textAlign: TextAlign.end,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.8), fontSize: 12),
+                        color: Colors.white.withOpacity(0.8), fontSize: 11),
                   ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
+                // Invoice number and date
                 Text(
                   'فاتورة رقم: ${invoice.formattedNum}',
+                  textAlign: TextAlign.end,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.85), fontSize: 13),
+                      color: Colors.white.withOpacity(0.85), fontSize: 12),
                 ),
                 Text(
-                  DateFormat('yyyy/MM/dd  hh:mm a', 'ar').format(invoice.date),
+                  DateFormat('yyyy/MM/dd hh:mm a', 'ar').format(invoice.date),
+                  textAlign: TextAlign.end,
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.75), fontSize: 11),
+                      color: Colors.white.withOpacity(0.75), fontSize: 10),
                 ),
               ],
             ),
@@ -520,7 +560,7 @@ class _ReceiptCard extends StatelessWidget {
 
           // ── Customer info ────────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: Row(
               children: [
                 const Icon(Icons.person_outline, size: 18, color: Colors.grey),
@@ -542,7 +582,7 @@ class _ReceiptCard extends StatelessWidget {
           ),
 
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: _DashedDivider(),
           ),
 

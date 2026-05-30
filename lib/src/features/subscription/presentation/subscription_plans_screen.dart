@@ -1,6 +1,7 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../domain/subscription_models.dart';
 import '../data/subscription_provider.dart';
@@ -61,11 +62,7 @@ class _SubscriptionPlansScreenState
           leading: widget.isWall
               ? const SizedBox()
               : null, // Hide back button if it's a wall
-          title: Text(
-            'تفعيل التطبيق',
-            style: GoogleFonts.almarai(
-                fontWeight: FontWeight.bold, color: Colors.white),
-          ),
+          title: const AppBarLogo(),
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
           actions: [

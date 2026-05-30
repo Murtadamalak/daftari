@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/theme/app_theme.dart';
 
@@ -56,6 +55,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
+      extendBody: true,
       drawer: isDesktop ? _buildDrawer(context, isDark) : null,
       body: Stack(
         children: [
@@ -105,19 +105,23 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 ),
               ),
             ),
+          if (!isDesktop)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _FlatNavBar(
+                selectedIndex: widget.navigationShell.currentIndex,
+                isDark: isDark,
+                onTap: (i) => widget.navigationShell.goBranch(
+                  i,
+                  initialLocation: i == widget.navigationShell.currentIndex,
+                ),
+                tabs: _tabs,
+              ),
+            ),
         ],
       ),
-      bottomNavigationBar: isDesktop
-          ? null
-          : _FlatNavBar(
-              selectedIndex: widget.navigationShell.currentIndex,
-              isDark: isDark,
-              onTap: (i) => widget.navigationShell.goBranch(
-                i,
-                initialLocation: i == widget.navigationShell.currentIndex,
-              ),
-              tabs: _tabs,
-            ),
     );
   }
 
@@ -152,10 +156,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                     border: Border.all(
                         color: Colors.white.withOpacity(0.2), width: 1),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'د',
-                      style: GoogleFonts.almarai(
+                      style: TextStyle(
+                        fontFamily: 'KOMedia',
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -164,9 +169,10 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                Text(
+                const Text(
                   'دفتري',
-                  style: GoogleFonts.almarai(
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -174,7 +180,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 ),
                 Text(
                   'نظام المبيعات والديون',
-                  style: GoogleFonts.almarai(
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
                     fontSize: 11,
                     color: Colors.white.withOpacity(0.7),
                   ),
@@ -240,7 +247,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 tab.label,
-                                style: GoogleFonts.almarai(
+                                style: TextStyle(
+                                  fontFamily: 'KOMedia',
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w500,
@@ -284,7 +292,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 const SizedBox(width: 6),
                 Text(
                   'دفتري — نظام إدارة المبيعات',
-                  style: GoogleFonts.almarai(
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
                     fontSize: 10,
                     color: isDark
                         ? AppColors.darkTextSecondary
@@ -301,7 +310,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Flat & Modern Navigation Bar
+// Floating Rounded Capsule Navigation Bar (Glassmorphic & Premium)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _FlatNavBar extends StatelessWidget {
@@ -319,42 +328,51 @@ class _FlatNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark
-        ? AppColors.darkSurface.withOpacity(0.9)
-        : AppColors.white.withOpacity(0.92);
-    final topBorder = isDark
-        ? AppColors.darkBorder.withOpacity(0.5)
-        : AppColors.border.withOpacity(0.8);
+    final primary = AppColors.primary;
+    final primaryDark = isDark ? const Color(0xFF0C1D1A) : AppColors.primaryDark;
 
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: bg,
-            border: Border(
-              top: BorderSide(color: topBorder, width: 1),
+    return Container(
+      color: Colors.transparent, // Ensure it doesn't clip background
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Container(
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                colors: [
+                  primary,
+                  primaryDark,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.4 : 0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(tabs.length, (i) {
-                  final tab = tabs[i];
-                  final isSelected = selectedIndex == i;
-                  return _NavItem(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(tabs.length, (i) {
+                final tab = tabs[i];
+                final isSelected = selectedIndex == i;
+                return Expanded(
+                  child: _NavItem(
                     icon: tab.icon,
                     activeIcon: tab.activeIcon,
                     label: tab.label,
                     isSelected: isSelected,
                     isDark: isDark,
                     onTap: () => onTap(i),
-                  );
-                }),
-              ),
+                  ),
+                );
+              }),
             ),
           ),
         ),
@@ -382,45 +400,51 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = isDark ? const Color(0xFF4DB896) : AppColors.primary;
-    final muted = isDark ? AppColors.darkTextSecondary : AppColors.textDisabled;
+    const activeBgColor = Colors.white;
+    final activeIconColor = AppColors.primary;
+    final inactiveColor = Colors.white.withOpacity(0.65);
+    const activeTextColor = Colors.white;
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              transitionBuilder: (child, anim) =>
-                  ScaleTransition(scale: anim, child: child),
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                key: ValueKey(isSelected),
-                color: isSelected ? primary : muted,
-                size: 21,
-              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutBack,
+            padding: EdgeInsets.all(isSelected ? 9 : 4),
+            decoration: BoxDecoration(
+              color: isSelected ? activeBgColor : Colors.transparent,
+              shape: BoxShape.circle,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      )
+                    ]
+                  : null,
             ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: GoogleFonts.almarai(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                color: isSelected ? primary : muted,
-              ),
+            child: Icon(
+              isSelected ? activeIcon : icon,
+              color: isSelected ? activeIconColor : inactiveColor,
+              size: isSelected ? 22 : 20,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'KOMedia',
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? activeTextColor : Colors.white60,
+            ),
+          ),
+        ],
       ),
     );
   }

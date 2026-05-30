@@ -1,3 +1,4 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/theme/app_theme.dart';
@@ -50,7 +51,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('مسح الباركود'),
+        title: const AppBarLogo(),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,

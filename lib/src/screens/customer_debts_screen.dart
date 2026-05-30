@@ -1,6 +1,7 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
@@ -84,7 +85,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
-        title: const Text('تفاصيل الديون والتسديد'),
+        title: const AppBarLogo(),
         centerTitle: true,
         actions: [
           RefreshActionButton(

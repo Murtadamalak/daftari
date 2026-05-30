@@ -1,3 +1,4 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -170,7 +171,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد'),
+        title: const AppBarLogo(),
         actions: [
           if (_isEditing)
             IconButton(

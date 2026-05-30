@@ -1,8 +1,9 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:universal_io/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:image_picker/image_picker.dart';
 import '../data/subscription_provider.dart';
 import 'payment_success_screen.dart';
@@ -105,11 +106,7 @@ class _PaymentSubmissionScreenState
         appBar: AppBar(
           backgroundColor: AppColors.primary,
           elevation: 0,
-          title: Text(
-            'تأكيد طلب التفعيل',
-            style: GoogleFonts.almarai(
-                fontWeight: FontWeight.bold, color: Colors.white),
-          ),
+          title: const AppBarLogo(),
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
         ),

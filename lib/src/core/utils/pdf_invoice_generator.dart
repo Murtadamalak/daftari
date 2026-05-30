@@ -107,7 +107,8 @@ class PdfInvoiceGenerator {
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
-                  color: const PdfColor.fromInt(0xFF1A3C6E),
+                  // brand teal color (0xFF098677)
+                  color: const PdfColor.fromInt(0xFF098677),
                   borderRadius:
                       const pw.BorderRadius.all(pw.Radius.circular(8)),
                 ),
@@ -143,6 +144,34 @@ class PdfInvoiceGenerator {
                       ),
 
                     pw.SizedBox(width: 12),
+
+                    // Rotated stamp (semi-transparent) - placed visually over header
+                    pw.Positioned(
+                      left: 0,
+                      top: 0,
+                      child: pw.Transform.rotate(
+                        angle: -0.35,
+                        child: pw.Opacity(
+                          opacity: 0.14,
+                          child: pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.white,
+                              borderRadius: const pw.BorderRadius.all(
+                                  pw.Radius.circular(6)),
+                            ),
+                            child: pw.Text(
+                              statusLabel,
+                              style: pw.TextStyle(
+                                  font: fontBold,
+                                  fontSize: 14,
+                                  color: PdfColor.fromInt(0xFF098677)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
 
                     // Shop name + app name
                     pw.Expanded(

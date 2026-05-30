@@ -1,7 +1,8 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 
 import '../core/providers/auth_provider.dart';
 import '../features/subscription/presentation/subscription_plans_screen.dart';
@@ -30,11 +31,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF0F172A),
         appBar: AppBar(
-          title: Text(
-            'حالة الاشتراك',
-            style: GoogleFonts.tajawal(
-                fontWeight: FontWeight.bold, color: Colors.white),
-          ),
+          title: const AppBarLogo(),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,

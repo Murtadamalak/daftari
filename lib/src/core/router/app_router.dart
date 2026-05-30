@@ -22,6 +22,7 @@ import '../../screens/reports_screen.dart';
 import '../../screens/settings_screen.dart';
 import '../../screens/comprehensive_reports_screen.dart';
 import '../../screens/customer_debts_screen.dart';
+import '../../screens/transactions_log_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -253,6 +254,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     pageBuilder: (context, state) => MaterialPage(
                       key: state.pageKey,
                       child: const ComprehensiveReportsScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'transactions',
+                    pageBuilder: (context, state) => MaterialPage(
+                      key: state.pageKey,
+                      child: const TransactionsLogScreen(),
                     ),
                   ),
                 ],

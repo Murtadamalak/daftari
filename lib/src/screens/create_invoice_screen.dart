@@ -1,6 +1,7 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 
 import '../core/providers/settings_provider.dart';
@@ -68,7 +69,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       backgroundColor: Colors.transparent, // Transparent to show gradient
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل الفاتورة' : 'فاتورة جديدة'),
+        title: const AppBarLogo(),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(

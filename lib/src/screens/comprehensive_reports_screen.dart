@@ -1,6 +1,7 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 
 import '../core/providers/comprehensive_reports_provider.dart';
@@ -21,7 +22,7 @@ class ComprehensiveReportsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('سجل التقارير والأرباح'),
+        title: const AppBarLogo(),
         centerTitle: true,
       ),
       body: Column(

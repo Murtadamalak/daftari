@@ -1,10 +1,12 @@
+import 'dart:ui' show ImageFilter;
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:universal_io/io.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,349 +72,404 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _loaded = true;
         }
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Scaffold(
+          extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: const Text('الإعدادات'),
+            title: const AppBarLogo(),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            flexibleSpace: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF0A1612)
+                          : const Color(0xFFF7F5F0))
+                      .withOpacity(0.4),
+                ),
+              ),
+            ),
             actions: [
-              RefreshActionButton(
-                onPressed: () {
-                  ref.invalidate(settingsProvider);
-                  ref.invalidate(authProvider);
-                },
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : AppColors.primary)
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.refresh_outlined,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : AppColors.primary,
+                        size: 18),
+                  ),
+                  tooltip: 'تحديث',
+                  onPressed: () {
+                    ref.invalidate(settingsProvider);
+                    ref.invalidate(authProvider);
+                  },
+                ),
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              // ── Shop Logo ─────────────────────────────────────────────────
-              _SectionHeader(title: 'هوية المحل', icon: Icons.store_outlined),
-              const SizedBox(height: 16),
-              _LogoSection(logoPath: settings.logoPath),
-              const SizedBox(height: 24),
-
-              // ── Shop Info ─────────────────────────────────────────────────
-              _SectionHeader(
-                  title: 'بيانات المحل', icon: Icons.business_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _ownerCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم صاحب المحل (الاسم الكامل)',
-                        prefixIcon: Icon(Icons.person_outline),
-                        hintText: 'أدخل الاسم الثلاثي',
-                      ),
-                      onChanged: (v) =>
-                          ref.read(settingsProvider.notifier).setOwnerName(v),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _nameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم المحل',
-                        prefixIcon: Icon(Icons.store_outlined),
-                      ),
-                      onChanged: (v) =>
-                          ref.read(settingsProvider.notifier).setShopName(v),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _phoneCtrl,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'رقم الهاتف',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                      ),
-                      onChanged: (v) =>
-                          ref.read(settingsProvider.notifier).setShopPhone(v),
-                    ),
-                  ],
-                ),
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF0A1612), const Color(0xFF13211D)]
+                    : [const Color(0xFFF7F5F0), const Color(0xFFEEEBE1)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              const SizedBox(height: 24),
+            ),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top + kToolbarHeight - 8,
+                20,
+                88,
+              ),
+              children: [
+                // ── Shop Logo ─────────────────────────────────────────────────
+                _SectionHeader(title: 'هوية المحل', icon: Icons.store_outlined),
+                const SizedBox(height: 16),
+                _LogoSection(logoPath: settings.logoPath),
+                const SizedBox(height: 24),
 
-              // ── Subscription Info ─────────────────────────────────────────
-              _SectionHeader(
-                  title: 'اشتراكي', icon: Icons.workspace_premium_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    _InfoRow(
-                        label: 'الحالة',
-                        value: authState.subStatus == 'active'
-                            ? 'نشط'
-                            : (authState.subStatus == 'expired'
-                                ? 'منتهي'
-                                : 'في الانتظار')),
-                    const Divider(height: 1),
-                    _InfoRow(
-                        label: 'الباقة',
-                        value: authState.planType == 'monthly'
-                            ? 'شهرية'
-                            : (authState.planType == 'yearly'
-                                ? 'سنوية'
-                                : 'مجانية')),
-                    if (remainingDays != null) ...[
-                      const Divider(height: 1),
-                      _InfoRow(
-                        label: 'الأيام المتبقية',
-                        value: '$remainingDays يوم',
-                        valueColor: remainingDays < 5
-                            ? AppColors.danger
-                            : AppColors.success,
+                // ── Shop Info ─────────────────────────────────────────────────
+                _SectionHeader(
+                    title: 'بيانات المحل', icon: Icons.business_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _ownerCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'اسم صاحب المحل (الاسم الكامل)',
+                          prefixIcon: Icon(Icons.person_outline),
+                          hintText: 'أدخل الاسم الثلاثي',
+                        ),
+                        onChanged: (v) =>
+                            ref.read(settingsProvider.notifier).setOwnerName(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _nameCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'اسم المحل',
+                          prefixIcon: Icon(Icons.store_outlined),
+                        ),
+                        onChanged: (v) =>
+                            ref.read(settingsProvider.notifier).setShopName(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'رقم الهاتف',
+                          prefixIcon: Icon(Icons.phone_outlined),
+                        ),
+                        onChanged: (v) =>
+                            ref.read(settingsProvider.notifier).setShopPhone(v),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // ── Appearance ────────────────────────────────────────────────
-              _SectionHeader(title: 'المظهر', icon: Icons.palette_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    _ThemeModeOption(
-                      label: 'تلقائي (حسب الجهاز)',
-                      icon: Icons.brightness_auto_outlined,
-                      mode: ThemeMode.system,
-                      selected: settings.themeMode,
-                      onTap: () => ref
-                          .read(settingsProvider.notifier)
-                          .setThemeMode(ThemeMode.system),
-                    ),
-                    const Divider(height: 1),
-                    _ThemeModeOption(
-                      label: 'الوضع النهاري',
-                      icon: Icons.light_mode_outlined,
-                      mode: ThemeMode.light,
-                      selected: settings.themeMode,
-                      onTap: () => ref
-                          .read(settingsProvider.notifier)
-                          .setThemeMode(ThemeMode.light),
-                    ),
-                    const Divider(height: 1),
-                    _ThemeModeOption(
-                      label: 'الوضع الليلي',
-                      icon: Icons.dark_mode_outlined,
-                      mode: ThemeMode.dark,
-                      selected: settings.themeMode,
-                      onTap: () => ref
-                          .read(settingsProvider.notifier)
-                          .setThemeMode(ThemeMode.dark),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Backup & Restore ─────────────────────────────────────────
-              _SectionHeader(
-                  title: 'النسخ الاحتياطي والاسترداد',
-                  icon: Icons.cloud_sync_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    // Export
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.cloud_upload_outlined,
-                            color: Color(0xFF10B981), size: 22),
-                      ),
-                      title: Text(
-                        'إنشاء نسخة احتياطية',
-                        style: GoogleFonts.almarai(
-                            fontSize: 14, fontWeight: FontWeight.w700),
-                      ),
-                      subtitle: Text(
-                        'تصدير كل البيانات (منتجات، فواتير، زبائن، ديون) إلى ملف JSON',
-                        style: GoogleFonts.almarai(
-                            fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                      onTap: () => _handleExport(context),
-                    ),
-                    const Divider(height: 20),
-                    // Restore
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.cloud_download_outlined,
-                            color: Color(0xFF6366F1), size: 22),
-                      ),
-                      title: Text(
-                        'استرداد من نسخة احتياطية',
-                        style: GoogleFonts.almarai(
-                            fontSize: 14, fontWeight: FontWeight.w700),
-                      ),
-                      subtitle: Text(
-                        'رفع ملف JSON لاستعادة البيانات (سيُستبدل بالبيانات الموجودة)',
-                        style: GoogleFonts.almarai(
-                            fontSize: 12, color: AppColors.danger),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                      onTap: () => _confirmRestore(context, ref),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Data Management ──────────────────────────────────────────
-              _SectionHeader(
-                  title: 'إدارة البيانات', icon: Icons.storage_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.format_list_numbered_rtl,
-                          color: AppColors.primary),
-                      title: Text(
-                        'إعادة ترقيم الفواتير',
-                        style: GoogleFonts.almarai(
-                            fontSize: 14, fontWeight: FontWeight.w700),
-                      ),
-                      subtitle: Text(
-                        'سيعيد ترتيب أرقام الفواتير بالتسلسل من 1 حسب التاريخ (يعالج الفراغات في الأرقام)',
-                        style: GoogleFonts.almarai(
-                            fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                      onTap: () => _confirmRenumberInvoices(context, ref),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── About App ──────────────────────────────────────────────────
-              _SectionHeader(
-                  title: 'حول التطبيق وحسابي', icon: Icons.info_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    _InfoRow(label: 'الإصدار', value: '1.0.0'),
-                    const Divider(height: 1),
-                    _InfoRow(label: 'التطبيق', value: 'نظام دفتري'),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      label: 'اخر تسجيل دخول',
-                      value: authState.user?.lastSignInAt != null
-                          ? DateFormat('yyyy/MM/dd  hh:mm a', 'ar').format(
-                              DateTime.parse(authState.user!.lastSignInAt!)
-                                  .toLocal())
-                          : 'غير متوفر',
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── About Developer ───────────────────────────────────────────
-              _SectionHeader(title: 'عن المبرمج', icon: Icons.code_outlined),
-              const SizedBox(height: 16),
-              _SettingsCard(
-                child: Column(
-                  children: [
-                    // Developer preview row
-                    Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.primary,
-                                AppColors.primaryLight,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(Icons.computer_outlined,
-                              color: Colors.white, size: 28),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('مكتب فن للتصميم والبرمجة',
-                                  style: GoogleFonts.almarai(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700)),
-                              Text('مرتضى علاء',
-                                  style: GoogleFonts.almarai(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                            ],
-                          ),
+                // ── Subscription Info ─────────────────────────────────────────
+                _SectionHeader(
+                    title: 'اشتراكي', icon: Icons.workspace_premium_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _InfoRow(
+                          label: 'الحالة',
+                          value: authState.subStatus == 'active'
+                              ? 'نشط'
+                              : (authState.subStatus == 'expired'
+                                  ? 'منتهي'
+                                  : 'في الانتظار')),
+                      const Divider(height: 1),
+                      _InfoRow(
+                          label: 'الباقة',
+                          value: authState.planType == 'monthly'
+                              ? 'شهرية'
+                              : (authState.planType == 'yearly'
+                                  ? 'سنوية'
+                                  : 'مجانية')),
+                      if (remainingDays != null) ...[
+                        const Divider(height: 1),
+                        _InfoRow(
+                          label: 'الأيام المتبقية',
+                          value: '$remainingDays يوم',
+                          valueColor: remainingDays < 5
+                              ? AppColors.danger
+                              : AppColors.success,
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 14),
-                    const Divider(height: 1),
-                    const SizedBox(height: 14),
-                    // More info button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.info_outline, size: 18),
-                        label: const Text('معلومات وتواصل'),
-                        onPressed: () => _showAboutDeveloperDialog(context),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Appearance ────────────────────────────────────────────────
+                _SectionHeader(title: 'المظهر', icon: Icons.palette_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _ThemeModeOption(
+                        label: 'تلقائي (حسب الجهاز)',
+                        icon: Icons.brightness_auto_outlined,
+                        mode: ThemeMode.system,
+                        selected: settings.themeMode,
+                        onTap: () => ref
+                            .read(settingsProvider.notifier)
+                            .setThemeMode(ThemeMode.system),
+                      ),
+                      const Divider(height: 1),
+                      _ThemeModeOption(
+                        label: 'الوضع النهاري',
+                        icon: Icons.light_mode_outlined,
+                        mode: ThemeMode.light,
+                        selected: settings.themeMode,
+                        onTap: () => ref
+                            .read(settingsProvider.notifier)
+                            .setThemeMode(ThemeMode.light),
+                      ),
+                      const Divider(height: 1),
+                      _ThemeModeOption(
+                        label: 'الوضع الليلي',
+                        icon: Icons.dark_mode_outlined,
+                        mode: ThemeMode.dark,
+                        selected: settings.themeMode,
+                        onTap: () => ref
+                            .read(settingsProvider.notifier)
+                            .setThemeMode(ThemeMode.dark),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Backup & Restore ─────────────────────────────────────────
+                _SectionHeader(
+                    title: 'النسخ الاحتياطي والاسترداد',
+                    icon: Icons.cloud_sync_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      // Export
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.cloud_upload_outlined,
+                              color: Color(0xFF10B981), size: 22),
+                        ),
+                        title: Text(
+                          'إنشاء نسخة احتياطية',
+                          style: GoogleFonts.almarai(
+                              fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          'تصدير كل البيانات (منتجات، فواتير، زبائن، ديون) إلى ملف JSON',
+                          style: GoogleFonts.almarai(
+                              fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                        onTap: () => _handleExport(context),
+                      ),
+                      const Divider(height: 20),
+                      // Restore
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.cloud_download_outlined,
+                              color: Color(0xFF6366F1), size: 22),
+                        ),
+                        title: Text(
+                          'استرداد من نسخة احتياطية',
+                          style: GoogleFonts.almarai(
+                              fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          'رفع ملف JSON لاستعادة البيانات (سيُستبدل بالبيانات الموجودة)',
+                          style: GoogleFonts.almarai(
+                              fontSize: 12, color: AppColors.danger),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                        onTap: () => _confirmRestore(context, ref),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Data Management ──────────────────────────────────────────
+                _SectionHeader(
+                    title: 'إدارة البيانات', icon: Icons.storage_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.format_list_numbered_rtl,
+                            color: AppColors.primary),
+                        title: Text(
+                          'إعادة ترقيم الفواتير',
+                          style: GoogleFonts.almarai(
+                              fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          'سيعيد ترتيب أرقام الفواتير بالتسلسل من 1 حسب التاريخ (يعالج الفراغات في الأرقام)',
+                          style: GoogleFonts.almarai(
+                              fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                        onTap: () => _confirmRenumberInvoices(context, ref),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── About App ──────────────────────────────────────────────────
+                _SectionHeader(
+                    title: 'حول التطبيق وحسابي', icon: Icons.info_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      _InfoRow(label: 'الإصدار', value: '2.0.0'),
+                      const Divider(height: 1),
+                      _InfoRow(label: 'التطبيق', value: 'نظام دفتري'),
+                      const Divider(height: 1),
+                      _InfoRow(
+                        label: 'اخر تسجيل دخول',
+                        value: authState.user?.lastSignInAt != null
+                            ? DateFormat('yyyy/MM/dd  hh:mm a', 'ar').format(
+                                DateTime.parse(authState.user!.lastSignInAt!)
+                                    .toLocal())
+                            : 'غير متوفر',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── About Developer ───────────────────────────────────────────
+                _SectionHeader(title: 'عن المبرمج', icon: Icons.code_outlined),
+                const SizedBox(height: 16),
+                _SettingsCard(
+                  child: Column(
+                    children: [
+                      // Developer preview row
+                      Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryLight,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(Icons.computer_outlined,
+                                color: Colors.white, size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('مكتب فن للتصميم والبرمجة',
+                                    style: GoogleFonts.almarai(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700)),
+                                Text('المهندس مرتضى علاء',
+                                    style: GoogleFonts.almarai(
+                                        fontSize: 14,
+                                        color: AppColors.darkTextPrimary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      const Divider(height: 1),
+                      const SizedBox(height: 14),
+                      // More info button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.info_outline, size: 18),
+                          label: const Text('معلومات وتواصل'),
+                          onPressed: () => _showAboutDeveloperDialog(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // ── Logout Button ──────────────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    label: Text(
+                      'تسجيل الخروج',
+                      style: GoogleFonts.almarai(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // ── Logout Button ──────────────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: Text(
-                    'تسجيل الخروج',
-                    style: GoogleFonts.almarai(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    onPressed: () => _confirmLogout(context, ref),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.danger,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () => _confirmLogout(context, ref),
                 ),
-              ),
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         );
       },

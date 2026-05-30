@@ -1,7 +1,9 @@
+import 'dart:ui' show ImageFilter;
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 
 import '../core/providers/statistics_provider.dart';
@@ -27,13 +29,18 @@ class ReportsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text('لوحة التحكم',
-            style: GoogleFonts.almarai(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : AppColors.primary)),
+        title: const AppBarLogo(),
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF0A1612)
+                      : const Color(0xFFF7F5F0))
+                  .withOpacity(0.4),
+            ),
+          ),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(left: 8),
@@ -104,25 +111,45 @@ class _DashboardBody extends ConsumerWidget {
           child: ListView(
             padding: EdgeInsets.fromLTRB(
               isWide ? 32 : 16,
-              MediaQuery.of(context).padding.top +
-                  70, // Clear transparent AppBar
+              MediaQuery.of(context).padding.top + kToolbarHeight - 8,
               isWide ? 32 : 16,
-              40,
+              80,
             ),
             children: [
               // ── Greeting ────────────────────────────────────────────────────────
               _GreetingHeader(stats: stats),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
               // ── KPI Cards ───────────────────────────────────────────────────────
               _SectionTitle(title: 'نظرة عامة', icon: Icons.dashboard_outlined),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _KpiGrid(stats: stats),
               const SizedBox(height: 20),
 
-              // ── Reports Button ────────────────────────────────────────────────
-              _ReportsButton(
-                  onTap: () => context.push('/reports/comprehensive')),
+              // ── Navigation Cards ─────────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: _ReportsButton(
+                      title: 'التقرير الشامل',
+                      subtitle: 'تحليل المبيعات والأرباح',
+                      icon: Icons.analytics_outlined,
+                      gradientColors: const [Color(0xFF098677), Color(0xFF0EAA97)],
+                      onTap: () => context.push('/reports/comprehensive'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ReportsButton(
+                      title: 'سجل الحركات',
+                      subtitle: 'الصندوق والواصل والمتبقي',
+                      icon: Icons.receipt_long_outlined,
+                      gradientColors: const [Color(0xFF0F5A4B), Color(0xFF168A73)],
+                      onTap: () => context.push('/reports/transactions'),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               if (isWide)
@@ -201,7 +228,18 @@ class _DashboardBody extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _ReportsButton extends StatelessWidget {
-  const _ReportsButton({required this.onTap});
+  const _ReportsButton({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.gradientColors,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> gradientColors;
   final VoidCallback onTap;
 
   @override
@@ -209,18 +247,18 @@ class _ReportsButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryLight],
+          gradient: LinearGradient(
+            colors: gradientColors,
             begin: Alignment.centerRight,
             end: Alignment.centerLeft,
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.25),
-              blurRadius: 12,
+              color: gradientColors.first.withOpacity(0.2),
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
@@ -228,35 +266,37 @@ class _ReportsButton extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.analytics_outlined,
-                  color: Colors.white, size: 22),
+              child: Icon(icon, color: Colors.white, size: 18),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'سجل التقارير والأرباح',
+                    title,
                     style: GoogleFonts.almarai(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    'فترات مخصصة • PDF مشاركة',
+                    subtitle,
                     style: GoogleFonts.almarai(
-                        color: Colors.white.withOpacity(0.75), fontSize: 11),
+                        color: Colors.white.withOpacity(0.85), fontSize: 9),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 14),
+            const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 10),
           ],
         ),
       ),
@@ -451,6 +491,7 @@ class _KpiGrid extends StatelessWidget {
 
         return GridView.builder(
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
@@ -490,101 +531,106 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark
-            ? data.color.withOpacity(0.1)
-            : data.bgColor.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: data.color.withOpacity(isDark ? 0.3 : 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: data.color.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withOpacity(0.04)
+                : Colors.white.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.08)
+                  : data.color.withOpacity(0.15),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // Subtle indicator circle
-            Positioned(
-              top: -20,
-              left: -20,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: data.color.withOpacity(0.05),
-                  shape: BoxShape.circle,
+          child: Stack(
+            children: [
+              // Subtle indicator circle
+              Positioned(
+                top: -20,
+                left: -20,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: data.color.withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: data.color.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(data.icon, color: data.color, size: 20),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: data.color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          data.sub,
-                          style: GoogleFonts.almarai(
-                            fontSize: 10,
-                            color: data.color,
-                            fontWeight: FontWeight.w700,
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: data.color.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          child: Icon(data.icon, color: data.color, size: 20),
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: data.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            data.sub,
+                            style: GoogleFonts.almarai(
+                              fontSize: 10,
+                              color: data.color,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      data.value,
+                      style: GoogleFonts.almarai(
+                        color: isDark ? Colors.white : data.color,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
                       ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    data.value,
-                    style: GoogleFonts.almarai(
-                      color: isDark ? Colors.white : data.color,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    data.title,
-                    style: GoogleFonts.almarai(
-                      color:
-                          isDark ? Colors.white70 : data.color.withOpacity(0.8),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 2),
+                    Text(
+                      data.title,
+                      style: GoogleFonts.almarai(
+                        color:
+                            isDark ? Colors.white70 : data.color.withOpacity(0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

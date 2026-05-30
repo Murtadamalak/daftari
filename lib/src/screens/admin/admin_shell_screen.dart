@@ -1,7 +1,8 @@
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import '../../core/providers/auth_provider.dart';
 
 class AdminShellScreen extends ConsumerWidget {
@@ -31,40 +32,7 @@ class AdminShellScreen extends ConsumerWidget {
         backgroundColor: surface,
         elevation: 0,
         centerTitle: true,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0D4C3F), Color(0xFF4DB896)],
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(
-                  'د',
-                  style: GoogleFonts.almarai(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'لوحة الإدارة',
-              style: GoogleFonts.almarai(
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
+        title: const AppBarLogo(),
         actions: [
           Container(
             margin: const EdgeInsets.only(left: 12),

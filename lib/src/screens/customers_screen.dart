@@ -1,7 +1,9 @@
+import 'dart:ui' show ImageFilter;
+import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/settings_provider.dart';
@@ -82,24 +84,77 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final customersAsync = ref.watch(customersWithDebtProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('سجل الديون (الزبائن)'),
+        title: const AppBarLogo(),
         centerTitle: true,
-        actions: [
-          RefreshActionButton(
-            onPressed: () => ref.invalidate(debtSearchDataProvider),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF0A1612)
+                      : const Color(0xFFF7F5F0))
+                  .withOpacity(0.4),
+            ),
           ),
-          // Print Report Button
-          IconButton(
-            icon: const Icon(Icons.print_outlined),
-            onPressed: () async {
-              // Workaround for Flutter Web mouse_tracker crash with tooltips/dialogs
-              await Future<void>.delayed(const Duration(milliseconds: 50));
-              if (context.mounted) _handlePrintReport(context, ref);
-            },
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : AppColors.primary)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.refresh_outlined,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : AppColors.primary,
+                    size: 18),
+              ),
+              tooltip: 'تحديث',
+              onPressed: () => ref.invalidate(debtSearchDataProvider),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : AppColors.primary)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.print_outlined,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : AppColors.primary,
+                    size: 18),
+              ),
+              tooltip: 'طباعة التقرير',
+              onPressed: () async {
+                await Future<void>.delayed(const Duration(milliseconds: 50));
+                if (context.mounted) _handlePrintReport(context, ref);
+              },
+            ),
           ),
           customersAsync.when(
             data: (list) => Padding(
@@ -109,14 +164,20 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : AppColors.primary)
+                        .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '${list.length} زبون',
-                    style: const TextStyle(
+                    style: TextStyle(
+                        fontFamily: 'KOMedia',
                         fontSize: 12,
-                        color: Colors.white,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : AppColors.primary,
                         fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -126,130 +187,195 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
             error: (_, __) => const SizedBox.shrink(),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(64),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _searchController,
-              builder: (context, value, _) {
-                return TextField(
-                  controller: _searchController,
-                  onChanged: (v) =>
-                      ref.read(debtSearchQueryProvider.notifier).state = v,
-                  decoration: InputDecoration(
-                    hintText: 'بحث بالاسم، الباركود، الفاتورة أو المنتج...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: value.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              ref.read(debtSearchQueryProvider.notifier).state =
-                                  '';
-                            },
-                          )
-                        : null,
-                  ),
-                );
-              },
-            ),
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF0A1612), const Color(0xFF13211D)]
+                : [const Color(0xFFF7F5F0), const Color(0xFFEEEBE1)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-      ),
-      body: customersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('حدث خطأ: $e')),
-        data: (customers) {
-          if (customers.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.check_circle_outline,
-                      size: 64, color: AppColors.success),
-                  const SizedBox(height: 16),
-                  Text(
-                    'لا توجد ديون مطابقة',
-                    style: GoogleFonts.almarai(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
+        child: Column(
+          children: [
+            // ── Search Card ──
+            Container(
+              margin: EdgeInsets.fromLTRB(
+                16,
+                MediaQuery.of(context).padding.top + kToolbarHeight - 8,
+                16,
+                12,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF101D1A) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: (isDark ? const Color(0xFF1E3C36) : const Color(0xFFD0DCDA))
+                      .withOpacity(0.5),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
-            );
-          }
-
-          // Calculate total outstanding debts
-          final totalDebt =
-              customers.fold<double>(0, (sum, c) => sum + c.totalDebt);
-
-          return Column(
-            children: [
-              // Summary Header
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      AppColors.danger,
-                      Color(0xFFB91C1C)
-                    ], // Red gradient for debts
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.danger.withOpacity(0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+              padding: const EdgeInsets.all(16),
+              child: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _searchController,
+                builder: (context, value, _) {
+                  return TextField(
+                    controller: _searchController,
+                    onChanged: (v) =>
+                        ref.read(debtSearchQueryProvider.notifier).state = v,
+                    style: TextStyle(
+                      fontFamily: 'KOMedia',
+                      fontSize: 14,
+                      color: isDark ? Colors.white : const Color(0xFF0A221F),
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'مجموع الديون المطلوبة',
-                      style: GoogleFonts.almarai(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.9),
+                    decoration: InputDecoration(
+                      hintText: 'بحث بالاسم، الباركود، الفاتورة أو المنتج...',
+                      hintStyle: TextStyle(
+                        fontFamily: 'KOMedia',
+                        fontSize: 13,
+                        color: isDark ? const Color(0xFF85AFA7).withOpacity(0.6) : const Color(0xFF9CA3AF),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: isDark ? const Color(0xFF85AFA7) : const Color(0xFF9CA3AF),
+                      ),
+                      suffixIcon: value.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.clear,
+                                color: isDark ? const Color(0xFF85AFA7) : const Color(0xFF9CA3AF),
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                ref.read(debtSearchQueryProvider.notifier).state = '';
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF162A26) : const Color(0xFFF4F6F5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _fmt(totalDebt),
-                      style: GoogleFonts.almarai(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                  );
+                },
+              ),
+            ),
+            // ── Main Content ──
+            Expanded(
+              child: customersAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('حدث خطأ: $e')),
+                data: (customers) {
+                  if (customers.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_outline,
+                              size: 64, color: AppColors.success),
+                          const SizedBox(height: 16),
+                          Text(
+                            'لا توجد ديون مطابقة',
+                            style: GoogleFonts.almarai(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    );
+                  }
 
-              // Debts List
-              Expanded(
-                child: ListView.separated(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: customers.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final customer = customers[index];
-                    return _DebtCard(customer: customer);
-                  },
-                ),
+                  // Calculate total outstanding debts
+                  final totalDebt =
+                      customers.fold<double>(0, (sum, c) => sum + c.totalDebt);
+
+                  return Column(
+                    children: [
+                      // Summary Header
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              AppColors.danger,
+                              Color(0xFFB91C1C)
+                            ], // Red gradient for debts
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.danger.withOpacity(0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'مجموع الديون المطلوبة',
+                              style: GoogleFonts.almarai(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _fmt(totalDebt),
+                              style: const TextStyle(
+                                fontFamily: 'KOMedia',
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Debts List
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+                          itemCount: customers.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final customer = customers[index];
+                            return _DebtCard(customer: customer);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -355,179 +481,203 @@ class _DebtCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return InkWell(
-      onTap: () {
-        context.push('/customers/details/${customer.id}');
-      },
-      onLongPress: () => _editCustomer(context, ref, customer),
+    return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.04)
+                : Colors.white.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.08)
+                  : AppColors.primary.withOpacity(0.12),
+              width: 1,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Left icon
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.danger.withOpacity(0.1),
-                shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(
+                  Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.03,
+                ),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              child: const Icon(
-                Icons.person_outline,
-                color: AppColors.danger,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Middle Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          child: InkWell(
+            onTap: () {
+              context.push('/customers/details/${customer.id}');
+            },
+            onLongPress: () => _editCustomer(context, ref, customer),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 children: [
-                  Text(
-                    customer.name,
-                    style: GoogleFonts.almarai(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                  // Left icon
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person_outline,
+                      color: AppColors.danger,
+                      size: 24,
                     ),
                   ),
-                  if (customer.phone != null && customer.phone!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () async {
-                        final invoices = await ref
-                            .read(invoiceRepositoryProvider)
-                            .getUnpaidByCustomer(customer.id);
-                        if (invoices.isEmpty) return;
+                  const SizedBox(width: 16),
 
-                        // Collect all products from all invoices
-                        final allItems = <String>{};
-                        for (final inv in invoices) {
-                          try {
-                            final items = await ref
-                                .read(invoiceRepositoryProvider)
-                                .getItemsByInvoiceId(inv.id);
-                            for (final it in items) {
-                              allItems.add(it.productName);
-                            }
-                          } catch (_) {}
-                        }
-
-                        String productsStr = allItems.join('، ');
-                        if (productsStr.length > 200) {
-                          productsStr = '${productsStr.substring(0, 197)}...';
-                        }
-                        if (productsStr.isEmpty) productsStr = 'مشتريات سابقة';
-
-                        final AppSettings? settings =
-                            ref.read(settingsProvider).valueOrNull;
-                        final String shopName = settings?.shopName ?? 'دفتري';
-                        final String todayDate = DateFormat('yyyy/MM/dd', 'ar')
-                            .format(DateTime.now());
-
-                        await WhatsAppLauncher.sendReminder(
-                          phone: customer.phone!,
-                          customerName: customer.name,
-                          products: productsStr,
-                          totalDebt: _fmt(customer.totalDebt),
-                          date: todayDate,
-                          shopName: shopName,
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF25D366).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                              color: const Color(0xFF25D366), width: 1),
+                  // Middle Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          customer.name,
+                          style: GoogleFonts.almarai(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const FaIcon(FontAwesomeIcons.whatsapp,
-                                color: Color(0xFF25D366), size: 16),
-                            const SizedBox(width: 8),
-                            Text(
-                              'تذكير',
-                              style: GoogleFonts.almarai(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF25D366),
+                        if (customer.phone != null && customer.phone!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () async {
+                              final invoices = await ref
+                                  .read(invoiceRepositoryProvider)
+                                  .getUnpaidByCustomer(customer.id);
+                              if (invoices.isEmpty) return;
+
+                              // Collect all products from all invoices
+                              final allItems = <String>{};
+                              for (final inv in invoices) {
+                                try {
+                                  final items = await ref
+                                      .read(invoiceRepositoryProvider)
+                                      .getItemsByInvoiceId(inv.id);
+                                  for (final it in items) {
+                                    allItems.add(it.productName);
+                                  }
+                                } catch (_) {}
+                              }
+
+                              String productsStr = allItems.join('، ');
+                              if (productsStr.length > 200) {
+                                productsStr = '${productsStr.substring(0, 197)}...';
+                              }
+                              if (productsStr.isEmpty) productsStr = 'مشتريات سابقة';
+
+                              final AppSettings? settings =
+                                  ref.read(settingsProvider).valueOrNull;
+                              final String shopName = settings?.shopName ?? 'دفتري';
+                              final String todayDate = DateFormat('yyyy/MM/dd', 'ar')
+                                  .format(DateTime.now());
+
+                              await WhatsAppLauncher.sendReminder(
+                                phone: customer.phone!,
+                                customerName: customer.name,
+                                products: productsStr,
+                                totalDebt: _fmt(customer.totalDebt),
+                                date: todayDate,
+                                shopName: shopName,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF25D366).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: const Color(0xFF25D366), width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const FaIcon(FontAwesomeIcons.whatsapp,
+                                      color: Color(0xFF25D366), size: 16),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'تذكير',
+                                    style: GoogleFonts.almarai(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF25D366),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  // Right Debt amount & View Details button
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.red, size: 20),
+                            onPressed: () =>
+                                _confirmDeleteCustomer(context, ref, customer),
+                            tooltip: 'حذف الزبون',
+                          ),
+                          Text(
+                            'المبلغ المطلوب',
+                            style: GoogleFonts.almarai(
+                              fontSize: 12,
+                              color: AppColors.danger,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        _fmt(customer.totalDebt),
+                        style: GoogleFonts.almarai(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.danger,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      FilledButton.tonalIcon(
+                        onPressed: () =>
+                            context.push('/customers/details/${customer.id}'),
+                        icon: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                        label: const Text(
+                          'التفاصيل وتسديد',
+                          style: TextStyle(
+                            fontFamily: 'KOMedia',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          foregroundColor: AppColors.primary,
+                          minimumSize: const Size(0, 36),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-
-            // Right Debt amount & View Details button
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: Colors.red, size: 20),
-                      onPressed: () =>
-                          _confirmDeleteCustomer(context, ref, customer),
-                      tooltip: 'حذف الزبون',
-                    ),
-                    Text(
-                      'المبلغ المطلوب',
-                      style: GoogleFonts.almarai(
-                        fontSize: 11,
-                        color: AppColors.danger,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  _fmt(customer.totalDebt),
-                  style: GoogleFonts.almarai(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.danger,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                FilledButton.tonalIcon(
-                  onPressed: () =>
-                      context.push('/customers/details/${customer.id}'),
-                  icon: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-                  label: const Text('التفاصيل وتسديد'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
-                    foregroundColor: AppColors.primary,
-                    minimumSize: const Size(0, 36),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

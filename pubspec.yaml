@@ -68,21 +68,14 @@ flutter:
   assets:
     - assets/fonts/Cairo-Regular.ttf
     - assets/fonts/Cairo-Bold.ttf
-    - assets/fonts/komedia_black.ttf
+    - assets/fonts/komedia_black.otf
     - assets/images/
   fonts:
     - family: KOMedia
       fonts:
-        - asset: assets/fonts/komedia_black.ttf
-    - family: Almarai
-      fonts:
-        - asset: assets/fonts/komedia_black.ttf
+        - asset: assets/fonts/komedia_black.otf
     - family: Cairo
       fonts:
-        - asset: assets/fonts/komedia_black.ttf
-    - family: Tajawal
-      fonts:
-        - asset: assets/fonts/komedia_black.ttf
-    - family: RobotoMono
-      fonts:
-        - asset: assets/fonts/komedia_black.ttf
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700

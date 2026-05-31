@@ -151,6 +151,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'add',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) => MaterialPage(
                       key: state.pageKey,
                       child: const AddEditProductScreen(),
@@ -158,6 +159,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'edit/:id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
                       return MaterialPage(
@@ -183,9 +185,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'details/:id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      // We can pass the customer object as an extra if needed, or just fetch it by ID in the screen.
                       return MaterialPage(
                         key: state.pageKey,
                         child: CustomerDebtsScreen(customerId: id),
@@ -209,6 +211,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'create',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) => MaterialPage(
                       key: state.pageKey,
                       child: const CreateInvoiceScreen(),
@@ -216,6 +219,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'details/:id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
                       return MaterialPage(
@@ -226,6 +230,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'edit/:id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
                       return MaterialPage(
@@ -251,6 +256,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'comprehensive',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) => MaterialPage(
                       key: state.pageKey,
                       child: const ComprehensiveReportsScreen(),
@@ -258,6 +264,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'transactions',
+                    parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) => MaterialPage(
                       key: state.pageKey,
                       child: const TransactionsLogScreen(),

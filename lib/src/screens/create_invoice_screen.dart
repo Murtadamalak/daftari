@@ -67,24 +67,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     final isLastStep = _currentStep == 2;
     return Scaffold(
       backgroundColor: Colors.transparent, // Transparent to show gradient
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const AppBarLogo(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            _confirmDiscard(context);
-          },
-        ),
-      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: Theme.of(context).brightness == Brightness.dark
-                ? [const Color(0xFF0F172A), const Color(0xFF1E1B4B)]
-                : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
+                ? [const Color(0xFF0A1612), const Color(0xFF13211D)]
+                : [const Color(0xFFF7F5F0), const Color(0xFFEEEBE1)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -92,6 +80,29 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              // ── Custom AppBar ───────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: SizedBox(
+                  height: 56,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const AppBarLogo(),
+                      Align(
+                        alignment: Alignment.centerRight, // RTL Close button on right side
+                        child: IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            _confirmDiscard(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // ── Step indicator at top ──────────────────────────────────────────
               _StepHeader(currentStep: _currentStep),
 
@@ -506,7 +517,13 @@ class _StepHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+    final inactiveColor = isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06);
+    final activeTextColor = isDark ? Colors.white : primary;
+    final inactiveTextColor = isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.4);
+
     return Container(
       color: Colors.transparent,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -520,8 +537,8 @@ class _StepHeader extends StatelessWidget {
               child: Container(
                 height: 2,
                 color: isPast
-                    ? Colors.white.withOpacity(0.8)
-                    : Colors.white.withOpacity(0.25),
+                    ? primary.withOpacity(0.8)
+                    : inactiveTextColor.withOpacity(0.2),
               ),
             );
           }
@@ -537,26 +554,34 @@ class _StepHeader extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: isActive
-                      ? Colors.white
+                      ? primary
                       : isPast
-                          ? Colors.white.withOpacity(0.8)
-                          : Colors.white.withOpacity(0.25),
+                          ? primary.withOpacity(0.15)
+                          : inactiveColor,
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isActive ? Colors.transparent : primary.withOpacity(0.25),
+                    width: 1.5,
+                  ),
                 ),
                 child: Icon(
                   isPast ? Icons.check : _icons[stepIndex],
                   size: 20,
-                  color: (isActive || isPast) ? primary : Colors.white,
+                  color: isActive
+                      ? Colors.white
+                      : isPast
+                          ? primary
+                          : inactiveTextColor,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 _steps[stepIndex],
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                  color:
-                      isActive ? Colors.white : Colors.white.withOpacity(0.65),
+                  fontFamily: 'KOMedia',
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.w800 : FontWeight.w400,
+                  color: isActive ? activeTextColor : inactiveTextColor,
                 ),
               ),
             ],
@@ -606,7 +631,10 @@ class _BottomActionBar extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: isSaving ? null : onBack,
                 icon: const Icon(Icons.arrow_forward_ios, size: 14),
-                label: const Text('رجوع'),
+                label: const Text(
+                  'رجوع',
+                  style: TextStyle(fontFamily: 'KOMedia'),
+                ),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(100, 50),
                 ),
@@ -632,9 +660,12 @@ class _BottomActionBar extends StatelessWidget {
               label: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(isSaving
-                      ? 'جاري الحفظ...'
-                      : (isLastStep ? 'حفظ الفاتورة' : 'التالي')),
+                  Text(
+                    isSaving
+                        ? 'جاري الحفظ...'
+                        : (isLastStep ? 'حفظ الفاتورة' : 'التالي'),
+                    style: const TextStyle(fontFamily: 'KOMedia'),
+                  ),
                   if (currentStep == 1 && itemCount > 0) ...[
                     const SizedBox(width: 8),
                     Container(
@@ -646,7 +677,10 @@ class _BottomActionBar extends StatelessWidget {
                       ),
                       child: Text(
                         '$itemCount • ${_fmt.format(grandTotal)} IQD',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontFamily: 'KOMedia',
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -709,53 +743,59 @@ class _CustomerStep extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Cash customer card ──────────────────────────────────────────────
-        _QuickOptionCard(
-          icon: Icons.payments_outlined,
-          iconColor: AppColors.success,
-          title: 'زبون نقدي',
-          subtitle: 'بدون حساب مسجّل',
-          isSelected: isCashOnly,
-          onTap: () => invoiceNotifier.setCustomer(null),
-        ),
-
-        const SizedBox(height: 16),
-
-        // ── Selection Buttons ──────────────────────────────────────────────
-        Row(
-          children: [
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.person_search_outlined,
-                label: 'بحث عن زبون',
-                color: AppColors.primary,
-                onTap: () => _pickCustomer(context, ref),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.person_add_outlined,
-                label: 'إضافة زبون',
-                color: const Color(0xFF8B5CF6),
-                onTap: () => _showAddCustomerDialog(context, ref),
-              ),
-            ),
-          ],
-        ),
-
-        // ── Selected customer info ────────────────────────────────────────
-        if (invoiceState.customer != null) ...[
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8, right: 4),
-            child: Text('الزبون المختار:',
-                style: GoogleFonts.almarai(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textSecondary)),
+        if (isCashOnly) ...[
+          // ── Cash customer card ──────────────────────────────────────────────
+          _QuickOptionCard(
+            icon: Icons.payments_outlined,
+            iconColor: AppColors.success,
+            title: 'زبون نقدي',
+            subtitle: 'بدون حساب مسجّل',
+            isSelected: true,
+            onTap: () => invoiceNotifier.setCustomer(null),
           ),
-          _CustomerInfoCard(customer: invoiceState.customer!),
+
+          const SizedBox(height: 16),
+
+          // ── Selection Buttons ──────────────────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.person_search_outlined,
+                  label: 'بحث عن زبون',
+                  color: AppColors.primary,
+                  onTap: () => _pickCustomer(context, ref),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.person_add_outlined,
+                  label: 'إضافة زبون',
+                  color: AppColors.accent,
+                  onTap: () => _showAddCustomerDialog(context, ref),
+                ),
+              ),
+            ],
+          ),
+        ] else ...[
+          // ── Selected customer info ────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12, right: 4),
+            child: Text(
+              'الزبون المختار:',
+              style: GoogleFonts.almarai(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          _CustomerInfoCard(
+            customer: invoiceState.customer!,
+            onClear: () => invoiceNotifier.setCustomer(null),
+            onChange: () => _pickCustomer(context, ref),
+          ),
         ],
       ],
     );
@@ -782,52 +822,93 @@ class _QuickOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBorderColor = AppColors.primary;
+    final inactiveBorderColor = isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06);
+
     return GestureDetector(
       onTap: onTap,
-      child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        opacity: isSelected ? 0.2 : 0.05,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              isSelected ? AppColors.success : Colors.white.withOpacity(0.15),
-          width: isSelected ? 2 : 1.5,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: isDark
+                      ? [AppColors.primary.withOpacity(0.25), AppColors.primary.withOpacity(0.08)]
+                      : [AppColors.primary.withOpacity(0.08), AppColors.primary.withOpacity(0.02)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected
+              ? null
+              : (isDark ? AppColors.darkSurface : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? activeBorderColor : inactiveBorderColor,
+            width: isSelected ? 2 : 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(isDark ? 0.15 : 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.08 : 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: (isSelected ? AppColors.primary : iconColor).withOpacity(0.12),
+                shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor, size: 22),
+              child: Icon(icon, color: isSelected ? AppColors.primary : iconColor, size: 24),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: isSelected ? AppColors.success : null)),
-                  Text(subtitle, style: const TextStyle(fontSize: 12)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: 'KOMedia',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: isSelected ? AppColors.primary : (isDark ? Colors.white : AppColors.textPrimary),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 20),
+              const Icon(Icons.check_circle, color: AppColors.primary, size: 22),
           ],
         ),
       ),
     );
   }
 }
-
-// ── Customer Picker Row ──────────────────────────────────────────────────────
 
 // ── Customer Search Picker Bottom Sheet ──────────────────────────────────────
 
@@ -844,6 +925,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final filtered = _query.isEmpty
         ? widget.customers
         : widget.customers.where((c) {
@@ -855,7 +937,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: isDark ? AppColors.darkBg : AppColors.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
@@ -872,7 +954,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
             width: 50,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -908,7 +990,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
                 hintText: 'بحث باسم الزبون أو رقم الهاتف...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.grey.withOpacity(0.05),
+                fillColor: isDark ? AppColors.darkSurface : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -967,6 +1049,7 @@ class _CustomerGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasDebt = customer.totalDebt > 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
       onTap: onTap,
@@ -974,7 +1057,7 @@ class _CustomerGridItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: hasDebt
@@ -1081,7 +1164,10 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
         children: [
           Icon(Icons.person_add_outlined, color: AppColors.primary),
           SizedBox(width: 10),
-          Text('زبون جديد'),
+          Text(
+            'زبون جديد',
+            style: TextStyle(fontFamily: 'KOMedia'),
+          ),
         ],
       ),
       content: Form(
@@ -1115,7 +1201,10 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
       actions: [
         OutlinedButton(
           onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('إلغاء'),
+          child: const Text(
+            'إلغاء',
+            style: TextStyle(fontFamily: 'KOMedia'),
+          ),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
@@ -1125,7 +1214,10 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
                   height: 18,
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
-              : const Text('حفظ واختر'),
+              : const Text(
+                  'حفظ واختر',
+                  style: TextStyle(fontFamily: 'KOMedia'),
+                ),
         ),
       ],
     );
@@ -1149,55 +1241,125 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
 }
 
 class _CustomerInfoCard extends StatelessWidget {
-  const _CustomerInfoCard({required this.customer});
+  const _CustomerInfoCard({
+    required this.customer,
+    required this.onClear,
+    required this.onChange,
+  });
   final CustomerModel customer;
+  final VoidCallback onClear;
+  final VoidCallback onChange;
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(14),
-      borderRadius: BorderRadius.circular(20),
-      opacity: 0.1,
-      border: Border.all(
-          color: const Color(0xFF4F46E5).withOpacity(0.5), width: 1.5),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.25),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.1 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: const Color(0xFF4F46E5).withOpacity(0.12),
+              color: AppColors.primary.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person, color: Color(0xFF4F46E5), size: 22),
+            child: const Icon(Icons.person, color: AppColors.primary, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(customer.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 15)),
+                Text(
+                  customer.name,
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
                 if (customer.phone != null)
-                  Text(customer.phone!,
-                      style: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade600,
-                          fontSize: 12)),
-                if (customer.totalDebt > 0)
+                  Text(
+                    customer.phone!,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                if (customer.totalDebt > 0) ...[
+                  const SizedBox(height: 4),
                   Text(
                     'دين حالي: ${NumberFormat('#,###').format(customer.totalDebt)} IQD',
                     style: const TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
+                      fontFamily: 'KOMedia',
+                      color: AppColors.danger,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
+                ],
               ],
             ),
           ),
-          const Icon(Icons.check_circle, color: Color(0xFF4F46E5), size: 20),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Change Button
+              InkWell(
+                onTap: onChange,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.sync_alt_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Clear Button
+              InkWell(
+                onTap: onClear,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.danger,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -1224,7 +1386,7 @@ class _ProductsStep extends ConsumerWidget {
               child: _ActionButton(
                 icon: Icons.qr_code_scanner,
                 label: 'مسح باركود',
-                color: const Color(0xFF0EA5E9),
+                color: AppColors.primary,
                 onTap: () => _scanBarcode(context, ref),
               ),
             ),
@@ -1233,7 +1395,7 @@ class _ProductsStep extends ConsumerWidget {
               child: _ActionButton(
                 icon: Icons.playlist_add,
                 label: 'اختيار منتج',
-                color: const Color(0xFF8B5CF6),
+                color: AppColors.accent,
                 onTap: () => _pickProduct(context, ref),
               ),
             ),
@@ -1253,12 +1415,13 @@ class _ProductsStep extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('${invoiceState.items.length} منتجات في السلة',
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontFamily: 'KOMedia')),
                 Text(
                   'الإجمالي: ${_fmt.format(invoiceState.subtotal)} IQD',
                   style: const TextStyle(
-                      color: Color(0xFF4F46E5),
-                      fontWeight: FontWeight.w700,
+                      fontFamily: 'KOMedia',
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
                       fontSize: 14),
                 ),
               ],
@@ -1333,24 +1496,48 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: color.withOpacity(0.25),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(isDark ? 0.05 : 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 6),
-            Text(label,
-                style: TextStyle(
-                    color: color, fontWeight: FontWeight.w700, fontSize: 13)),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'KOMedia',
+                color: color,
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       ),
@@ -1361,27 +1548,50 @@ class _ActionButton extends StatelessWidget {
 class _EmptyCartHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-            color: Colors.grey.shade300, width: 1.5, style: BorderStyle.solid),
+          color: isDark ? AppColors.darkBorder : AppColors.border,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.05 : 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         children: [
-          Icon(Icons.shopping_cart_outlined,
-              size: 52, color: Colors.grey.shade400),
-          const SizedBox(height: 12),
-          Text('السلة فارغة',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500)),
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 56,
+            color: isDark ? AppColors.darkTextSecondary.withOpacity(0.4) : AppColors.textSecondary.withOpacity(0.4),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'السلة فارغة',
+            style: TextStyle(
+              fontFamily: 'KOMedia',
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text('امسح الباركود أو اختر منتجاً',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
+          Text(
+            'امسح الباركود أو اختر منتجاً',
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 13,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -1403,95 +1613,127 @@ class _CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasWholesale = item.product.wholesalePrice != null;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Product name + remove ──
-            Row(
-              children: [
-                Expanded(
-                  child: Text(item.product.name,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 14)),
-                ),
-                GestureDetector(
-                  onTap: onRemove,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.delete_outline,
-                        color: Color(0xFFEF4444), size: 18),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // ── Price type + quantity ──
-            Row(
-              children: [
-                // Price type toggle
-                if (hasWholesale)
-                  _PriceTypeToggle(
-                    isWholesale: item.isWholesale,
-                    onChanged: onPriceTypeChange,
-                  )
-                else
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text('مفرد',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w600)),
-                  ),
-
-                const Spacer(),
-
-                // Quantity stepper
-                _QuantityStepper(
-                  quantity: item.quantity,
-                  onDecrease: () => onQtyChange(item.quantity - 1),
-                  onIncrease: () => onQtyChange(item.quantity + 1),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-
-            // ── Price summary ──
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${_fmt.format(item.effectivePrice)} IQD × ${item.quantity.toStringAsFixed(item.quantity == item.quantity.truncate() ? 0 : 2)}',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                ),
-                Text(
-                  '${_fmt.format(item.total)} IQD',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                      color: Color(0xFF4F46E5)),
-                ),
-              ],
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.border,
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.08 : 0.02),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Product name + remove ──
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.product.name,
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.danger,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // ── Price type + quantity ──
+          Row(
+            children: [
+              // Price type toggle
+              if (hasWholesale)
+                _PriceTypeToggle(
+                  isWholesale: item.isWholesale,
+                  onChanged: onPriceTypeChange,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkDivider : AppColors.divider,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'مفرد',
+                    style: TextStyle(
+                      fontFamily: 'KOMedia',
+                      fontSize: 11,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+
+              const Spacer(),
+
+              // Quantity stepper
+              _QuantityStepper(
+                quantity: item.quantity,
+                onDecrease: () => onQtyChange(item.quantity - 1),
+                onIncrease: () => onQtyChange(item.quantity + 1),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 1),
+          const SizedBox(height: 12),
+
+          // ── Price summary ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${_fmt.format(item.effectivePrice)} IQD × ${item.quantity.toStringAsFixed(item.quantity == item.quantity.truncate() ? 0 : 2)}',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                '${_fmt.format(item.total)} IQD',
+                style: const TextStyle(
+                  fontFamily: 'KOMedia',
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1507,22 +1749,25 @@ class _PriceTypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: isDark ? AppColors.darkDivider : AppColors.divider,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _Tab(
-              label: 'مفرد',
-              isActive: !isWholesale,
-              onTap: () => onChanged(false)),
+            label: 'مفرد',
+            isActive: !isWholesale,
+            onTap: () => onChanged(false),
+          ),
           _Tab(
-              label: 'جملة',
-              isActive: isWholesale,
-              onTap: () => onChanged(true)),
+            label: 'جملة',
+            isActive: isWholesale,
+            onTap: () => onChanged(true),
+          ),
         ],
       ),
     );
@@ -1530,29 +1775,36 @@ class _PriceTypeToggle extends StatelessWidget {
 }
 
 class _Tab extends StatelessWidget {
-  const _Tab(
-      {required this.label, required this.isActive, required this.onTap});
+  const _Tab({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
   final String label;
   final bool isActive;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF4F46E5) : Colors.transparent,
+          color: isActive ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           label,
           style: TextStyle(
+            fontFamily: 'KOMedia',
             fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: isActive ? Colors.white : Colors.grey.shade600,
+            fontWeight: FontWeight.w800,
+            color: isActive
+                ? Colors.white
+                : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
           ),
         ),
       ),
@@ -1579,7 +1831,11 @@ class _QuantityStepper extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
             quantity.toStringAsFixed(quantity == quantity.truncate() ? 0 : 2),
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            style: const TextStyle(
+              fontFamily: 'KOMedia',
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
+            ),
           ),
         ),
         _StepBtn(icon: Icons.add, onTap: onIncrease),
@@ -1601,10 +1857,10 @@ class _StepBtn extends StatelessWidget {
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFF4F46E5).withOpacity(0.1),
+          color: AppColors.primary.withOpacity(0.12),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 18, color: const Color(0xFF4F46E5)),
+        child: Icon(icon, size: 18, color: AppColors.primary),
       ),
     );
   }
@@ -1627,6 +1883,7 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final filtered = _query.isEmpty
         ? widget.products
         : widget.products
@@ -1638,70 +1895,125 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkBg : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          )
+        ],
       ),
       child: Column(
         children: [
           // Handle
           Container(
-            margin: const EdgeInsets.only(top: 10, bottom: 4),
-            width: 40,
-            height: 4,
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 50,
+            height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
+              color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'اختر منتجاً',
+                    style: GoogleFonts.almarai(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
             child: TextField(
               autofocus: true,
               onChanged: (v) => setState(() => _query = v),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'بحث في المنتجات...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
+          const SizedBox(height: 10),
           Expanded(
             child: filtered.isEmpty
                 ? Center(
-                    child: Text('لا توجد نتائج',
-                        style: TextStyle(color: Colors.grey.shade500)))
+                    child: Text(
+                      'لا توجد نتائج',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
+                    ),
+                  )
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: filtered.length,
                     itemBuilder: (_, i) {
                       final p = filtered[i];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkSurface : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? AppColors.darkBorder : AppColors.border.withOpacity(0.5),
+                            width: 1,
+                          ),
+                        ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           leading: Container(
-                            width: 40,
-                            height: 40,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4F46E5).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.primary.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.inventory_2_outlined,
-                                color: Color(0xFF4F46E5), size: 20),
+                            child: const Icon(Icons.inventory_2_outlined, color: AppColors.primary, size: 22),
                           ),
-                          title: Text(p.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 14)),
-                          subtitle: Text(
-                            '${_fmt.format(p.retailPrice)} IQD',
+                          title: Text(
+                            p.name,
                             style: const TextStyle(
-                                color: Color(0xFF4F46E5),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13),
+                              fontFamily: 'KOMedia',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
                           ),
-                          trailing: const Icon(Icons.add_circle,
-                              color: Color(0xFF4F46E5), size: 28),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '${_fmt.format(p.retailPrice)} IQD',
+                              style: const TextStyle(
+                                fontFamily: 'KOMedia',
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          trailing: const Icon(Icons.add_circle, color: AppColors.primary, size: 30),
                           onTap: () => Navigator.of(context).pop(p),
                         ),
                       );
@@ -1735,46 +2047,61 @@ class _PaymentStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final invoiceNotifier = ref.read(invoiceCreationProvider.notifier);
     final invoiceState = ref.watch(invoiceCreationProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── Totals summary card ──
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.border,
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.08 : 0.02),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              )
+            ],
+          ),
+          child: Column(
+            children: [
+              _TotalRow(
+                label: 'الإجمالي الفرعي',
+                value: invoiceState.subtotal,
+                size: 14,
+              ),
+              if (invoiceState.discount > 0) ...[
+                const SizedBox(height: 8),
                 _TotalRow(
-                    label: 'الإجمالي الفرعي',
-                    value: invoiceState.subtotal,
-                    size: 14),
-                if (invoiceState.discount > 0) ...[
-                  const SizedBox(height: 6),
-                  _TotalRow(
-                    label: 'الخصم',
-                    value: -invoiceState.discount,
-                    size: 14,
-                    color: const Color(0xFFF59E0B),
-                  ),
-                ],
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(),
-                ),
-                _TotalRow(
-                  label: 'الإجمالي النهائي',
-                  value: invoiceState.grandTotal,
-                  size: 22,
-                  bold: true,
-                  color: const Color(0xFF4F46E5),
+                  label: 'الخصم',
+                  value: -invoiceState.discount,
+                  size: 14,
+                  color: AppColors.warning,
                 ),
               ],
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Divider(color: isDark ? AppColors.darkDivider : AppColors.divider),
+              ),
+              _TotalRow(
+                label: 'الإجمالي النهائي',
+                value: invoiceState.grandTotal,
+                size: 20,
+                bold: true,
+                color: AppColors.primary,
+              ),
+            ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
         // ── Discount field ──
         TextField(
@@ -1789,12 +2116,20 @@ class _PaymentStep extends ConsumerWidget {
               invoiceNotifier.setDiscount(double.tryParse(val) ?? 0),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
 
         if (!isEditing) ...[
           // ── Payment method ──
-          Text('طريقة الدفع', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 10),
+          Text(
+            'طريقة الدفع',
+            style: TextStyle(
+              fontFamily: 'KOMedia',
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
 
           Row(
             children: PaymentMethod.values.map((method) {
@@ -1820,7 +2155,7 @@ class _PaymentStep extends ConsumerWidget {
 
           // ── Received amount (partial only) ──
           if (invoiceState.paymentMethod == PaymentMethod.partial) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextField(
               controller: receivedCtrl,
               keyboardType: TextInputType.number,
@@ -1833,7 +2168,11 @@ class _PaymentStep extends ConsumerWidget {
                         invoiceState.receivedAmount! > 0
                     ? 'المتبقي: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
                     : null,
-                helperStyle: const TextStyle(color: Color(0xFFEF4444)),
+                helperStyle: const TextStyle(
+                  fontFamily: 'KOMedia',
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               onChanged: (val) =>
                   invoiceNotifier.setReceivedAmount(double.tryParse(val)),
@@ -1842,7 +2181,7 @@ class _PaymentStep extends ConsumerWidget {
         ],
 
         if (isEditing && originalInvoice != null) ...[
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Builder(builder: (context) {
             final initialPaid = originalInvoice!.paid;
             final extraPaid = originalInvoice!.currentPaid - initialPaid;
@@ -1851,25 +2190,48 @@ class _PaymentStep extends ConsumerWidget {
               children: [
                 Text(
                   'تعديل بيانات الدفع:',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'طريقة الدفع الأصلية: ${originalInvoice!.payType == 'cash' ? 'نقدي' : originalInvoice!.payType == 'debt' ? 'آجل' : 'جزئي'}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'المبالغ المسددة بعد الفاتورة: ${_fmt.format(extraPaid)} IQD (لن تتغيّر من هنا)',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: Colors.grey),
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'طريقة الدفع الأصلية: ${originalInvoice!.payType == 'cash' ? 'نقدي' : originalInvoice!.payType == 'debt' ? 'آجل' : 'جزئي'}',
+                        style: const TextStyle(
+                          fontFamily: 'KOMedia',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'المبالغ المسددة بعد الفاتورة: ${_fmt.format(extraPaid)} IQD (لن تتغيّر من هنا)',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 TextField(
                   controller: receivedCtrl,
                   keyboardType: TextInputType.number,
@@ -1883,21 +2245,51 @@ class _PaymentStep extends ConsumerWidget {
                   onChanged: (val) =>
                       invoiceNotifier.setReceivedAmount(double.tryParse(val)),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'المبلغ المدفوع حتى الآن (بعد كل التسديدات): ${_fmt.format(originalInvoice!.currentPaid)} IQD',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.green),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'المبلغ المدفوع الكلي:',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '${_fmt.format(originalInvoice!.currentPaid)} IQD',
+                      style: const TextStyle(
+                        fontFamily: 'KOMedia',
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.success,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'المتبقي كدين بعد آخر تسديد: ${_fmt.format(originalInvoice!.debt)} IQD',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.redAccent),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'المتبقي كدين:',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '${_fmt.format(originalInvoice!.debt)} IQD',
+                      style: const TextStyle(
+                        fontFamily: 'KOMedia',
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.danger,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -1920,35 +2312,46 @@ class _PaymentMethodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final config = _config[method]!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: isSelected
               ? config.color.withOpacity(0.12)
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(14),
+              : (isDark ? AppColors.darkSurface : Colors.white),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? config.color : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? config.color : (isDark ? AppColors.darkBorder : AppColors.border),
+            width: isSelected ? 2 : 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? config.color.withOpacity(0.1) : Colors.transparent,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(config.icon,
-                color: isSelected ? config.color : Colors.grey.shade500,
-                size: 26),
-            const SizedBox(height: 6),
+            Icon(
+              config.icon,
+              color: isSelected ? config.color : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+              size: 26,
+            ),
+            const SizedBox(height: 8),
             Text(
               config.label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? config.color : Colors.grey.shade600,
+                fontFamily: 'KOMedia',
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                color: isSelected ? config.color : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
               ),
             ),
           ],
@@ -2001,6 +2404,7 @@ class _TotalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
+      fontFamily: 'KOMedia',
       fontSize: size,
       fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
       color: color,

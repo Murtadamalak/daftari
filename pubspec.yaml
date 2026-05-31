@@ -68,21 +68,21 @@ flutter:
   assets:
     - assets/fonts/Cairo-Regular.ttf
     - assets/fonts/Cairo-Bold.ttf
-    - assets/fonts/KOMedia-Black.ttf
+    - assets/fonts/komedia_black.ttf
     - assets/images/
   fonts:
     - family: KOMedia
       fonts:
-        - asset: assets/fonts/KOMedia-Black.ttf
+        - asset: assets/fonts/komedia_black.ttf
     - family: Almarai
       fonts:
-        - asset: assets/fonts/KOMedia-Black.ttf
+        - asset: assets/fonts/komedia_black.ttf
     - family: Cairo
       fonts:
-        - asset: assets/fonts/KOMedia-Black.ttf
+        - asset: assets/fonts/komedia_black.ttf
     - family: Tajawal
       fonts:
-        - asset: assets/fonts/KOMedia-Black.ttf
+        - asset: assets/fonts/komedia_black.ttf
     - family: RobotoMono
       fonts:
-        - asset: assets/fonts/KOMedia-Black.ttf
+        - asset: assets/fonts/komedia_black.ttf

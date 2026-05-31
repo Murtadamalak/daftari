@@ -183,6 +183,34 @@ class InvoiceRepository {
         .toList();
   }
 
+  /// جميع الفواتير المبيعات لزبون محدد (بدون إدخالات التسديد)
+  Future<List<InvoiceModel>> getInvoicesByCustomer(String customerId) async {
+    final res = await _db
+        .from('user_invoices')
+        .select()
+        .eq('user_id', _userId)
+        .eq('customer_id', customerId)
+        .neq('pay_type', 'تسديد دين')
+        .order('date', ascending: false);
+    return (res as List)
+        .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// دفعات التسديد فقط لزبون محدد
+  Future<List<InvoiceModel>> getPaymentsByCustomer(String customerId) async {
+    final res = await _db
+        .from('user_invoices')
+        .select()
+        .eq('user_id', _userId)
+        .eq('customer_id', customerId)
+        .eq('pay_type', 'تسديد دين')
+        .order('date', ascending: false);
+    return (res as List)
+        .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<InvoiceModel>> getByDateRange(
       DateTime start, DateTime end) async {
     final res = await _db

@@ -7,6 +7,9 @@ export PATH="$PATH:`pwd`/flutter/bin"
 echo "Enabling Flutter Web..."
 flutter config --enable-web
 
+echo "Cleaning build..."
+flutter clean
+
 echo "Getting packages..."
 flutter pub get
 

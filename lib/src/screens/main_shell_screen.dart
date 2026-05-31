@@ -52,11 +52,18 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = MediaQuery.of(context).size.width >= 600;
+    
+    final location = GoRouterState.of(context).uri.path;
+    final isMainTab = location == '/products' ||
+        location == '/customers' ||
+        location == '/invoices' ||
+        location == '/reports' ||
+        location == '/settings';
 
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
-      drawer: isDesktop ? _buildDrawer(context, isDark) : null,
+      drawer: (isDesktop && isMainTab) ? _buildDrawer(context, isDark) : null,
       body: Stack(
         children: [
           Center(
@@ -65,7 +72,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
               child: widget.navigationShell,
             ),
           ),
-          if (isDesktop)
+          if (isDesktop && isMainTab)
             Positioned(
               top: 16,
               right: 16,
@@ -105,7 +112,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 ),
               ),
             ),
-          if (!isDesktop)
+          if (!isDesktop && isMainTab)
             Positioned(
               left: 0,
               right: 0,

@@ -227,6 +227,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   ],
 ),
       ),
+      floatingActionButtonLocation: AppTheme.customCenterFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await context.push('/products/add');

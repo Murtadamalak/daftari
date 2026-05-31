@@ -643,4 +643,55 @@ class AppTheme {
   static const dangerSurface = AppColors.dangerSurface;
   static const warning = AppColors.warning;
   static const warningSurface = AppColors.warningSurface;
+
+  static const customCenterFloat = CustomCenterFloatLocation();
+  static const customEndFloat = CustomEndFloatLocation();
 }
+
+class CustomCenterFloatLocation extends FloatingActionButtonLocation {
+  const CustomCenterFloatLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX = (scaffoldGeometry.scaffoldSize.width - scaffoldGeometry.floatingActionButtonSize.width) / 2;
+    
+    double fabY = scaffoldGeometry.scaffoldSize.height - 
+        scaffoldGeometry.floatingActionButtonSize.height - 
+        scaffoldGeometry.minInsets.bottom - 16;
+        
+    final isMobile = scaffoldGeometry.scaffoldSize.width < 600;
+    if (isMobile) {
+      fabY -= 92; // 72 (bar height) + 12 (bottom margin) + 8 (extra spacing)
+    }
+    
+    return Offset(fabX, fabY);
+  }
+}
+
+class CustomEndFloatLocation extends FloatingActionButtonLocation {
+  const CustomEndFloatLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX;
+    if (scaffoldGeometry.textDirection == TextDirection.rtl) {
+      fabX = 16 + scaffoldGeometry.minInsets.left;
+    } else {
+      fabX = scaffoldGeometry.scaffoldSize.width - 
+          scaffoldGeometry.floatingActionButtonSize.width - 
+          scaffoldGeometry.minInsets.right - 16;
+    }
+
+    double fabY = scaffoldGeometry.scaffoldSize.height - 
+        scaffoldGeometry.floatingActionButtonSize.height - 
+        scaffoldGeometry.minInsets.bottom - 16;
+
+    final isMobile = scaffoldGeometry.scaffoldSize.width < 600;
+    if (isMobile) {
+      fabY -= 92;
+    }
+
+    return Offset(fabX, fabY);
+  }
+}
+

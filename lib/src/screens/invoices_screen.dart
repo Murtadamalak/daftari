@@ -191,7 +191,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: AppTheme.customCenterFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/invoices/create'),
         icon: const Icon(Icons.add),

@@ -3,7 +3,9 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "1cad9f6b01a27d49e21a4c4c81d13b49",
+const RESOURCES = {".vercel/project.json": "1a1f8a1fb8b3f628d37703b07ad6a457",
+".vercel/README.txt": "2b13c79d37d6ed82a3255b83b6815034",
+"assets/AssetManifest.bin": "1cad9f6b01a27d49e21a4c4c81d13b49",
 "assets/AssetManifest.bin.json": "df650182d1933cd2725122926347f9fc",
 "assets/AssetManifest.json": "ac7182aeff525d708474a46d2c8e45a9",
 "assets/assets/fonts/Cairo-Bold.ttf": "5e8d1abc73e3cb2f4e4f28e8f1266810",
@@ -31,7 +33,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "1cad9f6b01a27d49e21a4c4c81d13b49
 "canvaskit/skwasm.wasm": "39dd80367a4e71582d234948adc521c0",
 "favicon.png": "7f99d09d6bdcafa10dae695e2119949f",
 "flutter.js": "83d881c1dbb6d6bcd6b42e274605b69c",
-"flutter_bootstrap.js": "e94b99b43ed70e8dfaaf9ea8c3574b11",
+"flutter_bootstrap.js": "f0fd17d69bcfee8d3347d1acc79e5aa1",
 "icons/1.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/2.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/3.png": "c457ef57daa1d16f64b27b786ec2ea3c",
@@ -40,9 +42,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "1cad9f6b01a27d49e21a4c4c81d13b49
 "icons/Icon-512.png": "29546afdc28160ce8fe98a946459ee0e",
 "icons/Icon-maskable-192.png": "47ffde0fd500bd79bc59609ce8fec762",
 "icons/Icon-maskable-512.png": "29546afdc28160ce8fe98a946459ee0e",
-"index.html": "95aea0088429ffde5abab57cefccb869",
-"/": "95aea0088429ffde5abab57cefccb869",
-"main.dart.js": "e4ab95aa445784df52d7d82b85749326",
+"index.html": "b8e40012aa86ab5280981f33dd3c4993",
+"/": "b8e40012aa86ab5280981f33dd3c4993",
+"main.dart.js": "bc6049dc3db6bc788b8c7cf32b25e6fb",
 "manifest.json": "91b4614410d84a450d2fde71643f375a",
 "version.json": "9f5f193c564bc1c9303bc9692d535dbb"};
 // The application shell files that are downloaded before a service worker can

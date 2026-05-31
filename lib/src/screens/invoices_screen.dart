@@ -171,8 +171,11 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                           selectedStatus != InvoiceStatusFilter.all,
                     );
                   }
+                  final bottomPad = MediaQuery.of(context).padding.bottom +
+                      kBottomNavigationBarHeight +
+                      80;
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPad),
                     itemCount: invoices.length,
                     itemBuilder: (context, i) {
                       return _InvoiceCard(
@@ -188,6 +191,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/invoices/create'),
         icon: const Icon(Icons.add),

@@ -497,24 +497,14 @@ class CustomerDebtsScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF43A047).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.check_circle_outline,
-                      color: Color(0xFF43A047),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          payment.note ?? 'دفعة تسديد',
+                          payment.payType == 'تسديد دين'
+                              ? (payment.note ?? 'دفعة تسديد')
+                              : 'دفعة أولى - فاتورة رقم ${payment.formattedNum}',
                           style: GoogleFonts.almarai(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -549,7 +539,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
                   IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
                     onPressed: () => _confirmDeleteInvoice(context, ref, payment),
-                    tooltip: 'حذف الدفعة',
+                    tooltip: payment.payType == 'تسديد دين' ? 'حذف الدفعة' : 'حذف الفاتورة',
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -620,8 +610,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
                   if (val == null || val.isEmpty) return 'الرجاء إدخال المبلغ';
                   final parsed = double.tryParse(val);
                   if (parsed == null || parsed <= 0) return 'مبلغ غير صالح';
-                  if (parsed > customer.totalDebt)
+                  if (parsed > customer.totalDebt) {
                     return 'المبلغ أكبر من الدين الكلي!';
+                  }
                   return null;
                 },
               ),

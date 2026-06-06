@@ -197,19 +197,106 @@ class InvoiceRepository {
         .toList();
   }
 
-  /// دفعات التسديد فقط لزبون محدد
+  /// دفعات التسديد والمدفوعات لزبون محدد
   Future<List<InvoiceModel>> getPaymentsByCustomer(String customerId) async {
     final res = await _db
         .from('user_invoices')
         .select()
         .eq('user_id', _userId)
         .eq('customer_id', customerId)
-        .eq('pay_type', 'تسديد دين')
+        .gt('paid', 0)
         .order('date', ascending: false);
     return (res as List)
         .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  /// إعادة احتساب ديون العميل بالكامل وتحديث حالة الفواتير
+  Future<void> recalculateCustomerDebt(String customerId) async {
+    // 1. Fetch all sales invoices for the customer (ordered by date ascending)
+    final invoicesRes = await _db
+        .from('user_invoices')
+        .select()
+        .eq('user_id', _userId)
+        .eq('customer_id', customerId)
+        .neq('pay_type', 'تسديد دين')
+        .order('date', ascending: true);
+        
+    final salesInvoices = (invoicesRes as List)
+        .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    // 2. Fetch all payment records for the customer
+    final paymentsRes = await _db
+        .from('user_invoices')
+        .select()
+        .eq('user_id', _userId)
+        .eq('customer_id', customerId)
+        .eq('pay_type', 'تسديد دين')
+        .order('date', ascending: true);
+
+    final payments = (paymentsRes as List)
+        .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    // Calculate sum of all payments
+    double totalPayments = payments.fold(0.0, (sum, p) => sum + p.paid);
+
+    double newTotalDebt = 0.0;
+
+    // Loop through sales invoices oldest first
+    for (final inv in salesInvoices) {
+      final initialPaid = inv.paid;
+      final initialDebt = inv.grandTotal - initialPaid;
+
+      if (initialDebt <= 0.0001) {
+        // This invoice was cash or fully paid at creation. Its debt is 0 and status is paid.
+        if (inv.debt.abs() > 0.0001 || inv.status != 'paid') {
+          await _db
+              .from('user_invoices')
+              .update({'debt': 0, 'status': 'paid'})
+              .eq('id', inv.id)
+              .eq('user_id', _userId);
+        }
+        continue;
+      }
+
+      double currentInvDebt = initialDebt;
+      String currentStatus = 'unpaid';
+
+      if (totalPayments >= currentInvDebt) {
+        totalPayments -= currentInvDebt;
+        currentInvDebt = 0;
+        currentStatus = 'paid';
+      } else if (totalPayments > 0) {
+        currentInvDebt -= totalPayments;
+        totalPayments = 0;
+        currentStatus = 'partial';
+      } else {
+        currentInvDebt = initialDebt;
+        currentStatus = initialPaid > 0.0001 ? 'partial' : 'unpaid';
+      }
+
+      newTotalDebt += currentInvDebt;
+
+      // Update the invoice debt and status in database if they changed
+      if ((inv.debt - currentInvDebt).abs() > 0.0001 || inv.status != currentStatus) {
+        await _db
+            .from('user_invoices')
+            .update({
+              'debt': currentInvDebt,
+              'status': currentStatus,
+            })
+            .eq('id', inv.id)
+            .eq('user_id', _userId);
+      }
+    }
+
+    // 3. Update customer's total_debt in user_customers
+    final custRepo = CustomerRepository();
+    await custRepo.updateDebt(customerId, newTotalDebt);
+  }
+
 
   Future<List<InvoiceModel>> getByDateRange(
       DateTime start, DateTime end) async {
@@ -353,12 +440,8 @@ class InvoiceRepository {
     }
 
     // Update customer debt if needed
-    if (customerId != null && additionalDebt != null && additionalDebt > 0) {
-      final custRepo = CustomerRepository();
-      final cust = await custRepo.getById(customerId);
-      if (cust != null) {
-        await custRepo.updateDebt(customerId, cust.totalDebt + additionalDebt);
-      }
+    if (customerId != null) {
+      await recalculateCustomerDebt(customerId);
     }
 
     return (invoice, insertedItems);
@@ -373,28 +456,7 @@ class InvoiceRepository {
 
     final items = await getItemsByInvoiceId(id);
 
-    // 2. Update customer debt if applicable
-    if (inv.customerId != null) {
-      final custRepo = CustomerRepository();
-      final cust = await custRepo.getById(inv.customerId!);
-      if (cust != null) {
-        double debtChange = 0;
-        if (inv.payType == 'تسديد دين') {
-          // Deleting a payment means the customer owes that money again
-          debtChange = inv.paid;
-        } else {
-          // Deleting a sales invoice means the customer no longer owes its debt
-          debtChange = -inv.debt;
-        }
-
-        if (debtChange.abs() > 0.0001) {
-          await custRepo.updateDebt(
-              inv.customerId!, cust.totalDebt + debtChange);
-        }
-      }
-    }
-
-    // 3. Restore stock (only for sales invoices)
+    // 2. Restore stock (only for sales invoices)
     if (inv.payType != 'تسديد دين' && items.isNotEmpty) {
       final productRepo = ProductRepository();
       final allProducts = await productRepo.getAllProducts();
@@ -415,7 +477,7 @@ class InvoiceRepository {
       }
     }
 
-    // 4. Delete items and the invoice itself
+    // 3. Delete items and the invoice itself
     // Delete items first to be safe, then the invoice
     await _db
         .from('user_invoice_items')
@@ -428,6 +490,11 @@ class InvoiceRepository {
         .delete()
         .eq('user_id', _userId)
         .eq('id', id);
+
+    // 4. Recalculate customer debt if applicable (must be done AFTER deleting the invoice)
+    if (inv.customerId != null) {
+      await recalculateCustomerDebt(inv.customerId!);
+    }
   }
 
   // ── Pay Invoice Debt ──────────────────────────────────────────────────────
@@ -438,26 +505,6 @@ class InvoiceRepository {
   }) async {
     final inv = await getById(invoiceId);
     if (inv == null) throw StateError('Invoice not found');
-
-    final newDebt = inv.debt - amountPaid;
-    final newStatus = newDebt <= 0.01 ? 'paid' : 'partial';
-
-    await _db
-        .from('user_invoices')
-        .update({
-          'debt': newDebt < 0 ? 0 : newDebt,
-          'status': newStatus,
-        })
-        .eq('id', invoiceId)
-        .eq('user_id', _userId);
-
-    if (inv.customerId != null) {
-      final custRepo = CustomerRepository();
-      final cust = await custRepo.getById(inv.customerId!);
-      if (cust != null) {
-        await custRepo.updateDebt(inv.customerId!, cust.totalDebt - amountPaid);
-      }
-    }
 
     // Create receipt entry
     await _createReceiptRecord(
@@ -471,6 +518,10 @@ class InvoiceRepository {
       inv.ownerName,
       inv.shopLogoPath,
     );
+
+    if (inv.customerId != null) {
+      await recalculateCustomerDebt(inv.customerId!);
+    }
   }
 
   // ── Pay Customer Total Debt ───────────────────────────────────────────────
@@ -483,38 +534,21 @@ class InvoiceRepository {
     final cust = await custRepo.getById(customerId);
     if (cust == null) throw StateError('Customer not found');
 
-    // 1. Reduce customer total debt
-    await custRepo.updateDebt(customerId, cust.totalDebt - amountPaid);
-
-    // 2. Apply to unpaid invoices oldest first
+    // 1. Get some invoice's shop/owner info to populate the receipt metadata if possible
     final unpaid = await getUnpaidByCustomer(customerId);
-    double remaining = amountPaid;
     String? shopName;
     String? shopPhone;
     String? ownerName;
     String? shopLogoPath;
-
-    for (var inv in unpaid) {
-      if (remaining <= 0) break;
-      shopName ??= inv.shopName;
-      shopPhone ??= inv.shopPhone;
-      ownerName ??= inv.ownerName;
-      shopLogoPath ??= inv.shopLogoPath;
-      final apply = remaining >= inv.debt ? inv.debt : remaining;
-      final newDebt = inv.debt - apply;
-      final newStatus = newDebt <= 0.01 ? 'paid' : 'partial';
-      await _db
-          .from('user_invoices')
-          .update({
-            'debt': newDebt < 0 ? 0 : newDebt,
-            'status': newStatus,
-          })
-          .eq('id', inv.id)
-          .eq('user_id', _userId);
-      remaining -= apply;
+    if (unpaid.isNotEmpty) {
+      final inv = unpaid.first;
+      shopName = inv.shopName;
+      shopPhone = inv.shopPhone;
+      ownerName = inv.ownerName;
+      shopLogoPath = inv.shopLogoPath;
     }
 
-    // 3. Create receipt record
+    // 2. Create receipt record
     await _createReceiptRecord(
       cust.name,
       customerId,
@@ -526,6 +560,9 @@ class InvoiceRepository {
       ownerName,
       shopLogoPath,
     );
+
+    // 3. Recalculate customer debt
+    await recalculateCustomerDebt(customerId);
   }
 
   // ── Internal: Create Receipt Record ──────────────────────────────────────
@@ -678,35 +715,11 @@ class InvoiceRepository {
         .eq('id', original.id);
 
     // 4) تحديث ديون الزبون (القديم والجديد إن وجد)
-    final custRepo = CustomerRepository();
-
-    if (original.customerId == customerId) {
-      // نفس الزبون، نحدث الفرق فقط
-      if (original.customerId != null &&
-          (debt - original.debt).abs() > 0.0001) {
-        final cust = await custRepo.getById(original.customerId!);
-        if (cust != null) {
-          final newTotalDebt = cust.totalDebt + (debt - original.debt);
-          await custRepo.updateDebt(original.customerId!, newTotalDebt);
-        }
-      }
-    } else {
-      // تغيير الزبون!
-      // أ) حذف الدين القديم من الزبون القديم
-      if (original.customerId != null) {
-        final oldCust = await custRepo.getById(original.customerId!);
-        if (oldCust != null) {
-          await custRepo.updateDebt(
-              original.customerId!, oldCust.totalDebt - original.debt);
-        }
-      }
-      // ب) إضافة الدين الجديد للزبون الجديد
-      if (customerId != null) {
-        final newCust = await custRepo.getById(customerId);
-        if (newCust != null) {
-          await custRepo.updateDebt(customerId, newCust.totalDebt + debt);
-        }
-      }
+    if (original.customerId != null) {
+      await recalculateCustomerDebt(original.customerId!);
+    }
+    if (customerId != null && customerId != original.customerId) {
+      await recalculateCustomerDebt(customerId);
     }
 
     // 5) حذف البنود القديمة ثم إدخال البنود الجديدة

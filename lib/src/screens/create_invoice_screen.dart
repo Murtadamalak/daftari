@@ -15,6 +15,9 @@ import '../data/repositories/customer_repository.dart';
 import '../data/repositories/product_repository.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'barcode_scanner_screen.dart';
+import 'customers_screen.dart';
+import 'delayed_debts_screen.dart';
+import '../core/providers/invoices_provider.dart';
 
 // ─── Number formatter ─────────────────────────────────────────────────────────
 final _fmt = NumberFormat('#,###');
@@ -408,8 +411,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       // Refresh data
       ref.invalidate(productsProvider);
-      // Removed undefined providers like dashboardProvider etc.
-      // Realistically we can just rely on the ones we know exist.
+      ref.invalidate(debtSearchDataProvider);
+      ref.invalidate(delayedCustomersProvider);
+      ref.invalidate(allInvoicesProvider);
 
       invoiceNotifier.clear();
       if (mounted) {
@@ -486,6 +490,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       );
 
       ref.read(invoiceCreationProvider.notifier).clear();
+      ref.invalidate(productsProvider);
+      ref.invalidate(debtSearchDataProvider);
+      ref.invalidate(delayedCustomersProvider);
+      ref.invalidate(allInvoicesProvider);
 
       if (mounted) {
         Navigator.of(context).pop();

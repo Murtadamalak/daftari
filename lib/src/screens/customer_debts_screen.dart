@@ -18,6 +18,7 @@ import '../core/widgets/refresh_action_button.dart';
 
 import '../core/providers/invoices_provider.dart';
 import 'customers_screen.dart'; // To invalidate debtSearchDataProvider
+import 'delayed_debts_screen.dart';
 
 final _amtFmt = NumberFormat('#,###', 'en');
 String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
@@ -85,6 +86,8 @@ class CustomerDebtsScreen extends ConsumerWidget {
           context.pop();
         }
         ref.invalidate(debtSearchDataProvider);
+        ref.invalidate(delayedCustomersProvider);
+        ref.invalidate(allInvoicesProvider);
       } catch (e) {
         if (context.mounted) AppSnackBar.error(context, 'فشل الحذف: $e');
       }
@@ -652,6 +655,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
                         ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
                         ref.invalidate(customerAllInvoicesProvider(customer.id));
                         ref.invalidate(customerPaymentsProvider(customer.id));
+                        ref.invalidate(debtSearchDataProvider);
+                        ref.invalidate(delayedCustomersProvider);
+                        ref.invalidate(allInvoicesProvider);
 
                         final settings = ref.read(settingsProvider).valueOrNull;
                         await PdfPaymentReceiptGenerator.generateAndShare(
@@ -689,9 +695,12 @@ class CustomerDebtsScreen extends ConsumerWidget {
                           }
 
                           ref.invalidate(customerProvider(customer.id));
-                          ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
-                          ref.invalidate(customerAllInvoicesProvider(customer.id));
-                          ref.invalidate(customerPaymentsProvider(customer.id));
+                         ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
+                         ref.invalidate(customerAllInvoicesProvider(customer.id));
+                         ref.invalidate(customerPaymentsProvider(customer.id));
+                         ref.invalidate(debtSearchDataProvider);
+                         ref.invalidate(delayedCustomersProvider);
+                         ref.invalidate(allInvoicesProvider);
 
                           // Send WhatsApp Receipt
                           await WhatsAppLauncher.sendPaymentReceipt(
@@ -757,6 +766,8 @@ class CustomerDebtsScreen extends ConsumerWidget {
         ref.invalidate(customerAllInvoicesProvider(customerId));
         ref.invalidate(customerPaymentsProvider(customerId));
         ref.invalidate(allInvoicesProvider);
+        ref.invalidate(debtSearchDataProvider);
+        ref.invalidate(delayedCustomersProvider);
       } catch (e) {
         if (context.mounted) AppSnackBar.error(context, 'فشل الحذف: $e');
       }

@@ -425,15 +425,15 @@ class _NavItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected ? activeBgColor : Colors.transparent,
               shape: BoxShape.circle,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      )
-                    ]
-                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: isSelected
+                      ? Colors.black.withOpacity(0.15)
+                      : Colors.transparent,
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Icon(
               isSelected ? activeIcon : icon,

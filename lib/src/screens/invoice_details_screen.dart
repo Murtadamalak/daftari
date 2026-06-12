@@ -737,7 +737,7 @@ class _ReceiptCard extends StatelessWidget {
                     color: isDark ? Colors.white12 : Colors.grey.shade200),
               ),
             ),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Column(
               children: [
                 const Text(
@@ -747,31 +747,16 @@ class _ReceiptCard extends StatelessWidget {
                       color: Colors.grey,
                       fontStyle: FontStyle.italic),
                 ),
-                const SizedBox(height: 12),
-                const Divider(),
                 const SizedBox(height: 8),
+                const Divider(),
+                const SizedBox(height: 6),
                 Text(
-                  'برمجة وتطوير: مرتضى علاء | مكتب فن للتصميم والبرمجة',
+                  'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.almarai(
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white70 : Colors.grey.shade800,
-                  ),
-                ),
-                Text(
-                  'هاتف: 07876007620 - 07813938267',
-                  style: GoogleFonts.almarai(
-                    fontSize: 9,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '© 2026 جميع الحقوق محفوظة ',
-                  style: GoogleFonts.almarai(
-                    fontSize: 8,
-                    color: Colors.grey,
                   ),
                 ),
               ],

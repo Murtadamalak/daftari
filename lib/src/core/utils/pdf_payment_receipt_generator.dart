@@ -68,7 +68,7 @@ class PdfPaymentReceiptGenerator {
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
-                  color: const PdfColor.fromInt(0xFF1A3C6E),
+                  color: const PdfColor.fromInt(0xFF098677),
                   borderRadius:
                       const pw.BorderRadius.all(pw.Radius.circular(8)),
                 ),
@@ -249,16 +249,10 @@ class PdfPaymentReceiptGenerator {
                   border:
                       pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
                 ),
-                child: pw.Column(
-                  children: [
-                    pw.Text(_devCredit,
-                        style: pw.TextStyle(font: fontBold, fontSize: 8),
-                        textDirection: pw.TextDirection.rtl),
-                    pw.SizedBox(height: 2),
-                    pw.Text('هاتف: $_devPhone | $_copyright',
-                        style: pw.TextStyle(font: fontReg, fontSize: 7),
-                        textDirection: pw.TextDirection.rtl),
-                  ],
+                child: pw.Text(
+                  'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
+                  style: pw.TextStyle(font: fontBold, fontSize: 8, color: PdfColors.grey700),
+                  textDirection: pw.TextDirection.rtl,
                 ),
               ),
             ],

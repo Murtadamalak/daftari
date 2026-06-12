@@ -268,26 +268,14 @@ class PdfDebtReportGenerator {
                 style: pw.TextStyle(
                     font: fontReg, fontSize: 8, color: PdfColors.grey500),
               ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-                  pw.Text(_devCredit,
-                      style: pw.TextStyle(
-                          font: fontBold,
-                          fontSize: 7,
-                          color: PdfColors.grey600),
-                      textDirection: pw.TextDirection.rtl),
-                  pw.Text('هاتف: $_devPhone',
-                      style: pw.TextStyle(
-                          font: fontReg,
-                          fontSize: 7,
-                          color: PdfColors.grey500)),
-                ],
+              pw.Text(
+                'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
+                style: pw.TextStyle(
+                    font: fontBold,
+                    fontSize: 7,
+                    color: PdfColors.grey600),
+                textDirection: pw.TextDirection.rtl,
               ),
-              pw.Text(_copyright,
-                  style: pw.TextStyle(
-                      font: fontReg, fontSize: 7, color: PdfColors.grey500),
-                  textDirection: pw.TextDirection.rtl),
             ],
           ),
         ),

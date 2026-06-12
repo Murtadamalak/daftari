@@ -47,8 +47,9 @@ class ComprehensiveReportsScreen extends ConsumerWidget {
 class _HeaderPresets extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(comprehensiveReportProvider);
     final curPreset =
-        ref.watch(comprehensiveReportProvider.notifier).currentPreset;
+        ref.read(comprehensiveReportProvider.notifier).currentPreset;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -106,6 +107,7 @@ class _PresetChip extends ConsumerWidget {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
+      showCheckmark: false,
       onSelected: (val) {
         if (val) {
           ref.read(comprehensiveReportProvider.notifier).setPreset(label);

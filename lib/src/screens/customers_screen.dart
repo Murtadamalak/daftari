@@ -15,6 +15,7 @@ import '../data/repositories/customer_repository.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/widgets/refresh_action_button.dart';
+import 'delayed_debts_screen.dart';
 
 // Formatter for currency
 final _amtFmt = NumberFormat('#,###', 'en');
@@ -277,7 +278,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
             // ── Main Content ──
             Expanded(
               child: customersAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const CustomerListSkeleton(),
                 error: (e, _) => Center(child: Text('حدث خطأ: $e')),
                 data: (customers) {
                   if (customers.isEmpty) {
@@ -356,6 +357,8 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                           ],
                         ),
                       ),
+
+                      const _DelayedDebtsBanner(),
 
                       // Debts List
                       Expanded(
@@ -920,6 +923,217 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
           onPressed: () => Navigator.pop(context, DateTime(_year, _month)),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Delayed Debts Banner (Prominent Warning Card for Late Payers)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DelayedDebtsBanner extends ConsumerWidget {
+  const _DelayedDebtsBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final delayedAsync = ref.watch(delayedCustomersProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return delayedAsync.maybeWhen(
+      data: (list) {
+        if (list.isEmpty) {
+          // If no delayed customers, we show a premium green indicator card
+          return Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF16A34A), Color(0xFF15803D)],
+                begin: Alignment.centerRight,
+                end: Alignment.centerLeft,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF16A34A).withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'لا يوجد متأخرين عن السداد',
+                          style: GoogleFonts.almarai(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'جميع الزبائن قاموا بالتسديد خلال الـ 28 يوماً الماضية!',
+                          style: GoogleFonts.almarai(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Warning banner style for late payers
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF9800), Color(0xFFE65100)],
+              begin: Alignment.centerRight,
+              end: Alignment.centerLeft,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF9800).withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                context.push('/customers/delayed');
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.access_time_filled_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'زبائن متأخرين عن السداد (28+ يوم)',
+                            style: GoogleFonts.almarai(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'يوجد (${list.length}) زبائن متأخرين عن السداد. انقر هنا للمتابعة.',
+                            style: GoogleFonts.almarai(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+class CustomerListSkeleton extends StatelessWidget {
+  const CustomerListSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: 6,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SkeletonWidget(width: 140, height: 16),
+                    const SizedBox(height: 8),
+                    const SkeletonWidget(width: 100, height: 12),
+                  ],
+                ),
+              ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  SkeletonWidget(width: 40, height: 10),
+                  SizedBox(height: 6),
+                  SkeletonWidget(width: 70, height: 14),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

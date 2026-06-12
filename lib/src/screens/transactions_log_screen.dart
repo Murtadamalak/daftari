@@ -158,7 +158,8 @@ class _HeaderPresets extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final curPreset = ref.watch(comprehensiveReportProvider.notifier).currentPreset;
+    ref.watch(comprehensiveReportProvider);
+    final curPreset = ref.read(comprehensiveReportProvider.notifier).currentPreset;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -225,6 +226,7 @@ class _PresetChip extends ConsumerWidget {
         ),
       ),
       selected: selected,
+      showCheckmark: false,
       selectedColor: AppColors.primary,
       backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF162A26) : Colors.white,
       shape: RoundedRectangleBorder(

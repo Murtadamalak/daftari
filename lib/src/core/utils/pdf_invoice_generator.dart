@@ -112,116 +112,125 @@ class PdfInvoiceGenerator {
                   borderRadius:
                       const pw.BorderRadius.all(pw.Radius.circular(8)),
                 ),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                child: pw.Stack(
+                  alignment: pw.Alignment.center,
                   children: [
-                    // Logo placeholder or shop icon
-                    if (logoImage != null)
-                      pw.Container(
-                        width: 56,
-                        height: 56,
-                        child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-                      )
-                    else
-                      pw.Container(
-                        width: 52,
-                        height: 52,
-                        decoration: const pw.BoxDecoration(
-                          color: PdfColors.white,
-                          shape: pw.BoxShape.circle,
-                        ),
-                        child: pw.Center(
-                          child: pw.Text(
-                            'د',
-                            style: pw.TextStyle(
-                              font: fontBold,
-                              fontSize: 24,
-                              color: const PdfColor.fromInt(0xFF1A3C6E),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    pw.SizedBox(width: 12),
-
-                    // Rotated stamp (semi-transparent) - placed visually over header
-                    pw.Positioned(
-                      left: 0,
-                      top: 0,
-                      child: pw.Transform.rotate(
-                        angle: -0.35,
-                        child: pw.Opacity(
-                          opacity: 0.14,
-                          child: pw.Container(
-                            padding: const pw.EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: pw.BoxDecoration(
-                              color: PdfColors.white,
-                              borderRadius: const pw.BorderRadius.all(
-                                  pw.Radius.circular(6)),
-                            ),
-                            child: pw.Text(
-                              statusLabel,
-                              style: pw.TextStyle(
+                    // The main row with details
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        // Shop details (on the right in RTL)
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                shopName ?? invoice.shopName,
+                                style: pw.TextStyle(
                                   font: fontBold,
-                                  fontSize: 14,
-                                  color: PdfColor.fromInt(0xFF098677)),
-                            ),
+                                  fontSize: 18,
+                                  color: PdfColors.white,
+                                ),
+                                textDirection: pw.TextDirection.rtl,
+                              ),
+                              if ((ownerName ?? invoice.ownerName) != null) ...[
+                                pw.SizedBox(height: 2),
+                                pw.Text(
+                                  'بإدارة: ${ownerName ?? invoice.ownerName}',
+                                  style: pw.TextStyle(
+                                    font: fontReg,
+                                    fontSize: 10,
+                                    color: const PdfColor(0.8, 0.8, 1.0),
+                                  ),
+                                  textDirection: pw.TextDirection.rtl,
+                                ),
+                              ],
+                              if ((shopPhone ?? invoice.shopPhone) != null) ...[
+                                pw.SizedBox(height: 2),
+                                pw.Text(
+                                  'هاتف: ${shopPhone ?? invoice.shopPhone}',
+                                  style: pw.TextStyle(
+                                    font: fontReg,
+                                    fontSize: 10,
+                                    color: const PdfColor(0.8, 0.8, 1.0),
+                                  ),
+                                  textDirection: pw.TextDirection.rtl,
+                                ),
+                              ],
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                _appName,
+                                style: pw.TextStyle(
+                                  font: fontReg,
+                                  fontSize: 9,
+                                  color: const PdfColor(0.7, 0.7, 0.9),
+                                ),
+                                textDirection: pw.TextDirection.rtl,
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+
+                        pw.SizedBox(width: 12),
+
+                        // Logo/Icon (on the left in RTL)
+                        if (logoImage != null)
+                          pw.Container(
+                            width: 56,
+                            height: 56,
+                            child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                          )
+                        else
+                          pw.Container(
+                            width: 52,
+                            height: 52,
+                            decoration: const pw.BoxDecoration(
+                              color: PdfColors.white,
+                              shape: pw.BoxShape.circle,
+                            ),
+                            child: pw.Center(
+                              child: pw.Text(
+                                'د',
+                                style: pw.TextStyle(
+                                  font: fontBold,
+                                  fontSize: 24,
+                                  color: const PdfColor.fromInt(0xFF098677),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
 
-                    // Shop name + app name
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            shopName ?? invoice.shopName,
-                            style: pw.TextStyle(
-                              font: fontBold,
-                              fontSize: 18,
-                              color: PdfColors.white,
-                            ),
-                            textDirection: pw.TextDirection.rtl,
-                          ),
-                          if ((ownerName ?? invoice.ownerName) != null) ...[
-                            pw.SizedBox(height: 2),
-                            pw.Text(
-                              'بإدارة: ${ownerName ?? invoice.ownerName}',
-                              style: pw.TextStyle(
-                                font: fontReg,
-                                fontSize: 10,
-                                color: const PdfColor(0.8, 0.8, 1.0),
+                    // Rotated stamp overlayed on the stack
+                    pw.Positioned(
+                      left: 10,
+                      top: 0,
+                      bottom: 0,
+                      child: pw.Center(
+                        child: pw.Transform.rotate(
+                          angle: -0.35,
+                          child: pw.Opacity(
+                            opacity: 0.15,
+                            child: pw.Container(
+                              padding: const pw.EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border.all(color: PdfColors.white, width: 1.5),
+                                borderRadius: const pw.BorderRadius.all(
+                                    pw.Radius.circular(6)),
                               ),
-                              textDirection: pw.TextDirection.rtl,
-                            ),
-                          ],
-                          if ((shopPhone ?? invoice.shopPhone) != null) ...[
-                            pw.SizedBox(height: 2),
-                            pw.Text(
-                              'هاتف: ${shopPhone ?? invoice.shopPhone}',
-                              style: pw.TextStyle(
-                                font: fontReg,
-                                fontSize: 10,
-                                color: const PdfColor(0.8, 0.8, 1.0),
+                              child: pw.Text(
+                                statusLabel,
+                                style: pw.TextStyle(
+                                    font: fontBold,
+                                    fontSize: 14,
+                                    color: PdfColors.white),
                               ),
-                              textDirection: pw.TextDirection.rtl,
                             ),
-                          ],
-                          pw.SizedBox(height: 4),
-                          pw.Text(
-                            _appName,
-                            style: pw.TextStyle(
-                              font: fontReg,
-                              fontSize: 9,
-                              color: const PdfColor(0.7, 0.7, 0.9),
-                            ),
-                            textDirection: pw.TextDirection.rtl,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ],
@@ -231,43 +240,55 @@ class PdfInvoiceGenerator {
               pw.SizedBox(height: 16),
 
               // ═══════════════════════════════════════════════════════════════
-              // INVOICE INFO
+              // METADATA (CUSTOMER & INVOICE DETAILS IN 2 COLUMNS)
               // ═══════════════════════════════════════════════════════════════
               pw.Container(
-                padding:
-                    const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const pw.EdgeInsets.all(12),
                 decoration: pw.BoxDecoration(
-                  color: PdfColors.grey100,
-                  borderRadius:
-                      const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  color: PdfColors.grey50,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  border: pw.Border.all(color: PdfColors.grey200, width: 0.5),
                 ),
                 child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    _pdfLabelValue('رقم الفاتورة', invoice.formattedNum,
-                        fontReg, fontBold),
-                    _pdfLabelValue('التاريخ', dateStr, fontReg, fontBold),
-                    _pdfStatusBadge(statusLabel, statusColor, fontBold),
+                    // Right column: Customer details (تفاصيل الزبون من اليمين)
+                    pw.Expanded(
+                      flex: 5,
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        children: [
+                          pw.Text('تفاصيل الزبون:', style: smallBoldStyle.copyWith(color: const PdfColor.fromInt(0xFF098677))),
+                          pw.SizedBox(height: 6),
+                          pw.Text(invoice.customerName, style: boldStyle.copyWith(fontSize: 12)),
+                          if (invoice.customerPhone != null && invoice.customerPhone!.isNotEmpty) ...[
+                            pw.SizedBox(height: 4),
+                            pw.Text('الهاتف: ${invoice.customerPhone}', style: baseStyle.copyWith(color: PdfColors.grey700, fontSize: 10)),
+                          ],
+                        ],
+                      ),
+                    ),
+                    pw.Container(width: 1, height: 50, color: PdfColors.grey300, margin: const pw.EdgeInsets.symmetric(horizontal: 16)),
+                    // Left column: Invoice metadata (الباقي على اليسار)
+                    pw.Expanded(
+                      flex: 5,
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                            children: [
+                              _pdfLabelValue('رقم الفاتورة', invoice.formattedNum, fontReg, fontBold, alignLeft: true),
+                              _pdfStatusBadge(statusLabel, statusColor, fontBold),
+                            ],
+                          ),
+                          pw.SizedBox(height: 8),
+                          _pdfLabelValue('تاريخ الفاتورة', dateStr, fontReg, fontBold, alignLeft: true),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-
-              pw.SizedBox(height: 12),
-
-              // Customer
-              pw.Row(
-                children: [
-                  pw.Text('الزبون: ',
-                      style: boldStyle, textDirection: pw.TextDirection.rtl),
-                  pw.Text(invoice.customerName,
-                      style: baseStyle, textDirection: pw.TextDirection.rtl),
-                  if (invoice.customerPhone != null) ...[
-                    pw.SizedBox(width: 16),
-                    pw.Text('الهاتف: ',
-                        style: boldStyle, textDirection: pw.TextDirection.rtl),
-                    pw.Text(invoice.customerPhone!, style: baseStyle),
-                  ],
-                ],
               ),
 
               pw.SizedBox(height: 14),
@@ -288,7 +309,7 @@ class PdfInvoiceGenerator {
                   // Header row
                   pw.TableRow(
                     decoration: const pw.BoxDecoration(
-                        color: PdfColor.fromInt(0xFF1A3C6E)),
+                        color: PdfColor.fromInt(0xFF098677)),
                     children: ['المنتج', 'الكمية', 'السعر', 'الإجمالي']
                         .map((h) => pw.Padding(
                               padding: const pw.EdgeInsets.symmetric(
@@ -334,7 +355,7 @@ class PdfInvoiceGenerator {
                         _cell(
                           _fmt(item.total),
                           boldStyle.copyWith(
-                              color: const PdfColor.fromInt(0xFF1A3C6E)),
+                              color: const PdfColor.fromInt(0xFF098677)),
                         ),
                       ],
                     );
@@ -344,73 +365,84 @@ class PdfInvoiceGenerator {
 
               pw.SizedBox(height: 14),
 
-              // Notes (If any)
-              if (invoice.note != null && invoice.note!.isNotEmpty) ...[
-                pw.Container(
-                  width: double.infinity,
-                  padding: const pw.EdgeInsets.all(10),
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.yellow50,
-                    borderRadius:
-                        const pw.BorderRadius.all(pw.Radius.circular(6)),
-                    border: pw.Border.all(color: PdfColors.yellow200),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        'ملاحظات:',
-                        style: pw.TextStyle(
-                            font: fontBold,
-                            fontSize: 10,
-                            color: PdfColors.grey800),
-                        textDirection: pw.TextDirection.rtl,
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        invoice.note!,
-                        style: pw.TextStyle(
-                            font: fontReg, fontSize: 9, color: PdfColors.black),
-                        textDirection: pw.TextDirection.rtl,
-                      ),
-                    ],
-                  ),
-                ),
-                pw.SizedBox(height: 14),
-              ],
-
               // ═══════════════════════════════════════════════════════════════
-              // TOTALS
+              // NOTES & TOTALS SIDE-BY-SIDE (RTL: Notes on right, Totals on left)
               // ═══════════════════════════════════════════════════════════════
-              pw.Container(
-                padding: const pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
-                  borderRadius:
-                      const pw.BorderRadius.all(pw.Radius.circular(6)),
-                ),
-                child: pw.Column(
-                  children: [
-                    _pdfTotalRow('الإجمالي الفرعي', _fmt(invoice.subtotal),
-                        fontReg, fontBold),
-                    if (invoice.discount > 0)
-                      _pdfTotalRow('الخصم', '- ${_fmt(invoice.discount)}',
-                          fontReg, fontBold,
-                          valueColor: PdfColors.orange700),
-                    pw.Divider(color: PdfColors.grey400, height: 12),
-                    _pdfTotalRow('الإجمالي النهائي', _fmt(invoice.grandTotal),
-                        fontReg, fontBold,
-                        isBold: true, big: true),
-                    pw.SizedBox(height: 4),
-                    _pdfTotalRow('المبلغ المدفوع', _fmt(invoice.currentPaid),
-                        fontReg, fontBold,
-                        valueColor: PdfColors.green700),
-                    if (invoice.debt > 0)
-                      _pdfTotalRow('المتبقي (دين)', _fmt(invoice.debt), fontReg,
-                          fontBold,
-                          valueColor: PdfColors.red700, isBold: true),
-                  ],
-                ),
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Right side: Notes (تفاصيل إضافية / ملاحظات على اليمين)
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        if (invoice.note != null && invoice.note!.isNotEmpty)
+                          pw.Container(
+                            width: double.infinity,
+                            padding: const pw.EdgeInsets.all(10),
+                            decoration: pw.BoxDecoration(
+                              color: const PdfColor.fromInt(0xFFFFFDF5),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                              border: pw.Border.all(color: const PdfColor.fromInt(0xFFFBEFCD), width: 0.5),
+                            ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Text(
+                                  'ملاحظات:',
+                                  style: pw.TextStyle(
+                                      font: fontBold,
+                                      fontSize: 10,
+                                      color: const PdfColor.fromInt(0xFF855B00)),
+                                  textDirection: pw.TextDirection.rtl,
+                                ),
+                                pw.SizedBox(height: 4),
+                                pw.Text(
+                                  invoice.note!,
+                                  style: pw.TextStyle(
+                                      font: fontReg, fontSize: 9, color: PdfColors.black),
+                                  textDirection: pw.TextDirection.rtl,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(width: 24),
+                  // Left side: Totals (الحسابات والتفاصيل المالية على اليسار)
+                  pw.Container(
+                    width: 220,
+                    padding: const pw.EdgeInsets.all(12),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                      color: PdfColors.grey50,
+                    ),
+                    child: pw.Column(
+                      children: [
+                        _pdfTotalRow('الإجمالي الفرعي', _fmt(invoice.subtotal),
+                            fontReg, fontBold),
+                        if (invoice.discount > 0)
+                          _pdfTotalRow('الخصم', '- ${_fmt(invoice.discount)}',
+                              fontReg, fontBold,
+                              valueColor: PdfColors.orange700),
+                        pw.Divider(color: PdfColors.grey400, height: 12),
+                        _pdfTotalRow('الإجمالي النهائي', _fmt(invoice.grandTotal),
+                            fontReg, fontBold,
+                            isBold: true, big: true),
+                        pw.SizedBox(height: 4),
+                        _pdfTotalRow('المبلغ المدفوع', _fmt(invoice.currentPaid),
+                            fontReg, fontBold,
+                            valueColor: PdfColors.green700),
+                        if (invoice.debt > 0)
+                          _pdfTotalRow('المتبقي (دين)', _fmt(invoice.debt), fontReg,
+                              fontBold,
+                              valueColor: PdfColors.red700, isBold: true),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
               pw.SizedBox(height: 20),
@@ -434,83 +466,12 @@ class PdfInvoiceGenerator {
               // ═══════════════════════════════════════════════════════════════
               pw.Divider(color: PdfColors.grey300),
               pw.SizedBox(height: 8),
-
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  // ── Left: CTA + Credits ──
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        // CTA headline
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: pw.BoxDecoration(
-                            color: const PdfColor.fromInt(0xFFE8EEF8),
-                            borderRadius: const pw.BorderRadius.all(
-                                pw.Radius.circular(6)),
-                          ),
-                          child: pw.Text(
-                            _ctaText,
-                            style: pw.TextStyle(
-                              font: fontBold,
-                              fontSize: 10,
-                              color: const PdfColor.fromInt(0xFF1A3C6E),
-                            ),
-                            textDirection: pw.TextDirection.rtl,
-                            textAlign: pw.TextAlign.right,
-                          ),
-                        ),
-                        pw.SizedBox(height: 8),
-                        pw.Text(
-                          _devCredit,
-                          style: smallBoldStyle,
-                          textDirection: pw.TextDirection.rtl,
-                          textAlign: pw.TextAlign.right,
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          _devPhone,
-                          style: smallStyle,
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          _copyright,
-                          style: smallStyle.copyWith(fontSize: 7),
-                          textDirection: pw.TextDirection.rtl,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  pw.SizedBox(width: 20),
-
-                  // ── Right: QR Code ──
-                  pw.Column(
-                    children: [
-                      pw.BarcodeWidget(
-                        barcode: pw.Barcode.qrCode(),
-                        data: _telegramUrl,
-                        width: 70,
-                        height: 70,
-                        drawText: false,
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        _qrCaption,
-                        style: pw.TextStyle(
-                          font: fontReg,
-                          fontSize: 7,
-                          color: PdfColors.grey600,
-                        ),
-                        textDirection: pw.TextDirection.rtl,
-                        textAlign: pw.TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ],
+              pw.Center(
+                child: pw.Text(
+                  'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
+                  style: pw.TextStyle(font: fontBold, fontSize: 8, color: PdfColors.grey700),
+                  textDirection: pw.TextDirection.rtl,
+                ),
               ),
             ],
           );
@@ -551,9 +512,9 @@ class PdfInvoiceGenerator {
   }
 
   static pw.Widget _pdfLabelValue(
-      String label, String value, pw.Font reg, pw.Font bold) {
+      String label, String value, pw.Font reg, pw.Font bold, {bool alignLeft = false}) {
     return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.end,
+      crossAxisAlignment: alignLeft ? pw.CrossAxisAlignment.start : pw.CrossAxisAlignment.end,
       children: [
         pw.Text(label,
             style:

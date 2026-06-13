@@ -14,8 +14,7 @@ import '../../data/repositories/invoice_repository.dart';
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
-const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
+const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
 
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
@@ -225,8 +224,8 @@ class PdfDebtReportGenerator {
     String? shopPhone,
     String? shopLogoPath,
   }) async {
-    final fontReg = await _font(_cairoRegPath);
-    final fontBold = await _font(_cairoBoldPath);
+    final fontReg = await _font(_koMediaFontPath);
+    final fontBold = fontReg;
 
     final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
     final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);

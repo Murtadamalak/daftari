@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../../data/repositories/invoice_repository.dart';
+import '../../data/repositories/customer_repository.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -22,8 +23,7 @@ const _copyright = '© 2026 جميع الحقوق محفوظة ';
 const _telegramUrl = 'https://t.me/art8ms';
 const _qrCaption = 'امسح الرمز للتواصل المباشر';
 
-const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
-const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
+const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PDF Generator
@@ -55,14 +55,32 @@ class PdfInvoiceGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final fontReg = await _loadFontFromAssets(_cairoRegPath);
-    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
+    final fontReg = await _loadFontFromAssets(_koMediaFontPath);
+    final fontBold = fontReg;
 
     final baseStyle = pw.TextStyle(font: fontReg, fontSize: 11);
     final boldStyle = pw.TextStyle(font: fontBold, fontSize: 11);
     final smallStyle =
         pw.TextStyle(font: fontReg, fontSize: 9, color: PdfColors.grey600);
     final smallBoldStyle = pw.TextStyle(font: fontBold, fontSize: 9);
+
+    double previousDebt = 0;
+    double newTotalDebt = 0;
+    if (invoice.customerId != null) {
+      try {
+        final custRepo = CustomerRepository();
+        final customer = await custRepo.getById(invoice.customerId!);
+        if (customer != null) {
+          newTotalDebt = customer.totalDebt;
+          previousDebt = newTotalDebt - invoice.debt;
+          if (previousDebt < 0) previousDebt = 0;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error fetching customer debt for PDF: $e');
+        }
+      }
+    }
 
     // ── Logo (optional) ──────────────────────────────────────────────────────
     pw.ImageProvider? logoImage;
@@ -300,17 +318,17 @@ class PdfInvoiceGenerator {
                 border:
                     pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(4), // product
-                  1: const pw.FlexColumnWidth(1.2), // qty + unit
-                  2: const pw.FlexColumnWidth(2), // unit price
-                  3: const pw.FlexColumnWidth(2), // total
+                  0: const pw.FlexColumnWidth(2), // total (leftmost)
+                  1: const pw.FlexColumnWidth(2), // unit price
+                  2: const pw.FlexColumnWidth(1.2), // qty + unit
+                  3: const pw.FlexColumnWidth(4), // product (rightmost)
                 },
                 children: [
                   // Header row
                   pw.TableRow(
                     decoration: const pw.BoxDecoration(
                         color: PdfColor.fromInt(0xFF098677)),
-                    children: ['المنتج', 'الكمية', 'السعر', 'الإجمالي']
+                    children: ['الإجمالي', 'السعر', 'الكمية', 'المنتج']
                         .map((h) => pw.Padding(
                               padding: const pw.EdgeInsets.symmetric(
                                   vertical: 7, horizontal: 6),
@@ -333,6 +351,13 @@ class PdfInvoiceGenerator {
                     return pw.TableRow(
                       decoration: pw.BoxDecoration(color: bg),
                       children: [
+                        _cell(
+                          _fmt(item.total),
+                          boldStyle.copyWith(
+                              color: const PdfColor.fromInt(0xFF098677)),
+                        ),
+                        _cell(_fmt(item.unitPrice), baseStyle),
+                        _cell('${_fmtQty(item.qty)} ${item.unit}', baseStyle),
                         // Product name
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(6),
@@ -349,13 +374,6 @@ class PdfInvoiceGenerator {
                               ),
                             ],
                           ),
-                        ),
-                        _cell('${_fmtQty(item.qty)} ${item.unit}', baseStyle),
-                        _cell(_fmt(item.unitPrice), baseStyle),
-                        _cell(
-                          _fmt(item.total),
-                          boldStyle.copyWith(
-                              color: const PdfColor.fromInt(0xFF098677)),
                         ),
                       ],
                     );
@@ -439,6 +457,18 @@ class PdfInvoiceGenerator {
                           _pdfTotalRow('المتبقي (دين)', _fmt(invoice.debt), fontReg,
                               fontBold,
                               valueColor: PdfColors.red700, isBold: true),
+                        if (invoice.customerId != null && previousDebt > 0.01) ...[
+                          pw.SizedBox(height: 4),
+                          _pdfTotalRow('الديون السابقة', _fmt(previousDebt), fontReg,
+                              fontBold,
+                              valueColor: PdfColors.red700),
+                        ],
+                        if (invoice.customerId != null && newTotalDebt > 0.01) ...[
+                          pw.SizedBox(height: 4),
+                          _pdfTotalRow('الديون الكلية الجديدة', _fmt(newTotalDebt), fontReg,
+                              fontBold,
+                              valueColor: PdfColors.red700, isBold: true),
+                        ],
                       ],
                     ),
                   ),
@@ -452,7 +482,7 @@ class PdfInvoiceGenerator {
               // ═══════════════════════════════════════════════════════════════
               pw.Center(
                 child: pw.Text(
-                  'شكراً لتعاملكم معنا 🙏',
+                  'شكراً لتعاونكم معنا',
                   style: pw.TextStyle(
                       font: fontReg, fontSize: 13, color: PdfColors.grey600),
                   textDirection: pw.TextDirection.rtl,

@@ -366,7 +366,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _SettingsCard(
                   child: Column(
                     children: [
-                      _InfoRow(label: 'الإصدار', value: '2.0.0'),
+                      _InfoRow(label: 'الإصدار', value: '2.0.1'),
                       const Divider(height: 1),
                       _InfoRow(label: 'التطبيق', value: 'نظام دفتري'),
                       const Divider(height: 1),

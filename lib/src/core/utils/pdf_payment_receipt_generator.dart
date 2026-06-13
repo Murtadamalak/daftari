@@ -8,8 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 // Font paths
-const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
-const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
+const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
 
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
@@ -40,8 +39,8 @@ class PdfPaymentReceiptGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final fontReg = await _loadFontFromAssets(_cairoRegPath);
-    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
+    final fontReg = await _loadFontFromAssets(_koMediaFontPath);
+    final fontBold = fontReg;
 
     pw.ImageProvider? logoImage;
     if (shopLogoPath != null) {
@@ -208,7 +207,7 @@ class PdfPaymentReceiptGenerator {
                     pw.Divider(color: PdfColors.grey300),
                     pw.SizedBox(height: 16),
                     pw.Text(
-                      'شكراً لتعاملكم معنا',
+                      'شكراً لتعاونكم معنا',
                       style: pw.TextStyle(
                           font: fontBold,
                           fontSize: 20,

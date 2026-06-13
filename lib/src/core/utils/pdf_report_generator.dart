@@ -10,9 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 
-// Font paths
-const _cairoRegPath = 'assets/fonts/Cairo-Regular.ttf';
-const _cairoBoldPath = 'assets/fonts/Cairo-Bold.ttf';
+const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
 
 const _devCredit =
     'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
@@ -45,8 +43,8 @@ class PdfReportGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final fontReg = await _loadFontFromAssets(_cairoRegPath);
-    final fontBold = await _loadFontFromAssets(_cairoBoldPath);
+    final fontReg = await _loadFontFromAssets(_koMediaFontPath);
+    final fontBold = fontReg;
 
     final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
     final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);

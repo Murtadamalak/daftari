@@ -55,11 +55,9 @@ class PdfInvoiceGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final fontReg = await _loadFontFromAssets(_koMediaFontPath);
-    final fontBold = fontReg;
-    final fontCairoReg = await _loadFontFromAssets('assets/fonts/Cairo-Regular.ttf');
-    final fontCairoBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
-    final fallback = [fontCairoReg, fontCairoBold];
+    final fontReg = await _loadFontFromAssets('assets/fonts/Cairo-Regular.ttf');
+    final fontBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
+    final fallback = <pw.Font>[];
 
     pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
       return pw.TextStyle(

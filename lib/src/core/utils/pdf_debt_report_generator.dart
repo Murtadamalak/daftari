@@ -224,11 +224,10 @@ class PdfDebtReportGenerator {
     String? shopPhone,
     String? shopLogoPath,
   }) async {
-    final fontReg = await _font(_koMediaFontPath);
-    final fontBold = fontReg;
-    final fontCairoReg = await _font('assets/fonts/Cairo-Regular.ttf');
-    final fontCairoBold = await _font('assets/fonts/Cairo-Bold.ttf');
-    final fallback = [fontCairoReg, fontCairoBold];
+    final fontReg = await _font('assets/fonts/Cairo-Regular.ttf');
+    final fontBold = await _font('assets/fonts/Cairo-Bold.ttf');
+    final fallback = <pw.Font>[];
+
 
     pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
       return pw.TextStyle(

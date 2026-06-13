@@ -79,7 +79,7 @@ class PdfDebtReportGenerator {
   PdfDebtReportGenerator._();
 
   static final _amtFmt = NumberFormat('#,##0', 'en');
-  static String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
+  static String _fmt(double v) => '${_amtFmt.format(v)} IQD';
   static String _fmtDate(DateTime? d) =>
       d == null ? '-' : DateFormat('yyyy/MM/dd').format(d);
 

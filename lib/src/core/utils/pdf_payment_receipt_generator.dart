@@ -19,7 +19,7 @@ class PdfPaymentReceiptGenerator {
   PdfPaymentReceiptGenerator._();
 
   static final _amtFmt = NumberFormat('#,##0', 'en');
-  static String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
+  static String _fmt(double v) => '${_amtFmt.format(v)} IQD';
 
   /// Loads a font from assets.
   static Future<pw.Font> _loadFontFromAssets(String path) async {

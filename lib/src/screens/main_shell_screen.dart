@@ -154,26 +154,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                Image.asset(
+                  'assets/images/light.png',
                   width: 52,
                   height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                        color: Colors.white.withOpacity(0.2), width: 1),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'د',
-                      style: TextStyle(
-                        fontFamily: 'KOMedia',
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 14),
                 const Text(

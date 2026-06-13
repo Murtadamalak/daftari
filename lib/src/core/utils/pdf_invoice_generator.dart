@@ -33,7 +33,7 @@ class PdfInvoiceGenerator {
   PdfInvoiceGenerator._();
 
   static final _amtFmt = NumberFormat('#,##0', 'en');
-  static String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
+  static String _fmt(double v) => '${_amtFmt.format(v)} IQD';
   static String _fmtQty(double v) =>
       v == v.truncate() ? v.toInt().toString() : v.toStringAsFixed(2);
 
@@ -102,6 +102,12 @@ class PdfInvoiceGenerator {
         logoImage = pw.MemoryImage(bytes);
       }
     }
+
+    // ── App Logo (always loaded as fallback) ──────────────────────────────────
+    final appLogoBytes =
+        await rootBundle.load('assets/images/light.png');
+    final appLogoImage =
+        pw.MemoryImage(appLogoBytes.buffer.asUint8List());
 
     // ── Date ─────────────────────────────────────────────────────────────────
     final dateStr = DateFormat('yyyy/MM/dd  hh:mm a').format(invoice.date);
@@ -204,31 +210,20 @@ class PdfInvoiceGenerator {
                         pw.SizedBox(width: 12),
 
                         // Logo/Icon (on the left in RTL)
-                        if (logoImage != null)
-                          pw.Container(
-                            width: 56,
-                            height: 56,
-                            child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-                          )
-                        else
-                          pw.Container(
-                            width: 52,
-                            height: 52,
-                            decoration: const pw.BoxDecoration(
-                              color: PdfColors.white,
-                              shape: pw.BoxShape.circle,
-                            ),
-                            child: pw.Center(
-                              child: pw.Text(
-                                'د',
-                                style: ts(
-                                  fontBold,
-                                  fontSize: 24,
-                                  color: const PdfColor.fromInt(0xFF098677),
-                                ),
-                              ),
-                            ),
+                        // Always show app logo; if shop has a logo use it instead
+                        pw.Container(
+                          width: 56,
+                          height: 56,
+                          decoration: const pw.BoxDecoration(
+                            color: PdfColors.white,
+                            shape: pw.BoxShape.circle,
                           ),
+                          padding: const pw.EdgeInsets.all(4),
+                          child: pw.Image(
+                            logoImage ?? appLogoImage,
+                            fit: pw.BoxFit.contain,
+                          ),
+                        ),
                       ],
                     ),
 

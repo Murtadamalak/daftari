@@ -21,7 +21,7 @@ class PdfReportGenerator {
   PdfReportGenerator._();
 
   static final _amtFmt = NumberFormat('#,##0', 'en');
-  static String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
+  static String _fmt(double v) => '${_amtFmt.format(v)} IQD';
   static String _fmtQty(double v) =>
       v == v.truncate() ? v.toInt().toString() : v.toStringAsFixed(2);
 

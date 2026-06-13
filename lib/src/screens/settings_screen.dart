@@ -665,7 +665,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
 
       if (result == null || result.files.isEmpty) return;
-      final fileBytes = result.files.first.bytes;
+      Uint8List? fileBytes = result.files.first.bytes;
+      if (fileBytes == null && result.files.first.path != null) {
+        final file = File(result.files.first.path!);
+        fileBytes = await file.readAsBytes();
+      }
+
       if (fileBytes == null) {
         if (context.mounted) {
           AppSnackBar.error(context, 'تعذّر قراءة الملف');

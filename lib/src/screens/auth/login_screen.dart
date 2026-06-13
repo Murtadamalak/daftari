@@ -77,6 +77,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else if (eStr.contains('invalid_email') ||
           eStr.contains('invalid email')) {
         errorText = 'صيغة البريد الإلكتروني غير صحيحة.';
+      } else if (eStr.contains('rate_limit') ||
+          eStr.contains('rate limit') ||
+          eStr.contains('too many requests') ||
+          eStr.contains('429')) {
+        errorText = 'تم تجاوز الحد المسموح به للمحاولات. يرجى الانتظار قليلاً ثم المحاولة مجدداً.';
       } else {
         errorText = 'خطأ: ${e.toString()}';
       }

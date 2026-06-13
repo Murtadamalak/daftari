@@ -27,7 +27,7 @@ class _SubscriptionPlansScreenState
     const SubscriptionPlan(
       type: 'monthly',
       title: 'باقة شهرية',
-      price: '10,000 دينار / شهر',
+      price: '25,000 دينار / شهر',
       subtitle: 'اشتراك شهري مرن',
       features: ['زبائن لا محدود', 'فواتير لا محدودة', 'إشعارات تنبيه'],
       missingFeatures: [],
@@ -35,8 +35,8 @@ class _SubscriptionPlansScreenState
     const SubscriptionPlan(
       type: 'yearly',
       title: 'باقة سنوية',
-      price: '99,000 دينار / سنة',
-      subtitle: 'وفّرت أكثر من شهرين!',
+      price: '250,000 دينار / سنة',
+      subtitle: 'وفّرت شهرين كاملين!',
       features: [
         'زبائن لا محدود',
         'فواتير لا محدودة',

@@ -21,17 +21,31 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
   }
 
   Future<void> _fetchRequests() async {
-    final res = await _supabase
-        .from('payment_requests')
-        .select('*, profiles(full_name, shop_name, phone)')
-        .eq('status', 'pending')
-        .order('submitted_at', ascending: false);
+    try {
+      final res = await _supabase
+          .from('payment_requests')
+          .select('*, profiles(full_name, shop_name, phone)')
+          .eq('status', 'pending')
+          .order('submitted_at', ascending: false);
 
-    if (mounted) {
-      setState(() {
-        _requests = List<Map<String, dynamic>>.from(res);
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _requests = List<Map<String, dynamic>>.from(res);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في جلب الطلبات: $e', style: GoogleFonts.tajawal()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -196,6 +210,13 @@ class _AdminRequestsScreenState extends State<AdminRequestsScreen> {
                 Text(
                     'الباقة: ${req['plan_type'] == 'yearly' ? 'سنوية' : 'شهرية'}',
                     style: GoogleFonts.tajawal(color: Colors.orange)),
+                if (req['note'] != null && req['note'].toString().trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'ملاحظة: ${req['note']}',
+                    style: GoogleFonts.tajawal(color: Colors.yellow[700], fontSize: 13),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   children: [

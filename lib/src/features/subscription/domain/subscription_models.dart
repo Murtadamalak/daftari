@@ -64,8 +64,8 @@ class PaymentConfig {
     return PaymentConfig(
       zainCashNumber: paymentInfo['zain_cash_number']?.toString() ?? '',
       accountHolder: paymentInfo['account_holder']?.toString() ?? '',
-      monthlyPrice: (pricing['monthly'] as num?)?.toInt() ?? 10000,
-      yearlyPrice: (pricing['yearly'] as num?)?.toInt() ?? 99000,
+      monthlyPrice: (pricing['monthly'] as num?)?.toInt() ?? 25000,
+      yearlyPrice: (pricing['yearly'] as num?)?.toInt() ?? 250000,
     );
   }
 }

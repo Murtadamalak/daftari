@@ -39,6 +39,7 @@ CREATE TABLE public.payment_requests (
     transfer_number TEXT, -- Reference number from Zain Cash or similar
     receipt_url TEXT, -- Path in Supabase Storage
     status payment_status NOT NULL DEFAULT 'pending',
+    note TEXT, -- Additional user note
     submitted_at TIMESTAMPTZ DEFAULT NOW(),
     reviewed_at TIMESTAMPTZ,
     reviewed_by UUID REFERENCES auth.users(id),
@@ -178,7 +179,7 @@ BEGIN
     
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER trigger_payment_submitted
   AFTER INSERT ON public.payment_requests

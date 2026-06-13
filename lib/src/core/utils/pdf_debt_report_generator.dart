@@ -226,11 +226,22 @@ class PdfDebtReportGenerator {
   }) async {
     final fontReg = await _font(_koMediaFontPath);
     final fontBold = fontReg;
+    final fontCairoReg = await _font('assets/fonts/Cairo-Regular.ttf');
+    final fontCairoBold = await _font('assets/fonts/Cairo-Bold.ttf');
+    final fallback = [fontCairoReg, fontCairoBold];
 
-    final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
-    final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);
-    final smallStyle =
-        pw.TextStyle(font: fontReg, fontSize: 8, color: PdfColors.grey600);
+    pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
+      return pw.TextStyle(
+        font: font,
+        fontSize: fontSize,
+        color: color,
+        fontFallback: fallback,
+      );
+    }
+
+    final baseStyle = ts(fontReg, fontSize: 10);
+    final boldStyle = ts(fontBold, fontSize: 10);
+    final smallStyle = ts(fontReg, fontSize: 8, color: PdfColors.grey600);
 
     pw.ImageProvider? logoImage;
     if (shopLogoPath != null && !kIsWeb) {
@@ -243,7 +254,13 @@ class PdfDebtReportGenerator {
     final now = DateTime.now();
     final generatedAt = DateFormat('yyyy/MM/dd  hh:mm a').format(now);
 
-    final pdf = pw.Document();
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: fontReg,
+        bold: fontBold,
+        fontFallback: fallback,
+      ),
+    );
 
     pdf.addPage(
       pw.MultiPage(
@@ -401,23 +418,23 @@ class PdfDebtReportGenerator {
           pw.Row(
             children: [
               _card('عدد المديونين', '${summary.totalDebtors} زبون',
-                  _primaryColor, fontReg, fontBold,
+                  _primaryColor, fontReg, fontBold, fallback,
                   icon: '👥'),
               pw.SizedBox(width: 8),
               _card('الدين الكلي', _fmt(summary.totalDebt), _accentRed, fontReg,
-                  fontBold,
+                  fontBold, fallback,
                   icon: '💸'),
               pw.SizedBox(width: 8),
               _card('الواصل هذا الشهر', _fmt(summary.monthlyIncoming),
-                  _accentGreen, fontReg, fontBold,
+                  _accentGreen, fontReg, fontBold, fallback,
                   icon: '✅'),
               pw.SizedBox(width: 8),
               _card('عدد الفواتير', '${summary.invoiceCount}', _accentOrange,
-                  fontReg, fontBold,
+                  fontReg, fontBold, fallback,
                   icon: '🧾'),
               pw.SizedBox(width: 8),
               _card('المنتجات المباعة', '${summary.productsSoldCount} وحدة',
-                  const PdfColor.fromInt(0xFF7C3AED), fontReg, fontBold,
+                  const PdfColor.fromInt(0xFF7C3AED), fontReg, fontBold, fallback,
                   icon: '📦'),
             ],
           ),
@@ -442,134 +459,151 @@ class PdfDebtReportGenerator {
               ),
               child: pw.Center(
                 child: pw.Text('لا يوجد أي مديون حالياً',
-                    style: pw.TextStyle(
-                        font: fontReg, fontSize: 12, color: PdfColors.grey500),
+                    style: ts(fontReg, fontSize: 12, color: PdfColors.grey500),
                     textDirection: pw.TextDirection.rtl),
               ),
             )
-          else
-            pw.Table(
-              border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-              columnWidths: {
-                0: const pw.FixedColumnWidth(20), // رقم
-                1: const pw.FlexColumnWidth(2.5), // الاسم
-                2: const pw.FlexColumnWidth(1.6), // إجمالي المشتريات
-                3: const pw.FlexColumnWidth(1.6), // الواصل
-                4: const pw.FlexColumnWidth(1.6), // المتبقي
-                5: const pw.FlexColumnWidth(1.4), // تاريخ آخر شراء
-                6: const pw.FlexColumnWidth(1.4), // تاريخ آخر تسديد
-                7: const pw.FixedColumnWidth(30), // فواتير
-              },
-              children: [
-                // ── Header row ──
-                pw.TableRow(
-                  decoration: pw.BoxDecoration(color: _primaryColor),
-                  children: [
-                    '#',
-                    'اسم الزبون',
-                    'إجمالي المشتريات',
-                    'المبلغ الواصل',
-                    'المبلغ المتبقي',
-                    'آخر شراء',
-                    'آخر تسديد',
-                    'ف',
-                  ]
-                      .map((h) => pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                                vertical: 6, horizontal: 4),
-                            child: pw.Text(h,
-                                style: pw.TextStyle(
-                                    font: fontBold,
-                                    fontSize: 8,
-                                    color: PdfColors.white),
-                                textDirection: pw.TextDirection.rtl,
-                                textAlign: pw.TextAlign.center),
-                          ))
-                      .toList(),
-                ),
-                // ── Data rows ──
-                ...summary.rows.asMap().entries.map((entry) {
-                  final i = entry.key;
-                  final row = entry.value;
-                  final bg = i.isEven ? PdfColors.white : _lightBg;
-                  final debtColor = row.remaining > 500000
-                      ? _accentRed
-                      : (row.remaining > 100000
-                          ? _accentOrange
-                          : PdfColors.black);
+          else ...[
+            // Helper local builders for table-like rows
+            () {
+              pw.Widget buildCell(pw.Widget child, {double? width, int? flex, bool showBorder = true, PdfColor? dividerColor}) {
+                final cell = pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+                  child: child,
+                );
+                final inner = showBorder
+                    ? pw.Row(
+                        children: [
+                          pw.Expanded(child: cell),
+                          pw.Container(width: 0.5, color: dividerColor ?? PdfColors.grey300),
+                        ],
+                      )
+                    : cell;
+                if (width != null) {
+                  return pw.SizedBox(width: width, child: inner);
+                } else {
+                  return pw.Expanded(flex: flex ?? 1, child: inner);
+                }
+              }
 
-                  return pw.TableRow(
-                    decoration: pw.BoxDecoration(color: bg),
-                    children: [
-                      // رقم
-                      _tc('${i + 1}', baseStyle, center: true),
-                      // الاسم + الهاتف
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 4),
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          children: [
-                            pw.Text(row.customer.name,
-                                style: boldStyle,
-                                textDirection: pw.TextDirection.rtl),
-                            if (row.customer.phone != null)
-                              pw.Text(row.customer.phone!, style: smallStyle),
-                          ],
-                        ),
-                      ),
-                      // إجمالي المشتريات
-                      _tc(_fmt(row.totalPurchased), baseStyle, center: true),
-                      // الواصل
-                      _tc(_fmt(row.totalPaid),
-                          baseStyle.copyWith(color: _accentGreen),
-                          center: true),
-                      // المتبقي
-                      _tc(_fmt(row.remaining),
-                          boldStyle.copyWith(color: debtColor),
-                          center: true),
-                      // آخر شراء
-                      _tc(_fmtDate(row.lastPurchaseDate), smallStyle,
-                          center: true),
-                      // آخر تسديد
-                      _tc(_fmtDate(row.lastPaymentDate), smallStyle,
-                          center: true),
-                      // عدد الفواتير
-                      _tc('${row.invoiceCount}', baseStyle, center: true),
-                    ],
-                  );
-                }),
-
-                // ── Totals row ──
-                pw.TableRow(
-                  decoration: const pw.BoxDecoration(
-                      color: PdfColor.fromInt(0xFFE8EEF8)),
-                  children: [
-                    _tc('', boldStyle),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('المجموع الكلي',
-                          style: boldStyle,
-                          textDirection: pw.TextDirection.rtl),
+              pw.Widget buildRow({
+                required List<pw.Widget> cells,
+                PdfColor? bgColor,
+                bool isHeader = false,
+              }) {
+                return pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: bgColor,
+                    border: pw.Border(
+                      left: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      right: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      top: isHeader ? const pw.BorderSide(color: PdfColors.grey300, width: 0.5) : pw.BorderSide.none,
                     ),
-                    _tc(
-                        _fmt(summary.rows
-                            .fold(0, (s, r) => s + r.totalPurchased)),
-                        boldStyle,
-                        center: true),
-                    _tc(_fmt(summary.rows.fold(0, (s, r) => s + r.totalPaid)),
-                        boldStyle.copyWith(color: _accentGreen),
-                        center: true),
-                    _tc(_fmt(summary.totalDebt),
-                        boldStyle.copyWith(color: _accentRed),
-                        center: true),
-                    _tc('', boldStyle),
-                    _tc('', boldStyle),
-                    _tc('${summary.invoiceCount}', boldStyle, center: true),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  child: pw.Row(
+                    children: cells,
+                  ),
+                );
+              }
+
+              final headerColor = _primaryColor;
+              final whiteDiv = const PdfColor(1, 1, 1, 0.3);
+
+              return pw.Column(
+                children: [
+                  // ── Header row ──
+                  buildRow(
+                    isHeader: true,
+                    bgColor: headerColor,
+                    cells: [
+                      buildCell(pw.Text('#', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), width: 20, dividerColor: whiteDiv),
+                      buildCell(pw.Text('اسم الزبون', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 25, dividerColor: whiteDiv),
+                      buildCell(pw.Text('إجمالي المشتريات', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
+                      buildCell(pw.Text('المبلغ الواصل', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
+                      buildCell(pw.Text('المبلغ المتبقي', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
+                      buildCell(pw.Text('آخر شراء', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 14, dividerColor: whiteDiv),
+                      buildCell(pw.Text('آخر تسديد', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 14, dividerColor: whiteDiv),
+                      buildCell(pw.Text('ف', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), width: 30, showBorder: false),
+                    ],
+                  ),
+                  // ── Data rows ──
+                  ...summary.rows.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final row = entry.value;
+                    final bg = i.isEven ? PdfColors.white : _lightBg;
+                    final debtColor = row.remaining > 500000
+                        ? _accentRed
+                        : (row.remaining > 100000
+                            ? _accentOrange
+                            : PdfColors.black);
+
+                    return buildRow(
+                      bgColor: bg,
+                      cells: [
+                        buildCell(_tc('${i + 1}', baseStyle, center: true), width: 20),
+                        buildCell(
+                          pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text(row.customer.name,
+                                  style: boldStyle,
+                                  textDirection: pw.TextDirection.rtl),
+                              if (row.customer.phone != null)
+                                pw.Text(row.customer.phone!, style: smallStyle),
+                            ],
+                          ),
+                          flex: 25,
+                        ),
+                        buildCell(_tc(_fmt(row.totalPurchased), baseStyle, center: true), flex: 16),
+                        buildCell(_tc(_fmt(row.totalPaid), baseStyle.copyWith(color: _accentGreen), center: true), flex: 16),
+                        buildCell(_tc(_fmt(row.remaining), boldStyle.copyWith(color: debtColor), center: true), flex: 16),
+                        buildCell(_tc(_fmtDate(row.lastPurchaseDate), smallStyle, center: true), flex: 14),
+                        buildCell(_tc(_fmtDate(row.lastPaymentDate), smallStyle, center: true), flex: 14),
+                        buildCell(_tc('${row.invoiceCount}', baseStyle, center: true), width: 30, showBorder: false),
+                      ],
+                    );
+                  }),
+                  // ── Totals row ──
+                  buildRow(
+                    bgColor: const PdfColor.fromInt(0xFFE8EEF8),
+                    cells: [
+                      buildCell(_tc('', boldStyle), width: 20),
+                      buildCell(
+                        pw.Text('المجموع الكلي',
+                            style: boldStyle,
+                            textDirection: pw.TextDirection.rtl),
+                        flex: 25,
+                      ),
+                      buildCell(
+                        _tc(
+                            _fmt(summary.rows
+                                .fold(0, (s, r) => s + r.totalPurchased)),
+                            boldStyle,
+                            center: true),
+                        flex: 16,
+                      ),
+                      buildCell(
+                        _tc(_fmt(summary.rows.fold(0, (s, r) => s + r.totalPaid)),
+                            boldStyle.copyWith(color: _accentGreen),
+                            center: true),
+                        flex: 16,
+                      ),
+                      buildCell(
+                        _tc(_fmt(summary.totalDebt),
+                            boldStyle.copyWith(color: _accentRed),
+                            center: true),
+                        flex: 16,
+                      ),
+                      buildCell(_tc('', boldStyle), flex: 14),
+                      buildCell(_tc('', boldStyle), flex: 14),
+                      buildCell(_tc('${summary.invoiceCount}', boldStyle, center: true), width: 30, showBorder: false),
+                    ],
+                  ),
+                ],
+              );
+            }(),
+          ],
 
           pw.SizedBox(height: 20),
 
@@ -628,7 +662,7 @@ class PdfDebtReportGenerator {
   // ─────────────────────────────────────────────────────────────────────────
 
   static pw.Widget _card(
-      String title, String value, PdfColor color, pw.Font reg, pw.Font bold,
+      String title, String value, PdfColor color, pw.Font reg, pw.Font bold, List<pw.Font> fallback,
       {String icon = ''}) {
     return pw.Expanded(
       child: pw.Container(
@@ -643,17 +677,17 @@ class PdfDebtReportGenerator {
           children: [
             if (icon.isNotEmpty)
               pw.Text(icon,
-                  style: pw.TextStyle(font: reg, fontSize: 14),
+                  style: pw.TextStyle(font: reg, fontFallback: fallback, fontSize: 14),
                   textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 4),
             pw.Text(value,
-                style: pw.TextStyle(font: bold, fontSize: 11, color: color),
+                style: pw.TextStyle(font: bold, fontFallback: fallback, fontSize: 11, color: color),
                 textDirection: pw.TextDirection.rtl,
                 textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 3),
             pw.Text(title,
                 style: pw.TextStyle(
-                    font: reg, fontSize: 8, color: PdfColors.grey600),
+                    font: reg, fontFallback: fallback, fontSize: 8, color: PdfColors.grey600),
                 textDirection: pw.TextDirection.rtl,
                 textAlign: pw.TextAlign.center),
           ],

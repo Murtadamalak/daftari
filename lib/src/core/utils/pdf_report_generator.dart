@@ -41,15 +41,33 @@ class PdfReportGenerator {
     String? shopName,
     String? shopLogoPath,
   }) async {
-    final pdf = pw.Document();
-
     final fontReg = await _loadFontFromAssets(_koMediaFontPath);
     final fontBold = fontReg;
+    final fontCairoReg = await _loadFontFromAssets('assets/fonts/Cairo-Regular.ttf');
+    final fontCairoBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
+    final fallback = [fontCairoReg, fontCairoBold];
 
-    final baseStyle = pw.TextStyle(font: fontReg, fontSize: 10);
-    final boldStyle = pw.TextStyle(font: fontBold, fontSize: 10);
-    final titleStyle = pw.TextStyle(
-        font: fontBold,
+    pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
+      return pw.TextStyle(
+        font: font,
+        fontSize: fontSize,
+        color: color,
+        fontFallback: fallback,
+      );
+    }
+
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: fontReg,
+        bold: fontBold,
+        fontFallback: fallback,
+      ),
+    );
+
+    final baseStyle = ts(fontReg, fontSize: 10);
+    final boldStyle = ts(fontBold, fontSize: 10);
+    final titleStyle = ts(
+        fontBold,
         fontSize: 16,
         color: const PdfColor.fromInt(0xFF1A3C6E));
 
@@ -80,7 +98,7 @@ class PdfReportGenerator {
           ),
           child: pw.Text(
             'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
-            style: pw.TextStyle(font: fontBold, fontSize: 8, color: PdfColors.grey700),
+            style: ts(fontBold, fontSize: 8, color: PdfColors.grey700),
             textDirection: pw.TextDirection.rtl,
           ),
         ),
@@ -116,135 +134,133 @@ class PdfReportGenerator {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 _summaryCard('المبيعات الكلية', _fmt(totalSales),
-                    PdfColors.blue800, fontReg, fontBold),
+                    PdfColors.blue800, fontReg, fontBold, fallback),
                 _summaryCard('الإيرادات المحصلة', _fmt(totalPaid),
-                    PdfColors.green700, fontReg, fontBold),
+                    PdfColors.green700, fontReg, fontBold, fallback),
                 _summaryCard('الديون المتبقية', _fmt(totalDebt),
-                    PdfColors.red700, fontReg, fontBold),
+                    PdfColors.red700, fontReg, fontBold, fallback),
               ],
             ),
             pw.SizedBox(height: 24),
 
-            // ── Top Products Table ───────────────────────────────────────────────
-            pw.Text('تفاصيل المنتجات المباعة (الكميات):',
-                style: titleStyle.copyWith(fontSize: 14)),
-            pw.SizedBox(height: 8),
-            if (itemQuantities.isEmpty)
-              pw.Text('لا توجد مبيعات في هذه الفترة.', style: baseStyle)
-            else
-              pw.Table(
-                border: pw.TableBorder.all(color: PdfColors.grey300),
-                columnWidths: {
-                  0: const pw.FlexColumnWidth(3),
-                  1: const pw.FlexColumnWidth(1),
-                },
-                children: [
-                  pw.TableRow(
-                    decoration:
-                        const pw.BoxDecoration(color: PdfColors.grey200),
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(6),
-                        child: pw.Text('المنتج',
-                            style: boldStyle, textAlign: pw.TextAlign.right),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(6),
-                        child: pw.Text('الكمية',
-                            style: boldStyle, textAlign: pw.TextAlign.center),
-                      ),
-                    ],
-                  ),
-                  ...itemQuantities.map(
-                    (e) => pw.TableRow(
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(6),
-                          child: pw.Text(e.key,
-                              style: baseStyle, textAlign: pw.TextAlign.right),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(6),
-                          child: pw.Text(_fmtQty(e.value),
-                              style: boldStyle, textAlign: pw.TextAlign.center),
-                        ),
-                      ],
+            // Helper local builders for table-like rows
+            () {
+              pw.Widget buildCell(pw.Widget child, {double? width, int? flex, bool showBorder = true, PdfColor? dividerColor}) {
+                final cell = pw.Padding(
+                  padding: const pw.EdgeInsets.all(6),
+                  child: child,
+                );
+                final inner = showBorder
+                    ? pw.Row(
+                        children: [
+                          pw.Expanded(child: cell),
+                          pw.Container(width: 0.5, color: dividerColor ?? PdfColors.grey300),
+                        ],
+                      )
+                    : cell;
+                if (width != null) {
+                  return pw.SizedBox(width: width, child: inner);
+                } else {
+                  return pw.Expanded(flex: flex ?? 1, child: inner);
+                }
+              }
+
+              pw.Widget buildRow({
+                required List<pw.Widget> cells,
+                PdfColor? bgColor,
+                bool isHeader = false,
+              }) {
+                return pw.Container(
+                  decoration: pw.BoxDecoration(
+                    color: bgColor,
+                    border: pw.Border(
+                      left: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      right: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                      top: isHeader ? const pw.BorderSide(color: PdfColors.grey300, width: 0.5) : pw.BorderSide.none,
                     ),
                   ),
-                ],
-              ),
-
-            pw.SizedBox(height: 24),
-
-            // ── Invoices Table ───────────────────────────────────────────────
-            pw.Text('قائمة الفواتير:',
-                style: titleStyle.copyWith(fontSize: 14)),
-            pw.SizedBox(height: 8),
-            if (invoices.isEmpty)
-              pw.Text('لا توجد فواتير لهذه الفترة.', style: baseStyle)
-            else
-              pw.Table(
-                border: pw.TableBorder.all(color: PdfColors.grey300),
-                columnWidths: {
-                  0: const pw.FixedColumnWidth(80),
-                  1: const pw.FlexColumnWidth(),
-                  2: const pw.FixedColumnWidth(80),
-                  3: const pw.FixedColumnWidth(60),
-                },
-                children: [
-                  pw.TableRow(
-                    decoration:
-                        const pw.BoxDecoration(color: PdfColors.grey200),
-                    children:
-                        ['التاريخ / الوقت', 'الزبون', 'الإجمالي', 'الحالة']
-                            .map((text) => pw.Padding(
-                                  padding: const pw.EdgeInsets.all(6),
-                                  child: pw.Text(text,
-                                      style: boldStyle,
-                                      textAlign: pw.TextAlign.center),
-                                ))
-                            .toList(),
+                  child: pw.Row(
+                    children: cells,
                   ),
-                  ...invoices.map((inv) {
-                    final timeStr =
-                        DateFormat('yy/MM/dd hh:mm', 'en').format(inv.date);
-                    final cName = inv.payType == 'تسديد دين'
-                        ? '${inv.customerName} (دفعة دين)'
-                        : inv.customerName;
-                    final gTotal = _fmt(inv.grandTotal);
-                    final status = inv.payType == 'تسديد دين'
-                        ? 'دُفعة مسددة'
-                        : (inv.status == 'paid'
-                            ? 'مسدد'
-                            : (inv.status == 'partial' ? 'جزئي' : 'دين'));
+                );
+              }
 
-                    return pw.TableRow(
-                      children: [
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(6),
-                            child: pw.Text(timeStr,
-                                style: baseStyle,
-                                textAlign: pw.TextAlign.center)),
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(6),
-                            child: pw.Text(cName,
-                                style: baseStyle,
-                                textAlign: pw.TextAlign.right)),
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(6),
-                            child: pw.Text(gTotal,
-                                style: boldStyle,
-                                textAlign: pw.TextAlign.center)),
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(6),
-                            child: pw.Text(status,
-                                style: baseStyle,
-                                textAlign: pw.TextAlign.center)),
+              final headerBg = PdfColors.grey200;
+
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  // ── Top Products Table ───────────────────────────────────────────────
+                  pw.Text('تفاصيل المنتجات المباعة (الكميات):',
+                      style: titleStyle.copyWith(fontSize: 14)),
+                  pw.SizedBox(height: 8),
+                  if (itemQuantities.isEmpty)
+                    pw.Text('لا توجد مبيعات في هذه الفترة.', style: baseStyle)
+                  else ...[
+                    buildRow(
+                      isHeader: true,
+                      bgColor: headerBg,
+                      cells: [
+                        buildCell(pw.Text('المنتج', style: boldStyle, textAlign: pw.TextAlign.right), flex: 3),
+                        buildCell(pw.Text('الكمية', style: boldStyle, textAlign: pw.TextAlign.center), flex: 1, showBorder: false),
                       ],
-                    );
-                  }),
+                    ),
+                    ...itemQuantities.map(
+                      (e) => buildRow(
+                        cells: [
+                          buildCell(pw.Text(e.key, style: baseStyle, textAlign: pw.TextAlign.right), flex: 3),
+                          buildCell(pw.Text(_fmtQty(e.value), style: boldStyle, textAlign: pw.TextAlign.center), flex: 1, showBorder: false),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  pw.SizedBox(height: 24),
+
+                  // ── Invoices Table ───────────────────────────────────────────────
+                  pw.Text('قائمة الفواتير:',
+                      style: titleStyle.copyWith(fontSize: 14)),
+                  pw.SizedBox(height: 8),
+                  if (invoices.isEmpty)
+                    pw.Text('لا توجد فواتير لهذه الفترة.', style: baseStyle)
+                  else ...[
+                    buildRow(
+                      isHeader: true,
+                      bgColor: headerBg,
+                      cells: [
+                        buildCell(pw.Text('التاريخ / الوقت', style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
+                        buildCell(pw.Text('الزبون', style: boldStyle, textAlign: pw.TextAlign.center), flex: 1),
+                        buildCell(pw.Text('الإجمالي', style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
+                        buildCell(pw.Text('الحالة', style: boldStyle, textAlign: pw.TextAlign.center), width: 60, showBorder: false),
+                      ],
+                    ),
+                    ...invoices.map((inv) {
+                      final timeStr =
+                          DateFormat('yy/MM/dd hh:mm', 'en').format(inv.date);
+                      final cName = inv.payType == 'تسديد دين'
+                          ? '${inv.customerName} (دفعة دين)'
+                          : inv.customerName;
+                      final gTotal = _fmt(inv.grandTotal);
+                      final status = inv.payType == 'تسديد دين'
+                          ? 'دُفعة مسددة'
+                          : (inv.status == 'paid'
+                              ? 'مسدد'
+                              : (inv.status == 'partial' ? 'جزئي' : 'دين'));
+
+                      return buildRow(
+                        cells: [
+                          buildCell(pw.Text(timeStr, style: baseStyle, textAlign: pw.TextAlign.center), width: 80),
+                          buildCell(pw.Text(cName, style: baseStyle, textAlign: pw.TextAlign.right), flex: 1),
+                          buildCell(pw.Text(gTotal, style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
+                          buildCell(pw.Text(status, style: baseStyle, textAlign: pw.TextAlign.center), width: 60, showBorder: false),
+                        ],
+                      );
+                    }),
+                  ],
                 ],
-              ),
+              );
+            }(),
           ];
         },
       ),
@@ -275,7 +291,7 @@ class PdfReportGenerator {
   }
 
   static pw.Widget _summaryCard(
-      String title, String value, PdfColor color, pw.Font reg, pw.Font bold) {
+      String title, String value, PdfColor color, pw.Font reg, pw.Font bold, List<pw.Font> fallback) {
     return pw.Container(
       width: 140,
       padding: const pw.EdgeInsets.all(12),
@@ -289,11 +305,11 @@ class PdfReportGenerator {
         children: [
           pw.Text(title,
               style: pw.TextStyle(
-                  font: reg, fontSize: 10, color: PdfColors.grey700),
+                  font: reg, fontFallback: fallback, fontSize: 10, color: PdfColors.grey700),
               textDirection: pw.TextDirection.rtl),
           pw.SizedBox(height: 6),
           pw.Text(value,
-              style: pw.TextStyle(font: bold, fontSize: 13, color: color),
+              style: pw.TextStyle(font: bold, fontFallback: fallback, fontSize: 13, color: color),
               textDirection: pw.TextDirection.rtl),
         ],
       ),

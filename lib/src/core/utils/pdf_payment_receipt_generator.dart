@@ -41,6 +41,18 @@ class PdfPaymentReceiptGenerator {
 
     final fontReg = await _loadFontFromAssets(_koMediaFontPath);
     final fontBold = fontReg;
+    final fontCairoReg = await _loadFontFromAssets('assets/fonts/Cairo-Regular.ttf');
+    final fontCairoBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
+    final fallback = [fontCairoReg, fontCairoBold];
+
+    pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
+      return pw.TextStyle(
+        font: font,
+        fontSize: fontSize,
+        color: color,
+        fontFallback: fallback,
+      );
+    }
 
     pw.ImageProvider? logoImage;
     if (shopLogoPath != null) {
@@ -92,32 +104,32 @@ class PdfPaymentReceiptGenerator {
                       children: [
                         pw.Text(
                           shopName ?? 'مكتب تجاري',
-                          style: pw.TextStyle(
-                              font: fontBold,
+                          style: ts(
+                              fontBold,
                               fontSize: 22,
                               color: PdfColors.white),
                         ),
                         if (ownerName != null)
                           pw.Text(
                             'بإدارة: $ownerName',
-                            style: pw.TextStyle(
-                                font: fontReg,
+                            style: ts(
+                                fontReg,
                                 fontSize: 10,
                                 color: const PdfColor(0.8, 0.8, 1.0)),
                           ),
                         if (shopPhone != null)
                           pw.Text(
                             'هاتف: $shopPhone',
-                            style: pw.TextStyle(
-                                font: fontReg,
+                            style: ts(
+                                fontReg,
                                 fontSize: 10,
                                 color: const PdfColor(0.8, 0.8, 1.0)),
                           ),
                         pw.SizedBox(height: 4),
                         pw.Text(
                           'وصل استلام قبض',
-                          style: pw.TextStyle(
-                              font: fontReg,
+                          style: ts(
+                              fontReg,
                               fontSize: 14,
                               color: PdfColors.white),
                         ),
@@ -128,8 +140,8 @@ class PdfPaymentReceiptGenerator {
                       children: [
                         pw.Text(
                           'التاريخ: $dateStr',
-                          style: pw.TextStyle(
-                              font: fontReg,
+                          style: ts(
+                              fontReg,
                               fontSize: 12,
                               color: PdfColors.white),
                         ),
@@ -154,24 +166,24 @@ class PdfPaymentReceiptGenerator {
                   children: [
                     pw.Text(
                       'استلمت من السيد / السيدة',
-                      style: pw.TextStyle(
-                          font: fontReg,
+                      style: ts(
+                          fontReg,
                           fontSize: 18,
                           color: PdfColors.grey700),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
                       customerName,
-                      style: pw.TextStyle(
-                          font: fontBold,
+                      style: ts(
+                          fontBold,
                           fontSize: 28,
                           color: const PdfColor.fromInt(0xFF1E293B)),
                     ),
                     pw.SizedBox(height: 24),
                     pw.Text(
                       'مبلغاً وقدره',
-                      style: pw.TextStyle(
-                          font: fontReg,
+                      style: ts(
+                          fontReg,
                           fontSize: 18,
                           color: PdfColors.grey700),
                     ),
@@ -188,8 +200,8 @@ class PdfPaymentReceiptGenerator {
                       ),
                       child: pw.Text(
                         _fmt(amountPaid),
-                        style: pw.TextStyle(
-                            font: fontBold,
+                        style: ts(
+                            fontBold,
                             fontSize: 24,
                             color: const PdfColor.fromInt(0xFF4338CA)),
                         textDirection: pw.TextDirection.ltr,
@@ -198,8 +210,8 @@ class PdfPaymentReceiptGenerator {
                     pw.SizedBox(height: 24),
                     pw.Text(
                       'وذلك كدفعة تسديد من الدين الكُلي',
-                      style: pw.TextStyle(
-                          font: fontReg,
+                      style: ts(
+                          fontReg,
                           fontSize: 18,
                           color: PdfColors.grey700),
                     ),
@@ -208,8 +220,8 @@ class PdfPaymentReceiptGenerator {
                     pw.SizedBox(height: 16),
                     pw.Text(
                       'شكراً لتعاونكم معنا',
-                      style: pw.TextStyle(
-                          font: fontBold,
+                      style: ts(
+                          fontBold,
                           fontSize: 20,
                           color: const PdfColor.fromInt(0xFF10B981)),
                     ),
@@ -225,14 +237,14 @@ class PdfPaymentReceiptGenerator {
                   children: [
                     pw.Column(children: [
                       pw.Text('توقيع المستلم',
-                          style: pw.TextStyle(font: fontBold, fontSize: 16)),
+                          style: ts(fontBold, fontSize: 16)),
                       pw.SizedBox(height: 40),
                       pw.Container(
                           width: 150, height: 1, color: PdfColors.grey400),
                     ]),
                     pw.Column(children: [
                       pw.Text('توقيع المسدد',
-                          style: pw.TextStyle(font: fontBold, fontSize: 16)),
+                          style: ts(fontBold, fontSize: 16)),
                       pw.SizedBox(height: 40),
                       pw.Container(
                           width: 150, height: 1, color: PdfColors.grey400),
@@ -250,7 +262,7 @@ class PdfPaymentReceiptGenerator {
                 ),
                 child: pw.Text(
                   'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
-                  style: pw.TextStyle(font: fontBold, fontSize: 8, color: PdfColors.grey700),
+                  style: ts(fontBold, fontSize: 8, color: PdfColors.grey700),
                   textDirection: pw.TextDirection.rtl,
                 ),
               ),

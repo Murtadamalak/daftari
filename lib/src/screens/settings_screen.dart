@@ -662,12 +662,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         type: FileType.custom,
         allowedExtensions: ['json'],
         withData: true,
+        withReadStream: true,
       );
 
       if (result == null || result.files.isEmpty) return;
-      Uint8List? fileBytes = result.files.first.bytes;
-      if (fileBytes == null && result.files.first.path != null) {
-        final file = File(result.files.first.path!);
+      Uint8List? fileBytes;
+      final pickedFile = result.files.first;
+
+      if (pickedFile.bytes != null) {
+        fileBytes = pickedFile.bytes;
+      } else if (pickedFile.readStream != null) {
+        final builder = BytesBuilder();
+        await for (final chunk in pickedFile.readStream!) {
+          builder.add(chunk);
+        }
+        fileBytes = builder.takeBytes();
+      } else if (pickedFile.path != null) {
+        final file = File(pickedFile.path!);
         fileBytes = await file.readAsBytes();
       }
 
@@ -721,7 +732,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Navigator.pop(context); // إغلاق شاشة التحميل
         _showRestoreSuccessDialog(context, restoreResult);
       }
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint('Restore error: $e\n$s');
       if (context.mounted) {
         try {
           Navigator.pop(context);

@@ -444,10 +444,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       final original = _originalInvoice!;
       final initialPaidOld = original.paid;
-      final extraPaidAfterOld = original.currentPaid - initialPaidOld;
       final initialPaidNew = invoiceState.receivedAmount ?? initialPaidOld;
 
-      final paid = initialPaidNew + extraPaidAfterOld;
+      final paid = initialPaidNew;
       var debt = grandTotal - paid;
       if (debt < 0) debt = 0;
 

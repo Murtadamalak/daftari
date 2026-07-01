@@ -5,6 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app.dart';
+import 'src/core/services/connectivity_service.dart';
+import 'src/core/services/sync_service.dart';
+import 'src/data/local/offline_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +19,12 @@ void main() async {
     anonKey: 'sb_publishable_XZjwycMZHs1ci-GItcb8gQ_NSbnyiEj',
   );
 
+  // ── تهيئة قاعدة البيانات المحلية ──
+  await OfflineDatabase.instance.database;
+
+  // ── تهيئة خدمة مراقبة الاتصال ──
+  await ConnectivityService.instance.initialize();
+
   // Check if user opted out of "remember me" — if so, sign them out on cold start.
   // This runs once before the app UI is built.
   final prefs = await SharedPreferences.getInstance();
@@ -26,6 +35,12 @@ void main() async {
     if (existingSession != null) {
       await Supabase.instance.client.auth.signOut();
     }
+  }
+
+  // ── تهيئة محرك المزامنة (بعد التحقق من المستخدم) ──
+  final currentUser = Supabase.instance.client.auth.currentUser;
+  if (currentUser != null) {
+    await SyncService.instance.initialize();
   }
 
   runApp(

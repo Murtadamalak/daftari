@@ -9,11 +9,13 @@ class CartItem {
     required this.product,
     this.quantity = 1,
     this.isWholesale = false,
+    this.note = '',
   });
 
   final ProductModel product;
   final double quantity;
   final bool isWholesale;
+  final String note;
 
   /// Returns the effective price based on the selected type.
   /// Falls back to retail price if wholesale is null.
@@ -30,11 +32,13 @@ class CartItem {
     ProductModel? product,
     double? quantity,
     bool? isWholesale,
+    String? note,
   }) {
     return CartItem(
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,
       isWholesale: isWholesale ?? this.isWholesale,
+      note: note ?? this.note,
     );
   }
 }
@@ -122,6 +126,17 @@ class InvoiceCreationNotifier
     final items = state.items.map((item) {
       if (item.product.id == productId) {
         return item.copyWith(quantity: quantity);
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(items: items);
+  }
+
+  void updateNote(String productId, String note) {
+    final items = state.items.map((item) {
+      if (item.product.id == productId) {
+        return item.copyWith(note: note);
       }
       return item;
     }).toList();

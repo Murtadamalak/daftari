@@ -1,4 +1,5 @@
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
@@ -209,6 +210,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             product: match,
             quantity: it.qty,
             isWholesale: it.priceType == 'wholesale',
+            note: it.note,
           ),
         );
       }
@@ -235,18 +237,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       } else {
         notifier.setPaymentMethod(PaymentMethod.partial);
       }
-      notifier.setReceivedAmount(inv.paid);
+      // نستخدم المبلغ المدفوع الكلي (grandTotal - debt) بدلاً من الدفعة الأولى فقط
+      final totalPaid = inv.currentPaid;
+      notifier.setReceivedAmount(totalPaid);
 
       // نحقن العناصر في الحالة
       for (final c in cartItems) {
         notifier.addProduct(c.product);
         notifier.updateQuantity(c.product.id, c.quantity);
         notifier.togglePriceType(c.product.id, c.isWholesale);
+        if (c.note.isNotEmpty) {
+          notifier.updateNote(c.product.id, c.note);
+        }
       }
 
       _discountCtrl.text =
           inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
-      _receivedCtrl.text = inv.paid == 0 ? '' : inv.paid.toStringAsFixed(0);
+      _receivedCtrl.text = totalPaid == 0 ? '' : totalPaid.toStringAsFixed(0);
 
       _originalInvoice = inv;
       _originalItems = items;
@@ -272,15 +279,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         return;
       }
       if (widget.isEditing) {
-        final original = _originalInvoice!;
-        final initialPaidOld = original.paid;
-        final extraPaidAfterOld = original.currentPaid - initialPaidOld;
-        final initialPaidNew = state.receivedAmount ?? initialPaidOld;
-        final totalPaidAfterEdit = initialPaidNew + extraPaidAfterOld;
+        final totalPaid = state.receivedAmount ?? 0.0;
         final total = state.grandTotal;
-        if (totalPaidAfterEdit > total + 0.01) {
+        if (totalPaid > total + 0.01) {
           _showToast(
-              'المبلغ المدفوع (الدفعة الأولى + التسديدات) لا يمكن أن يكون أكبر من كلفة الفاتورة الكلية.');
+              'المبلغ المدفوع الكلي لا يمكن أن يكون أكبر من قيمة الفاتورة.');
           return;
         }
       }
@@ -356,8 +359,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final customer = invoiceState.customer;
 
       final items = invoiceState.items.map((item) {
+        final displayName = item.note.trim().isNotEmpty
+            ? '${item.product.name} [${item.note.trim()}]'
+            : item.product.name;
         return <String, dynamic>{
-          'product_name': item.product.name,
+          'product_name': displayName,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
@@ -443,27 +449,51 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final grandTotal = invoiceState.grandTotal;
 
       final original = _originalInvoice!;
-      final initialPaidOld = original.paid;
-      final initialPaidNew = invoiceState.receivedAmount ?? initialPaidOld;
 
-      final paid = initialPaidNew;
-      var debt = grandTotal - paid;
+      // المبلغ المدفوع الكلي الذي يريده المستخدم (يشمل كل الدفعات)
+      final desiredTotalPaid = invoiceState.receivedAmount ?? original.currentPaid;
+
+      // نحسب مجموع دفعات التسديد المنفصلة (سجلات 'تسديد دين')
+      // حتى لا نكررها عند إعادة احتساب الديون
+      double extraPayments = 0.0;
+      if (original.customerId != null) {
+        final paymentRecords = await repo.getPaymentRecordsByCustomer(original.customerId!);
+        extraPayments = paymentRecords.fold(0.0, (sum, p) => sum + p.paid);
+      }
+
+      // الـ paid في قاعدة البيانات = المبلغ المدفوع الكلي - دفعات التسديد المنفصلة
+      // لأن recalculateCustomerDebt ستضيف دفعات التسديد تلقائياً
+      var paidForDb = desiredTotalPaid - extraPayments;
+      if (paidForDb < 0) paidForDb = 0;
+      if (paidForDb > grandTotal) paidForDb = grandTotal;
+
+      // الدين يُحسب بعد recalculateCustomerDebt لكن نضع قيمة مبدئية
+      var debt = grandTotal - paidForDb;
       if (debt < 0) debt = 0;
 
       String status;
-      String payType = original.payType;
-      if (debt <= 0.01) {
+      String payType;
+      if (debt <= 0.01 && extraPayments <= 0.01) {
+        // مدفوع بالكامل من البداية (بدون تسديدات)
         status = 'paid';
-      } else if (original.payType == 'debt' && paid <= 0.01) {
+        payType = 'cash';
+      } else if (paidForDb <= 0.01 && extraPayments <= 0.01) {
+        // لم يُدفع شيء
         status = 'unpaid';
+        payType = 'debt';
       } else {
+        // دفع جزئي
         status = 'partial';
+        payType = 'partial';
       }
 
       // نبني العناصر الجديدة بنفس شكل الإنشاء العادي
       final items = invoiceState.items.map((item) {
+        final displayName = item.note.trim().isNotEmpty
+            ? '${item.product.name} [${item.note.trim()}]'
+            : item.product.name;
         return <String, dynamic>{
-          'product_name': item.product.name,
+          'product_name': displayName,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
@@ -481,7 +511,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         subtotal: subtotal,
         discount: discount,
         grandTotal: grandTotal,
-        paid: paid,
+        paid: paidForDb,
         debt: debt,
         status: status,
         payType: payType,
@@ -1444,6 +1474,8 @@ class _ProductsStep extends ConsumerWidget {
                     invoiceNotifier.updateQuantity(item.product.id, q),
                 onPriceTypeChange: (w) =>
                     invoiceNotifier.togglePriceType(item.product.id, w),
+                onNoteChange: (n) =>
+                    invoiceNotifier.updateNote(item.product.id, n),
               ),
             ),
           ),
@@ -1605,23 +1637,54 @@ class _EmptyCartHint extends StatelessWidget {
   }
 }
 
-class _CartItemCard extends StatelessWidget {
+class _CartItemCard extends StatefulWidget {
   const _CartItemCard({
     required this.item,
     required this.onRemove,
     required this.onQtyChange,
     required this.onPriceTypeChange,
+    required this.onNoteChange,
   });
 
   final CartItem item;
   final VoidCallback onRemove;
   final ValueChanged<double> onQtyChange;
   final ValueChanged<bool> onPriceTypeChange;
+  final ValueChanged<String> onNoteChange;
+
+  @override
+  State<_CartItemCard> createState() => _CartItemCardState();
+}
+
+class _CartItemCardState extends State<_CartItemCard> {
+  late TextEditingController _noteCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteCtrl = TextEditingController(text: widget.item.note);
+  }
+
+  @override
+  void didUpdateWidget(covariant _CartItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item.product.id != oldWidget.item.product.id) {
+      _noteCtrl.text = widget.item.note;
+    } else if (widget.item.note != oldWidget.item.note && widget.item.note != _noteCtrl.text) {
+      _noteCtrl.text = widget.item.note;
+    }
+  }
+
+  @override
+  void dispose() {
+    _noteCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hasWholesale = item.product.wholesalePrice != null;
+    final hasWholesale = widget.item.product.wholesalePrice != null;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1647,7 +1710,7 @@ class _CartItemCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  item.product.name,
+                  widget.item.product.name,
                   style: TextStyle(
                     fontFamily: 'KOMedia',
                     fontWeight: FontWeight.w800,
@@ -1657,7 +1720,7 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: onRemove,
+                onTap: widget.onRemove,
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -1673,6 +1736,43 @@ class _CartItemCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+
+          // ── Item Note Input Field ──
+          TextFormField(
+            controller: _noteCtrl,
+            onChanged: widget.onNoteChange,
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: 'Cairo',
+              color: isDark ? Colors.white : AppColors.textPrimary,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              hintText: 'أضف ملاحظة لهذا المنتج...',
+              hintStyle: TextStyle(
+                fontSize: 11,
+                fontFamily: 'Cairo',
+                color: isDark ? Colors.white38 : Colors.black38,
+              ),
+              prefixIcon: const Icon(Icons.edit_note, size: 18, color: AppColors.primary),
+              filled: true,
+              fillColor: isDark ? Colors.white.withOpacity(0.02) : Colors.grey.withOpacity(0.04),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black12),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1),
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
 
           // ── Price type + quantity ──
@@ -1681,8 +1781,8 @@ class _CartItemCard extends StatelessWidget {
               // Price type toggle
               if (hasWholesale)
                 _PriceTypeToggle(
-                  isWholesale: item.isWholesale,
-                  onChanged: onPriceTypeChange,
+                  isWholesale: widget.item.isWholesale,
+                  onChanged: widget.onPriceTypeChange,
                 )
               else
                 Container(
@@ -1706,9 +1806,9 @@ class _CartItemCard extends StatelessWidget {
 
               // Quantity stepper
               _QuantityStepper(
-                quantity: item.quantity,
-                onDecrease: () => onQtyChange(item.quantity - 1),
-                onIncrease: () => onQtyChange(item.quantity + 1),
+                quantity: widget.item.quantity,
+                onDecrease: () => widget.onQtyChange(widget.item.quantity - 1),
+                onIncrease: () => widget.onQtyChange(widget.item.quantity + 1),
               ),
             ],
           ),
@@ -1722,7 +1822,7 @@ class _CartItemCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_fmt.format(item.effectivePrice)} IQD × ${item.quantity.toStringAsFixed(item.quantity == item.quantity.truncate() ? 0 : 2)}',
+                '${_fmt.format(widget.item.effectivePrice)} IQD × ${widget.item.quantity.toStringAsFixed(widget.item.quantity == widget.item.quantity.truncate() ? 0 : 2)}',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
@@ -1730,7 +1830,7 @@ class _CartItemCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '${_fmt.format(item.total)} IQD',
+                '${_fmt.format(widget.item.total)} IQD',
                 style: const TextStyle(
                   fontFamily: 'KOMedia',
                   fontWeight: FontWeight.w800,
@@ -1877,23 +1977,60 @@ class _StepBtn extends StatelessWidget {
 // Product Picker Bottom Sheet
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ProductPickerSheet extends StatefulWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// Product Picker Bottom Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ProductPickerSheet extends ConsumerStatefulWidget {
   const _ProductPickerSheet({required this.products});
   final List<ProductModel> products;
 
   @override
-  State<_ProductPickerSheet> createState() => _ProductPickerSheetState();
+  ConsumerState<_ProductPickerSheet> createState() => _ProductPickerSheetState();
 }
 
-class _ProductPickerSheetState extends State<_ProductPickerSheet> {
+class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
   String _query = '';
+  late List<ProductModel> _localProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    _localProducts = widget.products;
+  }
+
+  Future<void> _quickAddProduct(BuildContext context) async {
+    final repo = ref.read(productRepositoryProvider);
+    final newProduct = await showDialog<ProductModel>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _AddProductDialog(
+        onSave: (name, retail, wholesale, unit, barcode, stock) async {
+          final saved = await repo.upsertProduct(
+            name: name,
+            retailPrice: retail,
+            wholesalePrice: wholesale,
+            unit: unit,
+            barcode: barcode,
+            stock: stock,
+          );
+          ref.invalidate(productsProvider);
+          return saved;
+        },
+      ),
+    );
+
+    if (newProduct != null && mounted) {
+      Navigator.of(context).pop(newProduct);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final filtered = _query.isEmpty
-        ? widget.products
-        : widget.products
+        ? _localProducts
+        : _localProducts
             .where((p) =>
                 p.name.toLowerCase().contains(_query.toLowerCase()) ||
                 (p.barcode?.toLowerCase().contains(_query.toLowerCase()) ??
@@ -1938,6 +2075,22 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
                     ),
                   ),
                 ),
+                FilledButton.icon(
+                  onPressed: () => _quickAddProduct(context),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text(
+                    'منتج جديد',
+                    style: TextStyle(fontFamily: 'Cairo', fontSize: 12),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
@@ -2030,6 +2183,182 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
         ],
       ),
     );
+  }
+}
+
+class _AddProductDialog extends StatefulWidget {
+  const _AddProductDialog({required this.onSave});
+  final Future<ProductModel> Function(
+    String name,
+    double retailPrice,
+    double? wholesalePrice,
+    String unit,
+    String? barcode,
+    double? stock,
+  ) onSave;
+
+  @override
+  State<_AddProductDialog> createState() => _AddProductDialogState();
+}
+
+class _AddProductDialogState extends State<_AddProductDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _retailCtrl = TextEditingController();
+  final _wholesaleCtrl = TextEditingController();
+  final _unitCtrl = TextEditingController(text: 'قطعة');
+  final _barcodeCtrl = TextEditingController();
+  final _stockCtrl = TextEditingController();
+
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _retailCtrl.dispose();
+    _wholesaleCtrl.dispose();
+    _unitCtrl.dispose();
+    _barcodeCtrl.dispose();
+    _stockCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AlertDialog(
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text(
+        'إضافة منتج جديد',
+        style: GoogleFonts.almarai(fontWeight: FontWeight.bold, fontSize: 16),
+        textAlign: TextAlign.center,
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameCtrl,
+                textDirection: ui.TextDirection.rtl,
+                decoration: const InputDecoration(
+                  labelText: 'اسم المنتج *',
+                  hintText: 'مثال: حليب المراعي 1 لتر',
+                  prefixIcon: Icon(Icons.shopping_bag_outlined),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'اسم المنتج مطلوب' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _retailCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'سعر المفرد *',
+                  hintText: 'سعر البيع بالمفرد',
+                  prefixIcon: Icon(Icons.monetization_on_outlined),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'سعر المفرد مطلوب';
+                  if (double.tryParse(v) == null) return 'أدخل رقم صحيح';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _wholesaleCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'سعر الجملة (اختياري)',
+                  hintText: 'سعر البيع بالجملة',
+                  prefixIcon: Icon(Icons.storefront_outlined),
+                ),
+                validator: (v) {
+                  if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
+                    return 'أدخل رقم صحيح';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _unitCtrl,
+                textDirection: ui.TextDirection.rtl,
+                decoration: const InputDecoration(
+                  labelText: 'الوحدة',
+                  hintText: 'قطعة، كرتون، كغ...',
+                  prefixIcon: Icon(Icons.scale_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _barcodeCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'الباركود (اختياري)',
+                  hintText: 'رقم الباركود',
+                  prefixIcon: Icon(Icons.qr_code_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _stockCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'المخزون الأولي (اختياري)',
+                  hintText: 'الكمية المتوفرة',
+                  prefixIcon: Icon(Icons.inventory_outlined),
+                ),
+                validator: (v) {
+                  if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
+                    return 'أدخل رقم صحيح';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: _isSaving ? null : _saveProduct,
+          style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+          child: _isSaving
+              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              : const Text('حفظ'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _saveProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+    try {
+      final name = _nameCtrl.text.trim();
+      final retail = double.parse(_retailCtrl.text.trim());
+      final wholesale = _wholesaleCtrl.text.trim().isNotEmpty
+          ? double.parse(_wholesaleCtrl.text.trim())
+          : null;
+      final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : 'قطعة';
+      final barcode = _barcodeCtrl.text.trim().isNotEmpty ? _barcodeCtrl.text.trim() : null;
+      final stock = _stockCtrl.text.trim().isNotEmpty ? double.parse(_stockCtrl.text.trim()) : null;
+
+      final savedProduct = await widget.onSave(name, retail, wholesale, unit, barcode, stock);
+      if (mounted) {
+        Navigator.pop(context, savedProduct);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        AppSnackBar.error(context, 'حدث خطأ أثناء حفظ المنتج: $e');
+      }
+    }
   }
 }
 
@@ -2190,13 +2519,13 @@ class _PaymentStep extends ConsumerWidget {
         if (isEditing && originalInvoice != null) ...[
           const SizedBox(height: 24),
           Builder(builder: (context) {
-            final initialPaid = originalInvoice!.paid;
-            final extraPaid = originalInvoice!.currentPaid - initialPaid;
+            final totalPaid = invoiceState.receivedAmount ?? originalInvoice!.currentPaid;
+            final remaining = invoiceState.grandTotal - totalPaid;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'تعديل بيانات الدفع:',
+                  'بيانات الدفع:',
                   style: TextStyle(
                     fontFamily: 'KOMedia',
                     fontSize: 16,
@@ -2204,7 +2533,27 @@ class _PaymentStep extends ConsumerWidget {
                     color: isDark ? Colors.white : AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: receivedCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'المبلغ المدفوع الكلي',
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                    suffixText: 'IQD',
+                    helperText: remaining > 0.01
+                        ? 'المتبقي كدين: ${_fmt.format(remaining)} IQD'
+                        : 'مدفوع بالكامل ✓',
+                    helperStyle: TextStyle(
+                      fontFamily: 'KOMedia',
+                      fontWeight: FontWeight.w800,
+                      color: remaining > 0.01 ? AppColors.danger : AppColors.success,
+                    ),
+                  ),
+                  onChanged: (val) =>
+                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
+                ),
+                const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -2216,87 +2565,54 @@ class _PaymentStep extends ConsumerWidget {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'طريقة الدفع الأصلية: ${originalInvoice!.payType == 'cash' ? 'نقدي' : originalInvoice!.payType == 'debt' ? 'آجل' : 'جزئي'}',
-                        style: const TextStyle(
-                          fontFamily: 'KOMedia',
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'المبلغ المدفوع:',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '${_fmt.format(totalPaid)} IQD',
+                            style: const TextStyle(
+                              fontFamily: 'KOMedia',
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.success,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'المبالغ المسددة بعد الفاتورة: ${_fmt.format(extraPaid)} IQD (لن تتغيّر من هنا)',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'المتبقي كدين:',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '${_fmt.format(remaining > 0 ? remaining : 0)} IQD',
+                            style: const TextStyle(
+                              fontFamily: 'KOMedia',
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.danger,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: receivedCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'المبلغ المدفوع عند إنشاء الفاتورة',
-                    prefixIcon: const Icon(Icons.payments_outlined),
-                    suffixText: 'IQD',
-                    helperText:
-                        'المدفوع الكلي بعد التسديدات سيكون: ${_fmt.format((double.tryParse(receivedCtrl.text) ?? initialPaid) + extraPaid)} IQD',
-                  ),
-                  onChanged: (val) =>
-                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'المبلغ المدفوع الكلي:',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      '${_fmt.format(originalInvoice!.currentPaid)} IQD',
-                      style: const TextStyle(
-                        fontFamily: 'KOMedia',
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.success,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'المتبقي كدين:',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      '${_fmt.format(originalInvoice!.debt)} IQD',
-                      style: const TextStyle(
-                        fontFamily: 'KOMedia',
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.danger,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             );

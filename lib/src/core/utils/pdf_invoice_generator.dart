@@ -371,6 +371,14 @@ class PdfInvoiceGenerator {
                               pw.Text(item.productName,
                                   style: baseStyle,
                                   textDirection: pw.TextDirection.rtl),
+                              if (item.note.isNotEmpty) ...[
+                                pw.SizedBox(height: 2),
+                                pw.Text(
+                                  'ملاحظة: ${item.note}',
+                                  style: smallStyle,
+                                  textDirection: pw.TextDirection.rtl,
+                                ),
+                              ],
                               pw.Text(
                                 item.priceType == 'wholesale' ? 'جملة' : 'مفرد',
                                 style: smallStyle,

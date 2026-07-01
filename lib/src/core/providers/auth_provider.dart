@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/sync_service.dart';
+import '../../data/local/offline_database.dart';
+
 enum AuthRole { initial, guest, user, admin }
 
 class AppAuthState {
@@ -75,6 +78,9 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
             phone: user.userMetadata?['phone'] as String?,
             isLoading: false,
           );
+
+          // ── تشغيل محرك المزامنة بعد تسجيل الدخول ──
+          SyncService.instance.initialize();
         } catch (_) {
           state = AppAuthState(
               role: AuthRole.user,
@@ -109,6 +115,10 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('rememberMe');
+
+    // ── تنظيف البيانات المحلية عند تسجيل الخروج ──
+    await OfflineDatabase.instance.clearAllData();
+
     await Supabase.instance.client.auth.signOut();
   }
 

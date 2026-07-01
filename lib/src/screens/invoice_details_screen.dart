@@ -614,6 +614,17 @@ class _ReceiptCard extends StatelessWidget {
                         Text(item.productName,
                             style: const TextStyle(
                                 fontSize: 13, fontWeight: FontWeight.w500)),
+                        if (item.note.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            item.note,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
                         Text(
                           item.priceType == 'wholesale' ? 'جملة' : 'مفرد',
                           style:

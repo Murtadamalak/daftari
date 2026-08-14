@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../local/offline_database.dart';
 import '../../core/services/connectivity_service.dart';
@@ -266,8 +267,8 @@ class CustomerRepository {
 
   Future<CustomerModel> _upsertOffline(
       Map<String, dynamic> data, String? id) async {
-    // إنشاء معرف جديد إذا لم يُوفَّر
-    final effectiveId = id ?? 'LOCAL-${DateTime.now().millisecondsSinceEpoch}';
+    // إنشاء معرف جديد UUID إذا لم يُوفَّر لضمان التوافق مع نوع uuid في Postgres
+    final effectiveId = id ?? const Uuid().v4();
     data['id'] = effectiveId;
     data['created_at'] = DateTime.now().toIso8601String();
 

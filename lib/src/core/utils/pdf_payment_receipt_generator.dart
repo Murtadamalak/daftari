@@ -7,14 +7,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
-// Font paths
-const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
-
-const _devCredit =
-    'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
-const _devPhone = '07876007620 - 07813938267';
-const _copyright = '© 2026 جميع الحقوق محفوظة ';
-
 class PdfPaymentReceiptGenerator {
   PdfPaymentReceiptGenerator._();
 
@@ -42,7 +34,6 @@ class PdfPaymentReceiptGenerator {
     final fontReg = await _loadFontFromAssets('assets/fonts/Cairo-Regular.ttf');
     final fontBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
     final fallback = <pw.Font>[];
-
 
     pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
       return pw.TextStyle(
@@ -103,34 +94,28 @@ class PdfPaymentReceiptGenerator {
                       children: [
                         pw.Text(
                           shopName ?? 'مكتب تجاري',
-                          style: ts(
-                              fontBold,
-                              fontSize: 22,
-                              color: PdfColors.white),
+                          style: ts(fontBold,
+                              fontSize: 22, color: PdfColors.white),
                         ),
                         if (ownerName != null)
                           pw.Text(
                             'بإدارة: $ownerName',
-                            style: ts(
-                                fontReg,
+                            style: ts(fontReg,
                                 fontSize: 10,
                                 color: const PdfColor(0.8, 0.8, 1.0)),
                           ),
                         if (shopPhone != null)
                           pw.Text(
                             'هاتف: $shopPhone',
-                            style: ts(
-                                fontReg,
+                            style: ts(fontReg,
                                 fontSize: 10,
                                 color: const PdfColor(0.8, 0.8, 1.0)),
                           ),
                         pw.SizedBox(height: 4),
                         pw.Text(
                           'وصل استلام قبض',
-                          style: ts(
-                              fontReg,
-                              fontSize: 14,
-                              color: PdfColors.white),
+                          style:
+                              ts(fontReg, fontSize: 14, color: PdfColors.white),
                         ),
                       ],
                     ),
@@ -139,10 +124,8 @@ class PdfPaymentReceiptGenerator {
                       children: [
                         pw.Text(
                           'التاريخ: $dateStr',
-                          style: ts(
-                              fontReg,
-                              fontSize: 12,
-                              color: PdfColors.white),
+                          style:
+                              ts(fontReg, fontSize: 12, color: PdfColors.white),
                         ),
                       ],
                     ),
@@ -165,26 +148,21 @@ class PdfPaymentReceiptGenerator {
                   children: [
                     pw.Text(
                       'استلمت من السيد / السيدة',
-                      style: ts(
-                          fontReg,
-                          fontSize: 18,
-                          color: PdfColors.grey700),
+                      style:
+                          ts(fontReg, fontSize: 18, color: PdfColors.grey700),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
                       customerName,
-                      style: ts(
-                          fontBold,
+                      style: ts(fontBold,
                           fontSize: 28,
                           color: const PdfColor.fromInt(0xFF1E293B)),
                     ),
                     pw.SizedBox(height: 24),
                     pw.Text(
                       'مبلغاً وقدره',
-                      style: ts(
-                          fontReg,
-                          fontSize: 18,
-                          color: PdfColors.grey700),
+                      style:
+                          ts(fontReg, fontSize: 18, color: PdfColors.grey700),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Container(
@@ -199,8 +177,7 @@ class PdfPaymentReceiptGenerator {
                       ),
                       child: pw.Text(
                         _fmt(amountPaid),
-                        style: ts(
-                            fontBold,
+                        style: ts(fontBold,
                             fontSize: 24,
                             color: const PdfColor.fromInt(0xFF4338CA)),
                         textDirection: pw.TextDirection.ltr,
@@ -209,18 +186,15 @@ class PdfPaymentReceiptGenerator {
                     pw.SizedBox(height: 24),
                     pw.Text(
                       'وذلك كدفعة تسديد من الدين الكُلي',
-                      style: ts(
-                          fontReg,
-                          fontSize: 18,
-                          color: PdfColors.grey700),
+                      style:
+                          ts(fontReg, fontSize: 18, color: PdfColors.grey700),
                     ),
                     pw.SizedBox(height: 32),
                     pw.Divider(color: PdfColors.grey300),
                     pw.SizedBox(height: 16),
                     pw.Text(
                       'شكراً لتعاونكم معنا',
-                      style: ts(
-                          fontBold,
+                      style: ts(fontBold,
                           fontSize: 20,
                           color: const PdfColor.fromInt(0xFF10B981)),
                     ),

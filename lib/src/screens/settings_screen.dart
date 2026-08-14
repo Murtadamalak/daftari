@@ -19,7 +19,6 @@ import '../core/utils/app_snackbar.dart';
 import '../core/utils/backup_service.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoices_provider.dart';
-import '../core/widgets/refresh_action_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -366,7 +365,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _SettingsCard(
                   child: Column(
                     children: [
-                      _InfoRow(label: 'الإصدار', value: '2.0.1'),
+                      _InfoRow(label: 'الإصدار', value: '2.3.0'),
                       const Divider(height: 1),
                       _InfoRow(label: 'التطبيق', value: 'نظام دفتري'),
                       const Divider(height: 1),
@@ -414,7 +413,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('مكتب فن للتصميم والبرمجة',
+                                Text('مكتب المهندس للتصميم والبرمجة',
                                     style: GoogleFonts.almarai(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700)),
@@ -1265,7 +1264,7 @@ class _AboutDeveloperDialog extends StatelessWidget {
 
             // ── Office name ──
             Text(
-              'مكتب فن للتصميم والبرمجة',
+              'مكتب المهندس للتصميم والبرمجة',
               style: GoogleFonts.almarai(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,

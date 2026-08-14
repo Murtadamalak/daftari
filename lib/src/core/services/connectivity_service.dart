@@ -51,7 +51,7 @@ class ConnectivityService {
           _controller.add(_isOnline);
         }
       },
-      onError: (e) {
+      onError: (Object? e) {
         debugPrint('[Connectivity] Error: $e');
       },
     );

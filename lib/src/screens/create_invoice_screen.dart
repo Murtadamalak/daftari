@@ -229,7 +229,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         }
       }
 
-      // نضبط طريقة الدفع وحقل "المبلغ المدفوع عند إنشاء الفاتورة" في الحالة
+      // نضبط طريقة الدفع في الحالة (للاستخدام الداخلي فقط)
       if (inv.payType == 'cash') {
         notifier.setPaymentMethod(PaymentMethod.cash);
       } else if (inv.payType == 'debt') {
@@ -237,7 +237,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       } else {
         notifier.setPaymentMethod(PaymentMethod.partial);
       }
-      // نستخدم المبلغ المدفوع الكلي (grandTotal - debt) بدلاً من الدفعة الأولى فقط
+
+      // المبلغ المدفوع الكلي = إجمالي الفاتورة - الدين الحالي
+      // يشمل الدفعة الأولى + جميع دفعات التسديد اللاحقة
       final totalPaid = inv.currentPaid;
       notifier.setReceivedAmount(totalPaid);
 
@@ -253,7 +255,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       _discountCtrl.text =
           inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
-      _receivedCtrl.text = totalPaid == 0 ? '' : totalPaid.toStringAsFixed(0);
+      // نملأ الحقل بالمبلغ الكلي المدفوع (0 → فارغ)
+      _receivedCtrl.text = totalPaid <= 0.001 ? '' : totalPaid.toStringAsFixed(0);
 
       _originalInvoice = inv;
       _originalItems = items;
@@ -279,12 +282,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         return;
       }
       if (widget.isEditing) {
+        // إذا أدخل المستخدم مبلغاً أكبر من الإجمالي، نضبطه تلقائياً
         final totalPaid = state.receivedAmount ?? 0.0;
         final total = state.grandTotal;
         if (totalPaid > total + 0.01) {
-          _showToast(
-              'المبلغ المدفوع الكلي لا يمكن أن يكون أكبر من قيمة الفاتورة.');
-          return;
+          ref.read(invoiceCreationProvider.notifier).setReceivedAmount(total);
+          _receivedCtrl.text = total.toStringAsFixed(0);
         }
       }
       if (widget.isEditing) {
@@ -359,16 +362,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final customer = invoiceState.customer;
 
       final items = invoiceState.items.map((item) {
-        final displayName = item.note.trim().isNotEmpty
-            ? '${item.product.name} [${item.note.trim()}]'
-            : item.product.name;
         return <String, dynamic>{
-          'product_name': displayName,
+          'product_name': item.product.name,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
           'price_type': item.isWholesale ? 'wholesale' : 'retail',
           'total': item.total,
+          'note': item.note.trim(),
         };
       }).toList();
 
@@ -451,54 +452,48 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final original = _originalInvoice!;
 
       // المبلغ المدفوع الكلي الذي يريده المستخدم (يشمل كل الدفعات)
-      final desiredTotalPaid = invoiceState.receivedAmount ?? original.currentPaid;
+      // إذا لم يُدخل المستخدم شيئاً، نستخدم الحالة الأصلية
+      final rawDesiredPaid = invoiceState.receivedAmount ?? original.currentPaid;
+      // نضمن أنه لا يتجاوز الإجمالي النهائي
+      final desiredTotalPaid = rawDesiredPaid.clamp(0.0, grandTotal);
 
       // نحسب مجموع دفعات التسديد المنفصلة (سجلات 'تسديد دين')
       // حتى لا نكررها عند إعادة احتساب الديون
       double extraPayments = 0.0;
       if (original.customerId != null) {
-        final paymentRecords = await repo.getPaymentRecordsByCustomer(original.customerId!);
+        final paymentRecords =
+            await repo.getPaymentRecordsByCustomer(original.customerId!);
         extraPayments = paymentRecords.fold(0.0, (sum, p) => sum + p.paid);
       }
 
       // الـ paid في قاعدة البيانات = المبلغ المدفوع الكلي - دفعات التسديد المنفصلة
-      // لأن recalculateCustomerDebt ستضيف دفعات التسديد تلقائياً
-      var paidForDb = desiredTotalPaid - extraPayments;
-      if (paidForDb < 0) paidForDb = 0;
-      if (paidForDb > grandTotal) paidForDb = grandTotal;
+      // لأن recalculateCustomerDebt ستضيف دفعات التسديد تلقائياً عند إعادة الحساب
+      final paidForDb =
+          (desiredTotalPaid - extraPayments).clamp(0.0, grandTotal);
 
-      // الدين يُحسب بعد recalculateCustomerDebt لكن نضع قيمة مبدئية
-      var debt = grandTotal - paidForDb;
-      if (debt < 0) debt = 0;
+      // الدين المبدئي (سيُعاد احتسابه في recalculateCustomerDebt)
+      final debt = (grandTotal - paidForDb).clamp(0.0, grandTotal);
 
-      String status;
-      String payType;
-      if (debt <= 0.01 && extraPayments <= 0.01) {
-        // مدفوع بالكامل من البداية (بدون تسديدات)
-        status = 'paid';
-        payType = 'cash';
-      } else if (paidForDb <= 0.01 && extraPayments <= 0.01) {
-        // لم يُدفع شيء
-        status = 'unpaid';
-        payType = 'debt';
-      } else {
-        // دفع جزئي
-        status = 'partial';
-        payType = 'partial';
-      }
+      // ─── تحديد نوع الدفع والحالة بناءً على المبلغ الكلي المطلوب ─────────
+      // نستخدم desiredTotalPaid (لا paidForDb) لأنه يعبّر عن نية المستخدم
+      final bool fullyPaid = desiredTotalPaid >= grandTotal - 0.01;
+      final bool nothingPaid = desiredTotalPaid <= 0.01;
+
+      final String status =
+          fullyPaid ? 'paid' : (nothingPaid ? 'unpaid' : 'partial');
+      final String payType =
+          fullyPaid ? 'cash' : (nothingPaid ? 'debt' : 'partial');
 
       // نبني العناصر الجديدة بنفس شكل الإنشاء العادي
       final items = invoiceState.items.map((item) {
-        final displayName = item.note.trim().isNotEmpty
-            ? '${item.product.name} [${item.note.trim()}]'
-            : item.product.name;
         return <String, dynamic>{
-          'product_name': displayName,
+          'product_name': item.product.name,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
           'price_type': item.isWholesale ? 'wholesale' : 'retail',
           'total': item.total,
+          'note': item.note.trim(),
         };
       }).toList();
 
@@ -2519,41 +2514,168 @@ class _PaymentStep extends ConsumerWidget {
         if (isEditing && originalInvoice != null) ...[
           const SizedBox(height: 24),
           Builder(builder: (context) {
-            final totalPaid = invoiceState.receivedAmount ?? originalInvoice!.currentPaid;
-            final remaining = invoiceState.grandTotal - totalPaid;
+            final grandTotal = invoiceState.grandTotal;
+            final totalPaid = (invoiceState.receivedAmount ?? originalInvoice!.currentPaid)
+                .clamp(0.0, grandTotal);
+            final remaining = grandTotal - totalPaid;
+            final isFullyPaid = remaining <= 0.01;
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'بيانات الدفع:',
-                  style: TextStyle(
-                    fontFamily: 'KOMedia',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : AppColors.textPrimary,
-                  ),
+                // ── عنوان القسم ──────────────────────────────────────────
+                Row(
+                  children: [
+                    Icon(
+                      Icons.payments_outlined,
+                      size: 20,
+                      color: isDark ? Colors.white70 : AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'تعديل مبلغ الدفع',
+                      style: TextStyle(
+                        fontFamily: 'KOMedia',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: receivedCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'المبلغ المدفوع الكلي',
-                    prefixIcon: const Icon(Icons.payments_outlined),
-                    suffixText: 'IQD',
-                    helperText: remaining > 0.01
-                        ? 'المتبقي كدين: ${_fmt.format(remaining)} IQD'
-                        : 'مدفوع بالكامل ✓',
-                    helperStyle: TextStyle(
-                      fontFamily: 'KOMedia',
-                      fontWeight: FontWeight.w800,
-                      color: remaining > 0.01 ? AppColors.danger : AppColors.success,
+
+                const SizedBox(height: 8),
+
+                // ── تلميح توضيحي ─────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.blue.withOpacity(0.1)
+                        : Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.25),
                     ),
                   ),
-                  onChanged: (val) =>
-                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline,
+                          size: 15, color: Colors.blue),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'يشمل المبلغ أدناه جميع الدفعات منذ إنشاء الفاتورة وحتى الآن (الدفعة الأولى + دفعات التسديد)',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 11.5,
+                            color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
+
+                const SizedBox(height: 16),
+
+                // ── حقل المبلغ + زر سريع "مدفوع بالكامل" ───────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: receivedCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'المبلغ المدفوع الكلي حتى الآن',
+                          prefixIcon: const Icon(Icons.attach_money_outlined),
+                          suffixText: 'IQD',
+                          helperText: isFullyPaid
+                              ? 'مدفوع بالكامل ✓'
+                              : remaining > 0
+                                  ? 'الباقي كدين: ${_fmt.format(remaining)} IQD'
+                                  : null,
+                          helperStyle: TextStyle(
+                            fontFamily: 'KOMedia',
+                            fontWeight: FontWeight.w800,
+                            color: isFullyPaid
+                                ? AppColors.success
+                                : AppColors.danger,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          final parsed = double.tryParse(val);
+                          invoiceNotifier.setReceivedAmount(parsed);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // زر سريع: مدفوع بالكامل
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Tooltip(
+                        message: 'ضبط المبلغ المدفوع على الإجمالي الكامل',
+                        child: InkWell(
+                          onTap: isFullyPaid
+                              ? null
+                              : () {
+                                  invoiceNotifier.setReceivedAmount(grandTotal);
+                                  receivedCtrl.text =
+                                      grandTotal.toStringAsFixed(0);
+                                },
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: isFullyPaid
+                                  ? AppColors.success.withOpacity(0.15)
+                                  : (isDark
+                                      ? AppColors.darkSurface
+                                      : Colors.green.shade50),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isFullyPaid
+                                    ? AppColors.success
+                                    : Colors.green.shade300,
+                                width: isFullyPaid ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isFullyPaid
+                                      ? Icons.check_circle
+                                      : Icons.check_circle_outline,
+                                  size: 20,
+                                  color: AppColors.success,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'كامل',
+                                  style: TextStyle(
+                                    fontFamily: 'KOMedia',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── بطاقة الملخص ──────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -2566,15 +2688,47 @@ class _PaymentStep extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
+                      // إجمالي الفاتورة
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'المبلغ المدفوع:',
+                            'إجمالي الفاتورة:',
                             style: TextStyle(
                               fontFamily: 'Cairo',
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '${_fmt.format(grandTotal)} IQD',
+                            style: TextStyle(
+                              fontFamily: 'KOMedia',
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? Colors.white : AppColors.textPrimary,
                               fontSize: 14,
-                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(
+                        height: 20,
+                        color: isDark ? AppColors.darkDivider : AppColors.divider,
+                      ),
+                      // المبلغ المدفوع
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'المبلغ المدفوع الكلي:',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
                             ),
                           ),
                           Text(
@@ -2589,23 +2743,30 @@ class _PaymentStep extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      // الباقي كدين
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'المتبقي كدين:',
+                            'الباقي كدين:',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 14,
-                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
                             ),
                           ),
                           Text(
-                            '${_fmt.format(remaining > 0 ? remaining : 0)} IQD',
-                            style: const TextStyle(
+                            isFullyPaid
+                                ? 'لا يوجد دين ✓'
+                                : '${_fmt.format(remaining)} IQD',
+                            style: TextStyle(
                               fontFamily: 'KOMedia',
                               fontWeight: FontWeight.w800,
-                              color: AppColors.danger,
+                              color: isFullyPaid
+                                  ? AppColors.success
+                                  : AppColors.danger,
                               fontSize: 15,
                             ),
                           ),

@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoices_provider.dart';
 import '../data/repositories/invoice_repository.dart';
-import '../core/widgets/refresh_action_button.dart';
 import '../core/theme/app_theme.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {

@@ -640,8 +640,9 @@ class InvoiceRepository {
       final itemId = item['id'] as String? ?? const Uuid().v4();
       final String rawName = item['product_name'] as String? ?? '';
       String baseName = rawName;
-      String note = '';
-      if (rawName.contains(' [') && rawName.endsWith(']')) {
+      // Use note field directly if provided, otherwise extract from product_name (backward compat)
+      String note = item['note'] as String? ?? '';
+      if (note.isEmpty && rawName.contains(' [') && rawName.endsWith(']')) {
         final idx = rawName.lastIndexOf(' [');
         baseName = rawName.substring(0, idx);
         note = rawName.substring(idx + 2, rawName.length - 1);
@@ -650,7 +651,7 @@ class InvoiceRepository {
         'id': itemId,
         'invoice_id': id,
         'user_id': _userId,
-        'product_name': rawName,
+        'product_name': baseName.isNotEmpty ? baseName : rawName,
         'unit': item['unit'] as String? ?? 'قطعة',
         'qty': (item['qty'] as num?)?.toDouble() ?? 1.0,
         'unit_price': (item['unit_price'] as num?)?.toDouble() ?? 0.0,
@@ -1049,8 +1050,9 @@ class InvoiceRepository {
       final itemId = item['id'] as String? ?? const Uuid().v4();
       final String rawName = item['product_name'] as String? ?? '';
       String baseName = rawName;
-      String note = '';
-      if (rawName.contains(' [') && rawName.endsWith(']')) {
+      // Use note field directly if provided, otherwise extract from product_name (backward compat)
+      String note = item['note'] as String? ?? '';
+      if (note.isEmpty && rawName.contains(' [') && rawName.endsWith(']')) {
         final idx = rawName.lastIndexOf(' [');
         baseName = rawName.substring(0, idx);
         note = rawName.substring(idx + 2, rawName.length - 1);
@@ -1059,7 +1061,7 @@ class InvoiceRepository {
         'id': itemId,
         'invoice_id': original.id,
         'user_id': _userId,
-        'product_name': rawName,
+        'product_name': baseName.isNotEmpty ? baseName : rawName,
         'unit': item['unit'] as String? ?? 'قطعة',
         'qty': (item['qty'] as num?)?.toDouble() ?? 1.0,
         'unit_price': (item['unit_price'] as num?)?.toDouble() ?? 0.0,

@@ -11,17 +11,6 @@ import '../../data/repositories/customer_repository.dart';
 import '../../data/repositories/invoice_repository.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
-
-const _devCredit =
-    'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
-const _devPhone = '07876007620  -  07813938267';
-const _copyright = '© 2026 جميع الحقوق محفوظة - مكتب فن للتصميم والبرمجة';
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Model: بيانات صف الزبون الكاملة للتقرير
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -228,7 +217,6 @@ class PdfDebtReportGenerator {
     final fontBold = await _font('assets/fonts/Cairo-Bold.ttf');
     final fallback = <pw.Font>[];
 
-
     pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
       return pw.TextStyle(
         font: font,
@@ -286,9 +274,7 @@ class PdfDebtReportGenerator {
               pw.Text(
                 'برمجة وتطوير المهندس مرتضى علاء - 07876007620 - نظام دفتري',
                 style: pw.TextStyle(
-                    font: fontBold,
-                    fontSize: 7,
-                    color: PdfColors.grey600),
+                    font: fontBold, fontSize: 7, color: PdfColors.grey600),
                 textDirection: pw.TextDirection.rtl,
               ),
             ],
@@ -432,8 +418,13 @@ class PdfDebtReportGenerator {
                   fontReg, fontBold, fallback,
                   icon: '🧾'),
               pw.SizedBox(width: 8),
-              _card('المنتجات المباعة', '${summary.productsSoldCount} وحدة',
-                  const PdfColor.fromInt(0xFF7C3AED), fontReg, fontBold, fallback,
+              _card(
+                  'المنتجات المباعة',
+                  '${summary.productsSoldCount} وحدة',
+                  const PdfColor.fromInt(0xFF7C3AED),
+                  fontReg,
+                  fontBold,
+                  fallback,
                   icon: '📦'),
             ],
           ),
@@ -465,16 +456,23 @@ class PdfDebtReportGenerator {
           else ...[
             // Helper local builders for table-like rows
             () {
-              pw.Widget buildCell(pw.Widget child, {double? width, int? flex, bool showBorder = true, PdfColor? dividerColor}) {
+              pw.Widget buildCell(pw.Widget child,
+                  {double? width,
+                  int? flex,
+                  bool showBorder = true,
+                  PdfColor? dividerColor}) {
                 final cell = pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+                  padding:
+                      const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
                   child: child,
                 );
                 final inner = showBorder
                     ? pw.Row(
                         children: [
                           pw.Expanded(child: cell),
-                          pw.Container(width: 0.5, color: dividerColor ?? PdfColors.grey300),
+                          pw.Container(
+                              width: 0.5,
+                              color: dividerColor ?? PdfColors.grey300),
                         ],
                       )
                     : cell;
@@ -494,10 +492,16 @@ class PdfDebtReportGenerator {
                   decoration: pw.BoxDecoration(
                     color: bgColor,
                     border: pw.Border(
-                      left: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      right: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      top: isHeader ? const pw.BorderSide(color: PdfColors.grey300, width: 0.5) : pw.BorderSide.none,
+                      left: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      right: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      bottom: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      top: isHeader
+                          ? const pw.BorderSide(
+                              color: PdfColors.grey300, width: 0.5)
+                          : pw.BorderSide.none,
                     ),
                   ),
                   child: pw.Row(
@@ -516,14 +520,70 @@ class PdfDebtReportGenerator {
                     isHeader: true,
                     bgColor: headerColor,
                     cells: [
-                      buildCell(pw.Text('#', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), width: 20, dividerColor: whiteDiv),
-                      buildCell(pw.Text('اسم الزبون', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 25, dividerColor: whiteDiv),
-                      buildCell(pw.Text('إجمالي المشتريات', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
-                      buildCell(pw.Text('المبلغ الواصل', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
-                      buildCell(pw.Text('المبلغ المتبقي', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 16, dividerColor: whiteDiv),
-                      buildCell(pw.Text('آخر شراء', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 14, dividerColor: whiteDiv),
-                      buildCell(pw.Text('آخر تسديد', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), flex: 14, dividerColor: whiteDiv),
-                      buildCell(pw.Text('ف', style: ts(fontBold, fontSize: 8, color: PdfColors.white), textDirection: pw.TextDirection.rtl, textAlign: pw.TextAlign.center), width: 30, showBorder: false),
+                      buildCell(
+                          pw.Text('#',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          width: 20,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('اسم الزبون',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 25,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('إجمالي المشتريات',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 16,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('المبلغ الواصل',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 16,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('المبلغ المتبقي',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 16,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('آخر شراء',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 14,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('آخر تسديد',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          flex: 14,
+                          dividerColor: whiteDiv),
+                      buildCell(
+                          pw.Text('ف',
+                              style: ts(fontBold,
+                                  fontSize: 8, color: PdfColors.white),
+                              textDirection: pw.TextDirection.rtl,
+                              textAlign: pw.TextAlign.center),
+                          width: 30,
+                          showBorder: false),
                     ],
                   ),
                   // ── Data rows ──
@@ -540,7 +600,8 @@ class PdfDebtReportGenerator {
                     return buildRow(
                       bgColor: bg,
                       cells: [
-                        buildCell(_tc('${i + 1}', baseStyle, center: true), width: 20),
+                        buildCell(_tc('${i + 1}', baseStyle, center: true),
+                            width: 20),
                         buildCell(
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -554,12 +615,32 @@ class PdfDebtReportGenerator {
                           ),
                           flex: 25,
                         ),
-                        buildCell(_tc(_fmt(row.totalPurchased), baseStyle, center: true), flex: 16),
-                        buildCell(_tc(_fmt(row.totalPaid), baseStyle.copyWith(color: _accentGreen), center: true), flex: 16),
-                        buildCell(_tc(_fmt(row.remaining), boldStyle.copyWith(color: debtColor), center: true), flex: 16),
-                        buildCell(_tc(_fmtDate(row.lastPurchaseDate), smallStyle, center: true), flex: 14),
-                        buildCell(_tc(_fmtDate(row.lastPaymentDate), smallStyle, center: true), flex: 14),
-                        buildCell(_tc('${row.invoiceCount}', baseStyle, center: true), width: 30, showBorder: false),
+                        buildCell(
+                            _tc(_fmt(row.totalPurchased), baseStyle,
+                                center: true),
+                            flex: 16),
+                        buildCell(
+                            _tc(_fmt(row.totalPaid),
+                                baseStyle.copyWith(color: _accentGreen),
+                                center: true),
+                            flex: 16),
+                        buildCell(
+                            _tc(_fmt(row.remaining),
+                                boldStyle.copyWith(color: debtColor),
+                                center: true),
+                            flex: 16),
+                        buildCell(
+                            _tc(_fmtDate(row.lastPurchaseDate), smallStyle,
+                                center: true),
+                            flex: 14),
+                        buildCell(
+                            _tc(_fmtDate(row.lastPaymentDate), smallStyle,
+                                center: true),
+                            flex: 14),
+                        buildCell(
+                            _tc('${row.invoiceCount}', baseStyle, center: true),
+                            width: 30,
+                            showBorder: false),
                       ],
                     );
                   }),
@@ -583,7 +664,9 @@ class PdfDebtReportGenerator {
                         flex: 16,
                       ),
                       buildCell(
-                        _tc(_fmt(summary.rows.fold(0, (s, r) => s + r.totalPaid)),
+                        _tc(
+                            _fmt(summary.rows
+                                .fold(0, (s, r) => s + r.totalPaid)),
                             boldStyle.copyWith(color: _accentGreen),
                             center: true),
                         flex: 16,
@@ -596,7 +679,11 @@ class PdfDebtReportGenerator {
                       ),
                       buildCell(_tc('', boldStyle), flex: 14),
                       buildCell(_tc('', boldStyle), flex: 14),
-                      buildCell(_tc('${summary.invoiceCount}', boldStyle, center: true), width: 30, showBorder: false),
+                      buildCell(
+                          _tc('${summary.invoiceCount}', boldStyle,
+                              center: true),
+                          width: 30,
+                          showBorder: false),
                     ],
                   ),
                 ],
@@ -660,8 +747,8 @@ class PdfDebtReportGenerator {
   // Helpers
   // ─────────────────────────────────────────────────────────────────────────
 
-  static pw.Widget _card(
-      String title, String value, PdfColor color, pw.Font reg, pw.Font bold, List<pw.Font> fallback,
+  static pw.Widget _card(String title, String value, PdfColor color,
+      pw.Font reg, pw.Font bold, List<pw.Font> fallback,
       {String icon = ''}) {
     return pw.Expanded(
       child: pw.Container(
@@ -676,17 +763,25 @@ class PdfDebtReportGenerator {
           children: [
             if (icon.isNotEmpty)
               pw.Text(icon,
-                  style: pw.TextStyle(font: reg, fontFallback: fallback, fontSize: 14),
+                  style: pw.TextStyle(
+                      font: reg, fontFallback: fallback, fontSize: 14),
                   textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 4),
             pw.Text(value,
-                style: pw.TextStyle(font: bold, fontFallback: fallback, fontSize: 11, color: color),
+                style: pw.TextStyle(
+                    font: bold,
+                    fontFallback: fallback,
+                    fontSize: 11,
+                    color: color),
                 textDirection: pw.TextDirection.rtl,
                 textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 3),
             pw.Text(title,
                 style: pw.TextStyle(
-                    font: reg, fontFallback: fallback, fontSize: 8, color: PdfColors.grey600),
+                    font: reg,
+                    fontFallback: fallback,
+                    fontSize: 8,
+                    color: PdfColors.grey600),
                 textDirection: pw.TextDirection.rtl,
                 textAlign: pw.TextAlign.center),
           ],

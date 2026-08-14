@@ -9,7 +9,6 @@ import '../core/providers/app_providers.dart';
 import '../core/providers/products_provider.dart';
 import '../core/widgets/soft_card.dart';
 import '../data/repositories/product_repository.dart';
-import '../core/widgets/refresh_action_button.dart';
 import '../core/theme/app_theme.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
@@ -32,7 +31,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(filteredProductsProvider);
     final searchQuery = ref.watch(productSearchQueryProvider);
-    final theme = Theme.of(context);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

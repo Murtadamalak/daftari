@@ -191,7 +191,7 @@ class _SubscriptionStatusWidgetState
 
   void _navigateToPlans(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => const SubscriptionPlansScreen(),
       ),
     );

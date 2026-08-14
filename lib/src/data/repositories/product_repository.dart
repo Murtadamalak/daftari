@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../local/offline_database.dart';
 import '../../core/services/connectivity_service.dart';
@@ -306,7 +307,7 @@ class ProductRepository {
 
   Future<ProductModel> _upsertOffline(
       Map<String, dynamic> data, String? id) async {
-    final effectiveId = id ?? 'LOCAL-${DateTime.now().millisecondsSinceEpoch}';
+    final effectiveId = id ?? const Uuid().v4();
     data['id'] = effectiveId;
     data['created_at'] = DateTime.now().toIso8601String();
 

@@ -14,7 +14,6 @@ import '../core/utils/pdf_debt_report_generator.dart';
 import '../data/repositories/customer_repository.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../core/widgets/refresh_action_button.dart';
 import 'delayed_debts_screen.dart';
 
 // Formatter for currency
@@ -57,7 +56,9 @@ final customersWithDebtProvider =
     final cInvs = data.invoices.where((i) => i.customerId == c.id);
     for (final inv in cInvs) {
       if (inv.num.toString().contains(query) ||
-          inv.formattedNum.toLowerCase().contains(query)) return true;
+          inv.formattedNum.toLowerCase().contains(query)) {
+        return true;
+      }
       final items = data.items.where((it) => it.invoiceId == inv.id);
       if (items.any((it) => it.productName.toLowerCase().contains(query))) {
         return true;
@@ -937,7 +938,6 @@ class _DelayedDebtsBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final delayedAsync = ref.watch(delayedCustomersProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return delayedAsync.maybeWhen(
       data: (list) {

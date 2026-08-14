@@ -34,6 +34,39 @@ class RouterNotifier extends ChangeNotifier {
   }
 }
 
+CustomTransitionPage<dynamic> _buildSmoothPage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<dynamic>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.03, 0.0),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.985, end: 1.0).animate(curvedAnimation),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = RouterNotifier(ref);
 
@@ -86,11 +119,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => _buildSmoothPage(
+          key: state.pageKey,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: '/subscription',
-        builder: (context, state) => const SubscriptionScreen(),
+        pageBuilder: (context, state) => _buildSmoothPage(
+          key: state.pageKey,
+          child: const SubscriptionScreen(),
+        ),
       ),
 
       // ── Admin Shell ──────────────────────────────────────────────────
@@ -103,7 +142,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin',
-                builder: (context, state) => const AdminDashboardScreen(),
+                pageBuilder: (context, state) => _buildSmoothPage(
+                  key: state.pageKey,
+                  child: const AdminDashboardScreen(),
+                ),
               ),
             ],
           ),
@@ -111,7 +153,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin/requests',
-                builder: (context, state) => const AdminRequestsScreen(),
+                pageBuilder: (context, state) => _buildSmoothPage(
+                  key: state.pageKey,
+                  child: const AdminRequestsScreen(),
+                ),
               ),
             ],
           ),
@@ -119,7 +164,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin/users',
-                builder: (context, state) => const AdminUsersScreen(),
+                pageBuilder: (context, state) => _buildSmoothPage(
+                  key: state.pageKey,
+                  child: const AdminUsersScreen(),
+                ),
               ),
             ],
           ),
@@ -127,7 +175,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/admin/settings',
-                builder: (context, state) => const AdminSettingsScreen(),
+                pageBuilder: (context, state) => _buildSmoothPage(
+                  key: state.pageKey,
+                  child: const AdminSettingsScreen(),
+                ),
               ),
             ],
           ),
@@ -145,7 +196,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/products',
-                pageBuilder: (context, state) => MaterialPage(
+                pageBuilder: (context, state) => _buildSmoothPage(
                   key: state.pageKey,
                   child: const ProductsScreen(),
                 ),
@@ -153,7 +204,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'add',
                     parentNavigatorKey: _rootNavigatorKey,
-                    pageBuilder: (context, state) => MaterialPage(
+                    pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const AddEditProductScreen(),
                     ),
@@ -163,7 +214,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return MaterialPage(
+                      return _buildSmoothPage(
                         key: state.pageKey,
                         child: AddEditProductScreen(productId: id),
                       );
@@ -179,7 +230,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/customers',
-                pageBuilder: (context, state) => MaterialPage(
+                pageBuilder: (context, state) => _buildSmoothPage(
                   key: state.pageKey,
                   child: const CustomersScreen(),
                 ),
@@ -189,7 +240,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return MaterialPage(
+                      return _buildSmoothPage(
                         key: state.pageKey,
                         child: CustomerDebtsScreen(customerId: id),
                       );
@@ -198,7 +249,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'delayed',
                     parentNavigatorKey: _rootNavigatorKey,
-                    pageBuilder: (context, state) => MaterialPage(
+                    pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const DelayedDebtsScreen(),
                     ),
@@ -213,7 +264,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/invoices',
-                pageBuilder: (context, state) => MaterialPage(
+                pageBuilder: (context, state) => _buildSmoothPage(
                   key: state.pageKey,
                   child: const InvoicesScreen(),
                 ),
@@ -221,7 +272,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'create',
                     parentNavigatorKey: _rootNavigatorKey,
-                    pageBuilder: (context, state) => MaterialPage(
+                    pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const CreateInvoiceScreen(),
                     ),
@@ -231,7 +282,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return MaterialPage(
+                      return _buildSmoothPage(
                         key: state.pageKey,
                         child: InvoiceDetailsScreen(invoiceId: id),
                       );
@@ -242,7 +293,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return MaterialPage(
+                      return _buildSmoothPage(
                         key: state.pageKey,
                         child: CreateInvoiceScreen(invoiceId: id),
                       );
@@ -258,7 +309,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/reports',
-                pageBuilder: (context, state) => MaterialPage(
+                pageBuilder: (context, state) => _buildSmoothPage(
                   key: state.pageKey,
                   child: const ReportsScreen(),
                 ),
@@ -266,7 +317,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'comprehensive',
                     parentNavigatorKey: _rootNavigatorKey,
-                    pageBuilder: (context, state) => MaterialPage(
+                    pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const ComprehensiveReportsScreen(),
                     ),
@@ -274,7 +325,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'transactions',
                     parentNavigatorKey: _rootNavigatorKey,
-                    pageBuilder: (context, state) => MaterialPage(
+                    pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const TransactionsLogScreen(),
                     ),
@@ -289,7 +340,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/settings',
-                pageBuilder: (context, state) => MaterialPage(
+                pageBuilder: (context, state) => _buildSmoothPage(
                   key: state.pageKey,
                   child: const SettingsScreen(),
                 ),

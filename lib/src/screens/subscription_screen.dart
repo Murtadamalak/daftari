@@ -199,7 +199,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        MaterialPageRoute<void>(
                           builder: (_) =>
                               const SubscriptionPlansScreen(isWall: true),
                         ),

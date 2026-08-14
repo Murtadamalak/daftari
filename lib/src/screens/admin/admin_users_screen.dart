@@ -227,7 +227,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     final days = _daysLeft(sub?['end_date']);
     final dColor = _daysColor(days);
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: _surface,
       isScrollControlled: true,

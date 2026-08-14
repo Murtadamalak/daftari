@@ -68,7 +68,7 @@ class _PaymentSubmissionScreenState
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const PaymentSuccessScreen()),
+          MaterialPageRoute<void>(builder: (_) => const PaymentSuccessScreen()),
         );
       }
     } catch (e) {

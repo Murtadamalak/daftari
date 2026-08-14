@@ -37,6 +37,7 @@ class AppColors {
 
   // ── Neutrals – Dark ───────────────────────────────────────────────────────
   static const darkBg = Color(0xFF081210); // Deep, luxurious dark emerald-black
+  static const darkBackground = darkBg;
   static const darkSurface = Color(0xFF101D1A); // Dark card surface
   static const darkSurface2 = Color(0xFF162A26); // Elevated dark surface
   static const darkBorder = Color(0xFF1E3C36);

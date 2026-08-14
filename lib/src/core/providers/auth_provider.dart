@@ -36,60 +36,103 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
   }
 
   void _init() {
+    // فحص الجلسة المباشرة أولاً لتسريع الإقلاع
+    final currentUser = Supabase.instance.client.auth.currentSession?.user ??
+        Supabase.instance.client.auth.currentUser;
+    if (currentUser != null) {
+      _processUser(currentUser);
+    }
+
     Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final user = data.session?.user;
-
       if (user == null) {
         state = const AppAuthState(role: AuthRole.guest, isLoading: false);
       } else {
-        try {
-          // Fetch is_admin and subscription status in parallel
-          final profileFuture = Supabase.instance.client
-              .from('profiles')
-              .select('is_admin')
-              .eq('id', user.id)
-              .maybeSingle();
-
-          final subFuture = Supabase.instance.client
-              .from('subscriptions')
-              .select('status, plan_type, end_date')
-              .eq('user_id', user.id)
-              .maybeSingle();
-
-          final results = await Future.wait([profileFuture, subFuture]);
-          final profileRes = results[0];
-          final subRes = results[1];
-
-          final isAdmin = profileRes != null && profileRes['is_admin'] == true;
-          final subStatus =
-              subRes != null ? subRes['status'] as String? : 'none';
-          final planType =
-              subRes != null ? subRes['plan_type'] as String? : 'free';
-          final endDate = subRes != null ? subRes['end_date'] as String? : null;
-
-          state = AppAuthState(
-            role: isAdmin ? AuthRole.admin : AuthRole.user,
-            user: user,
-            subStatus: subStatus,
-            planType: planType,
-            endDate: endDate,
-            fullName: user.userMetadata?['full_name'] as String?,
-            shopName: user.userMetadata?['shop_name'] as String?,
-            phone: user.userMetadata?['phone'] as String?,
-            isLoading: false,
-          );
-
-          // ── تشغيل محرك المزامنة بعد تسجيل الدخول ──
-          SyncService.instance.initialize();
-        } catch (_) {
-          state = AppAuthState(
-              role: AuthRole.user,
-              user: user,
-              subStatus: 'error',
-              isLoading: false);
-        }
+        await _processUser(user);
       }
     });
+  }
+
+  Future<void> _processUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    try {
+      // محاولة جلب الصلاحيات والاشتراك من السحابة إذا كان متصلاً
+      final profileFuture = Supabase.instance.client
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      final subFuture = Supabase.instance.client
+          .from('subscriptions')
+          .select('status, plan_type, end_date')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      final results = await Future.wait([profileFuture, subFuture]);
+      final profileRes = results[0];
+      final subRes = results[1];
+
+      final isAdmin = profileRes != null && profileRes['is_admin'] == true;
+      final subStatus =
+          subRes != null ? subRes['status'] as String? : 'none';
+      final planType =
+          subRes != null ? subRes['plan_type'] as String? : 'free';
+      final endDate = subRes != null ? subRes['end_date'] as String? : null;
+
+      // حفظ في الكاش المحلي للاستخدام عند انقطاع الإنترنت
+      await prefs.setBool('cached_is_admin_${user.id}', isAdmin);
+      if (subStatus != null) {
+        await prefs.setString('cached_sub_status_${user.id}', subStatus);
+      }
+      if (planType != null) {
+        await prefs.setString('cached_plan_type_${user.id}', planType);
+      }
+      if (endDate != null) {
+        await prefs.setString('cached_end_date_${user.id}', endDate);
+      }
+
+      state = AppAuthState(
+        role: isAdmin ? AuthRole.admin : AuthRole.user,
+        user: user,
+        subStatus: subStatus,
+        planType: planType,
+        endDate: endDate,
+        fullName: user.userMetadata?['full_name'] as String?,
+        shopName: user.userMetadata?['shop_name'] as String?,
+        phone: user.userMetadata?['phone'] as String?,
+        isLoading: false,
+      );
+
+      // تشغيل محرك المزامنة
+      SyncService.instance.initialize();
+    } catch (_) {
+      // ── العمل أوفلاين (استرجاع من الكاش المحلي) ──
+      final cachedIsAdmin =
+          prefs.getBool('cached_is_admin_${user.id}') ?? false;
+      final cachedSubStatus =
+          prefs.getString('cached_sub_status_${user.id}') ?? 'active';
+      final cachedPlanType =
+          prefs.getString('cached_plan_type_${user.id}') ?? 'monthly';
+      final cachedEndDate =
+          prefs.getString('cached_end_date_${user.id}');
+
+      state = AppAuthState(
+        role: cachedIsAdmin ? AuthRole.admin : AuthRole.user,
+        user: user,
+        subStatus: cachedSubStatus,
+        planType: cachedPlanType,
+        endDate: cachedEndDate,
+        fullName: user.userMetadata?['full_name'] as String?,
+        shopName: user.userMetadata?['shop_name'] as String?,
+        phone: user.userMetadata?['phone'] as String?,
+        isLoading: false,
+      );
+
+      // تهيئة المزامنة للبدء فور عودة الإنترنت
+      SyncService.instance.initialize();
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -140,7 +183,10 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
   }
 
   void refreshStatus() {
-    _init(); // Re-run the listener and status check
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      _processUser(user);
+    }
   }
 }
 

@@ -11,8 +11,6 @@ import '../core/providers/settings_provider.dart';
 import '../core/theme/app_theme.dart';
 import '../core/utils/whatsapp_launcher.dart';
 import '../data/repositories/customer_repository.dart';
-import '../data/repositories/invoice_repository.dart';
-import '../core/widgets/refresh_action_button.dart';
 
 final _amtFmt = NumberFormat('#,###', 'en');
 String _fmt(double v) => '${_amtFmt.format(v)} د.ع';

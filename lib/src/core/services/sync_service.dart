@@ -287,6 +287,7 @@ class SyncService {
         'unit_price': (r['unit_price'] as num?)?.toDouble() ?? 0,
         'price_type': r['price_type'] ?? 'retail',
         'total': (r['total'] as num?)?.toDouble() ?? 0,
+        'note': r['note'] as String? ?? '',
       }).toList());
     }
 

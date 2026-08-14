@@ -10,13 +10,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 
-const _koMediaFontPath = 'assets/fonts/komedia_black.otf';
-
-const _devCredit =
-    'برمجة وتطوير: المبرمج مرتضى علاء | مكتب فن للتصميم والبرمجة';
-const _devPhone = '07876007620 - 07813938267';
-const _copyright = '© 2026 جميع الحقوق محفوظة ';
-
 class PdfReportGenerator {
   PdfReportGenerator._();
 
@@ -45,7 +38,6 @@ class PdfReportGenerator {
     final fontBold = await _loadFontFromAssets('assets/fonts/Cairo-Bold.ttf');
     final fallback = <pw.Font>[];
 
-
     pw.TextStyle ts(pw.Font font, {double? fontSize, PdfColor? color}) {
       return pw.TextStyle(
         font: font,
@@ -65,10 +57,8 @@ class PdfReportGenerator {
 
     final baseStyle = ts(fontReg, fontSize: 10);
     final boldStyle = ts(fontBold, fontSize: 10);
-    final titleStyle = ts(
-        fontBold,
-        fontSize: 16,
-        color: const PdfColor.fromInt(0xFF1A3C6E));
+    final titleStyle =
+        ts(fontBold, fontSize: 16, color: const PdfColor.fromInt(0xFF1A3C6E));
 
     final dateStr1 = DateFormat('yyyy/MM/dd').format(dateRange.start);
     final dateStr2 = DateFormat('yyyy/MM/dd').format(dateRange.end);
@@ -144,7 +134,11 @@ class PdfReportGenerator {
 
             // Helper local builders for table-like rows
             () {
-              pw.Widget buildCell(pw.Widget child, {double? width, int? flex, bool showBorder = true, PdfColor? dividerColor}) {
+              pw.Widget buildCell(pw.Widget child,
+                  {double? width,
+                  int? flex,
+                  bool showBorder = true,
+                  PdfColor? dividerColor}) {
                 final cell = pw.Padding(
                   padding: const pw.EdgeInsets.all(6),
                   child: child,
@@ -153,7 +147,9 @@ class PdfReportGenerator {
                     ? pw.Row(
                         children: [
                           pw.Expanded(child: cell),
-                          pw.Container(width: 0.5, color: dividerColor ?? PdfColors.grey300),
+                          pw.Container(
+                              width: 0.5,
+                              color: dividerColor ?? PdfColors.grey300),
                         ],
                       )
                     : cell;
@@ -173,10 +169,16 @@ class PdfReportGenerator {
                   decoration: pw.BoxDecoration(
                     color: bgColor,
                     border: pw.Border(
-                      left: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      right: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      bottom: const pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-                      top: isHeader ? const pw.BorderSide(color: PdfColors.grey300, width: 0.5) : pw.BorderSide.none,
+                      left: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      right: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      bottom: const pw.BorderSide(
+                          color: PdfColors.grey300, width: 0.5),
+                      top: isHeader
+                          ? const pw.BorderSide(
+                              color: PdfColors.grey300, width: 0.5)
+                          : pw.BorderSide.none,
                     ),
                   ),
                   child: pw.Row(
@@ -201,15 +203,33 @@ class PdfReportGenerator {
                       isHeader: true,
                       bgColor: headerBg,
                       cells: [
-                        buildCell(pw.Text('المنتج', style: boldStyle, textAlign: pw.TextAlign.right), flex: 3),
-                        buildCell(pw.Text('الكمية', style: boldStyle, textAlign: pw.TextAlign.center), flex: 1, showBorder: false),
+                        buildCell(
+                            pw.Text('المنتج',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.right),
+                            flex: 3),
+                        buildCell(
+                            pw.Text('الكمية',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.center),
+                            flex: 1,
+                            showBorder: false),
                       ],
                     ),
                     ...itemQuantities.map(
                       (e) => buildRow(
                         cells: [
-                          buildCell(pw.Text(e.key, style: baseStyle, textAlign: pw.TextAlign.right), flex: 3),
-                          buildCell(pw.Text(_fmtQty(e.value), style: boldStyle, textAlign: pw.TextAlign.center), flex: 1, showBorder: false),
+                          buildCell(
+                              pw.Text(e.key,
+                                  style: baseStyle,
+                                  textAlign: pw.TextAlign.right),
+                              flex: 3),
+                          buildCell(
+                              pw.Text(_fmtQty(e.value),
+                                  style: boldStyle,
+                                  textAlign: pw.TextAlign.center),
+                              flex: 1,
+                              showBorder: false),
                         ],
                       ),
                     ),
@@ -228,10 +248,27 @@ class PdfReportGenerator {
                       isHeader: true,
                       bgColor: headerBg,
                       cells: [
-                        buildCell(pw.Text('التاريخ / الوقت', style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
-                        buildCell(pw.Text('الزبون', style: boldStyle, textAlign: pw.TextAlign.center), flex: 1),
-                        buildCell(pw.Text('الإجمالي', style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
-                        buildCell(pw.Text('الحالة', style: boldStyle, textAlign: pw.TextAlign.center), width: 60, showBorder: false),
+                        buildCell(
+                            pw.Text('التاريخ / الوقت',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.center),
+                            width: 80),
+                        buildCell(
+                            pw.Text('الزبون',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.center),
+                            flex: 1),
+                        buildCell(
+                            pw.Text('الإجمالي',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.center),
+                            width: 80),
+                        buildCell(
+                            pw.Text('الحالة',
+                                style: boldStyle,
+                                textAlign: pw.TextAlign.center),
+                            width: 60,
+                            showBorder: false),
                       ],
                     ),
                     ...invoices.map((inv) {
@@ -249,10 +286,27 @@ class PdfReportGenerator {
 
                       return buildRow(
                         cells: [
-                          buildCell(pw.Text(timeStr, style: baseStyle, textAlign: pw.TextAlign.center), width: 80),
-                          buildCell(pw.Text(cName, style: baseStyle, textAlign: pw.TextAlign.right), flex: 1),
-                          buildCell(pw.Text(gTotal, style: boldStyle, textAlign: pw.TextAlign.center), width: 80),
-                          buildCell(pw.Text(status, style: baseStyle, textAlign: pw.TextAlign.center), width: 60, showBorder: false),
+                          buildCell(
+                              pw.Text(timeStr,
+                                  style: baseStyle,
+                                  textAlign: pw.TextAlign.center),
+                              width: 80),
+                          buildCell(
+                              pw.Text(cName,
+                                  style: baseStyle,
+                                  textAlign: pw.TextAlign.right),
+                              flex: 1),
+                          buildCell(
+                              pw.Text(gTotal,
+                                  style: boldStyle,
+                                  textAlign: pw.TextAlign.center),
+                              width: 80),
+                          buildCell(
+                              pw.Text(status,
+                                  style: baseStyle,
+                                  textAlign: pw.TextAlign.center),
+                              width: 60,
+                              showBorder: false),
                         ],
                       );
                     }),
@@ -289,8 +343,8 @@ class PdfReportGenerator {
     }
   }
 
-  static pw.Widget _summaryCard(
-      String title, String value, PdfColor color, pw.Font reg, pw.Font bold, List<pw.Font> fallback) {
+  static pw.Widget _summaryCard(String title, String value, PdfColor color,
+      pw.Font reg, pw.Font bold, List<pw.Font> fallback) {
     return pw.Container(
       width: 140,
       padding: const pw.EdgeInsets.all(12),
@@ -304,11 +358,18 @@ class PdfReportGenerator {
         children: [
           pw.Text(title,
               style: pw.TextStyle(
-                  font: reg, fontFallback: fallback, fontSize: 10, color: PdfColors.grey700),
+                  font: reg,
+                  fontFallback: fallback,
+                  fontSize: 10,
+                  color: PdfColors.grey700),
               textDirection: pw.TextDirection.rtl),
           pw.SizedBox(height: 6),
           pw.Text(value,
-              style: pw.TextStyle(font: bold, fontFallback: fallback, fontSize: 13, color: color),
+              style: pw.TextStyle(
+                  font: bold,
+                  fontFallback: fallback,
+                  fontSize: 13,
+                  color: color),
               textDirection: pw.TextDirection.rtl),
         ],
       ),

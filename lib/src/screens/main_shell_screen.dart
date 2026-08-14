@@ -1,11 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/widgets/connectivity_banner.dart';
 import '../core/providers/auth_provider.dart';
+import '../core/providers/connectivity_provider.dart';
+import '../core/services/sync_service.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({
@@ -65,6 +67,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
         location == '/settings';
 
     if (isDesktop && isMainTab) {
+      final currentTab = _tabs[widget.navigationShell.currentIndex];
+
       return Scaffold(
         body: Row(
           children: [
@@ -72,12 +76,19 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             Expanded(
               child: Column(
                 children: [
+                  // ── شريط سطح المكتب العلوي الأنيق ──
+                  _buildDesktopTopBar(context, isDark, currentTab),
                   const ConnectivityBanner(),
-                  Expanded(child: widget.navigationShell),
+                  Expanded(
+                    child: Container(
+                      color: isDark ? AppColors.darkBg : AppColors.background,
+                      child: widget.navigationShell,
+                    ),
+                  ),
                 ],
               ),
             ),
-            // ── القائمة الجانبية الثابتة (على اليمين في RTL) ──
+            // ── القائمة الجانبية الثابتة والقابلة للطي (على اليمين في RTL) ──
             _buildDesktopSidebar(context, isDark),
           ],
         ),
@@ -121,22 +132,204 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // شريط سطح المكتب العلوي
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildDesktopTopBar(
+    BuildContext context,
+    bool isDark,
+    ({IconData icon, IconData activeIcon, String label}) currentTab,
+  ) {
+    final bg = isDark ? AppColors.darkSurface : Colors.white;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final isOnline = ref.watch(isOnlineProvider);
+    final syncStatus = ref.watch(syncStatusProvider).valueOrNull ?? SyncStatus.idle;
+    final pendingCount = ref.watch(pendingOperationsCountProvider).valueOrNull ?? 0;
+
+    String dateStr = '';
+    try {
+      dateStr = DateFormat('EEEE، d MMMM y', 'ar').format(DateTime.now());
+    } catch (_) {
+      dateStr = DateFormat('yyyy/MM/dd').format(DateTime.now());
+    }
+
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border(
+          bottom: BorderSide(color: borderColor, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // ── عنوان القسم الحالي ──
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F322E) : AppColors.primarySurface,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              currentTab.activeIcon,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                currentTab.label,
+                style: TextStyle(
+                  fontFamily: 'KOMedia',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                dateStr,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 11,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          // ── شارة حالة السحابة والمزامنة ──
+          InkWell(
+            onTap: isOnline
+                ? () {
+                    ref.invalidate(syncNowProvider);
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isOnline
+                    ? (syncStatus == SyncStatus.syncing
+                        ? Colors.blue.withOpacity(0.12)
+                        : Colors.green.withOpacity(0.12))
+                    : Colors.red.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isOnline
+                      ? (syncStatus == SyncStatus.syncing
+                          ? Colors.blue.withOpacity(0.3)
+                          : Colors.green.withOpacity(0.3))
+                      : Colors.red.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (syncStatus == SyncStatus.syncing)
+                    const SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF2196F3)),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isOnline ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  Text(
+                    !isOnline
+                        ? 'أوفلاين (كاش محلي)'
+                        : syncStatus == SyncStatus.syncing
+                            ? 'جارٍ المزامنة...'
+                            : (pendingCount > 0
+                                ? '$pendingCount بانتظار المزامنة'
+                                : 'متصل بالسحابة ✓'),
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: isOnline
+                          ? (syncStatus == SyncStatus.syncing
+                              ? const Color(0xFF2196F3)
+                              : const Color(0xFF16A34A))
+                          : const Color(0xFFDC2626),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // ── زر طي / إظهار القائمة الجانبية من الهيدر ──
+          Tooltip(
+            message: _isSidebarCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية',
+            child: IconButton(
+              icon: Icon(
+                _isSidebarCollapsed
+                    ? Icons.menu_rounded
+                    : Icons.menu_open_rounded,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                size: 22,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isSidebarCollapsed = !_isSidebarCollapsed;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // القائمة الجانبية للديسكتوب
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildDesktopSidebar(BuildContext context, bool isDark) {
-    final bg = isDark ? AppColors.darkSurface : AppColors.white;
+    final bg = isDark ? AppColors.darkSurface : Colors.white;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final authState = ref.watch(authProvider);
-    final shopName = authState.shopName ?? 'مبيعات المحل';
+    final shopName = authState.shopName ?? 'دفتري';
     final fullName = authState.fullName ?? 'المستخدم';
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOutCubic,
-      width: _isSidebarCollapsed ? 80 : 250,
+      width: _isSidebarCollapsed ? 76 : 260,
       decoration: BoxDecoration(
         color: bg,
         border: Border(
           left: BorderSide(color: borderColor, width: 1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(-2, 0),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -144,7 +337,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           SafeArea(
             bottom: false,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
               height: 80,
               alignment: Alignment.center,
               child: Row(
@@ -159,16 +352,33 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                           const Icon(Icons.receipt_long, color: AppColors.primary, size: 28),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'دفتري',
-                        style: TextStyle(
-                          fontFamily: 'KOMedia',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'دفتري',
+                            style: TextStyle(
+                              fontFamily: 'KOMedia',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.primary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            shopName,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -185,18 +395,22 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                         ),
                       ),
                     ),
-                  IconButton(
-                    icon: Icon(
-                      _isSidebarCollapsed
-                          ? Icons.chevron_left_rounded
-                          : Icons.chevron_right_rounded,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  Tooltip(
+                    message: _isSidebarCollapsed ? 'توسيع' : 'طي',
+                    child: IconButton(
+                      icon: Icon(
+                        _isSidebarCollapsed
+                            ? Icons.chevron_left_rounded
+                            : Icons.chevron_right_rounded,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isSidebarCollapsed = !_isSidebarCollapsed;
+                        });
+                      },
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isSidebarCollapsed = !_isSidebarCollapsed;
-                      });
-                    },
                   ),
                 ],
               ),
@@ -207,7 +421,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           // ── بنود الملاحة ──
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
               itemCount: _tabs.length,
               itemBuilder: (context, i) {
                 final tab = _tabs[i];
@@ -225,7 +439,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         onTap: () => widget.navigationShell.goBranch(
                           i,
                           initialLocation: i == widget.navigationShell.currentIndex,
@@ -234,11 +448,17 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                           duration: const Duration(milliseconds: 200),
                           padding: EdgeInsets.symmetric(
                             horizontal: _isSidebarCollapsed ? 0 : 16,
-                            vertical: 12,
+                            vertical: 13,
                           ),
                           decoration: BoxDecoration(
                             color: isSelected ? activeBg : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
+                            border: isSelected
+                                ? Border.all(
+                                    color: activeColor.withOpacity(0.25),
+                                    width: 1,
+                                  )
+                                : null,
                           ),
                           alignment: _isSidebarCollapsed ? Alignment.center : Alignment.centerRight,
                           child: Row(
@@ -252,14 +472,14 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                                 size: 22,
                               ),
                               if (!_isSidebarCollapsed) ...[
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 14),
                                 Expanded(
                                   child: Text(
                                     tab.label,
                                     style: TextStyle(
                                       fontFamily: 'KOMedia',
                                       fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                                       color: itemColor,
                                     ),
                                   ),
@@ -267,10 +487,10 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                                 if (isSelected)
                                   Container(
                                     width: 6,
-                                    height: 6,
+                                    height: 18,
                                     decoration: BoxDecoration(
                                       color: activeColor,
-                                      shape: BoxShape.circle,
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
                               ],
@@ -290,11 +510,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           SafeArea(
             top: false,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               child: Column(
                 children: [
                   InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     onTap: () {
                       widget.navigationShell.goBranch(4); // الانتقال للإعدادات
                     },
@@ -344,18 +564,23 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                                 ],
                               ),
                             ),
+                            Icon(
+                              Icons.settings_outlined,
+                              size: 18,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
                           ],
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                        showDialog(
+                        showDialog<void>(
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text('تسجيل الخروج'),
@@ -382,14 +607,14 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                       },
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: _isSidebarCollapsed ? 0 : 16,
-                          vertical: 10,
+                          horizontal: _isSidebarCollapsed ? 0 : 14,
+                          vertical: 9,
                         ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           color: isDark
-                              ? Colors.red.withValues(alpha: 0.1)
-                              : Colors.red.withValues(alpha: 0.05),
+                              ? Colors.red.withOpacity(0.12)
+                              : Colors.red.withOpacity(0.06),
                         ),
                         alignment: _isSidebarCollapsed ? Alignment.center : Alignment.centerRight,
                         child: Row(
@@ -400,15 +625,15 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                             const Icon(
                               Icons.logout_rounded,
                               color: Colors.redAccent,
-                              size: 20,
+                              size: 18,
                             ),
                             if (!_isSidebarCollapsed) ...[
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               const Text(
                                 'تسجيل الخروج',
                                 style: TextStyle(
                                   fontFamily: 'KOMedia',
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.redAccent,
                                 ),
@@ -428,178 +653,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     );
   }
 
-
-  Widget _buildDrawer(BuildContext context, bool isDark) {
-    final bg = isDark ? AppColors.darkSurface : AppColors.white;
-
-    return Drawer(
-      backgroundColor: bg,
-      width: 240,
-      child: Column(
-        children: [
-          // ── Header ────────────────────────────────────────────────────────
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primaryDark, AppColors.primary],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.asset(
-                  'assets/images/light.png',
-                  width: 52,
-                  height: 52,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'دفتري',
-                  style: TextStyle(
-                    fontFamily: 'KOMedia',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'نظام المبيعات والديون',
-                  style: TextStyle(
-                    fontFamily: 'KOMedia',
-                    fontSize: 11,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Nav Items ─────────────────────────────────────────────────────
-          Expanded(
-            child: Container(
-              color: isDark ? AppColors.darkSurface : AppColors.background,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                children: _tabs.asMap().entries.map((e) {
-                  final i = e.key;
-                  final tab = e.value;
-                  final isSelected = widget.navigationShell.currentIndex == i;
-                  final textColor = isSelected
-                      ? AppColors.primary
-                      : (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.textSecondary);
-
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: () {
-                          widget.navigationShell.goBranch(
-                            i,
-                            initialLocation:
-                                i == widget.navigationShell.currentIndex,
-                          );
-                          Navigator.of(context).pop();
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 11),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primarySurface
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            border: isSelected
-                                ? Border.all(
-                                    color: AppColors.primary.withOpacity(0.15),
-                                    width: 1)
-                                : null,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isSelected ? tab.activeIcon : tab.icon,
-                                color: textColor,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                tab.label,
-                                style: TextStyle(
-                                  fontFamily: 'KOMedia',
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                  fontSize: 14,
-                                  color: textColor,
-                                ),
-                              ),
-                              if (isSelected) ...[
-                                const Spacer(),
-                                Container(
-                                  width: 4,
-                                  height: 4,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-
-          // ── Footer ────────────────────────────────────────────────────────
-          Container(
-            color: isDark ? AppColors.darkSurface : AppColors.background,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline,
-                    size: 14,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textDisabled),
-                const SizedBox(width: 6),
-                Text(
-                  'دفتري — نظام إدارة المبيعات',
-                  style: TextStyle(
-                    fontFamily: 'KOMedia',
-                    fontSize: 10,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textDisabled,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Floating Rounded Capsule Navigation Bar (Glassmorphic & Premium)
+// Floating Rounded Capsule Navigation Bar (Glassmorphic & Premium for Mobile)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _FlatNavBar extends StatelessWidget {
@@ -621,7 +679,7 @@ class _FlatNavBar extends StatelessWidget {
     final primaryDark = isDark ? const Color(0xFF0C1D1A) : AppColors.primaryDark;
 
     return Container(
-      color: Colors.transparent, // Ensure it doesn't clip background
+      color: Colors.transparent,
       child: SafeArea(
         top: false,
         child: Padding(

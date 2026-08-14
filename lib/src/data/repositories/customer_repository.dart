@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,12 +24,20 @@ class CustomerModel {
   });
 
   factory CustomerModel.fromJson(Map<String, dynamic> j) => CustomerModel(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        phone: j['phone'] as String?,
+        id: j['id']?.toString() ?? '',
+        name: j['name']?.toString() ?? '',
+        phone: j['phone']?.toString(),
         totalDebt: (j['total_debt'] as num?)?.toDouble() ?? 0.0,
-        createdAt: DateTime.parse(j['created_at'] as String),
+        createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'phone': phone,
+        'total_debt': totalDebt,
+        'created_at': createdAt.toIso8601String(),
+      };
 
   Map<String, dynamic> toInsertJson(String userId) => {
         'user_id': userId,
@@ -60,10 +71,14 @@ class CustomerRepository {
   final SupabaseClient _db = Supabase.instance.client;
   final _localDb = OfflineDatabase.instance;
 
-  String get _userId => _db.auth.currentUser!.id;
+  String get _userId => _db.auth.currentUser?.id ?? '';
   bool get _isOnline => ConnectivityService.instance.isOnline;
 
   Future<List<CustomerModel>> getAllCustomers() async {
+    if (_userId.isEmpty) {
+      return _getFromCache();
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -78,7 +93,7 @@ class CustomerRepository {
 
         return customers;
       } catch (e) {
-        // إذا فشل حتى وهو أونلاين (timeout مثلاً) → نقرأ من الكاش
+        debugPrint('[CustomerRepo] Error fetching customers: $e');
         return _getFromCache();
       }
     } else {
@@ -87,6 +102,12 @@ class CustomerRepository {
   }
 
   Future<List<CustomerModel>> getCustomersWithDebt() async {
+    if (_userId.isEmpty) {
+      final all = await _getFromCache();
+      return all.where((c) => c.totalDebt > 0).toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -110,6 +131,10 @@ class CustomerRepository {
   }
 
   Future<CustomerModel?> getById(String id) async {
+    if (_userId.isEmpty) {
+      return _getByIdFromCache(id);
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -134,108 +159,156 @@ class CustomerRepository {
     String? phone,
     double totalDebt = 0,
   }) async {
-    // عند التعديل نحتاج لاحقاً لتحديث جميع الفواتير المرتبطة بنفس الزبون
-    // حتى ينعكس الاسم/الهاتف الجديد في كل مكان (التفاصيل، التقارير، PDF...).
-    final data = <String, dynamic>{
+    if (id != null && id.isNotEmpty) {
+      final updated = await updateCustomer(id: id, name: name, phone: phone);
+      if (totalDebt > 0) {
+        await updateDebt(id, totalDebt);
+      }
+      return updated;
+    } else {
+      return createCustomer(name: name, phone: phone, initialDebt: totalDebt);
+    }
+  }
+
+  Future<CustomerModel> createCustomer({
+    required String name,
+    String? phone,
+    double initialDebt = 0.0,
+  }) async {
+    final payload = {
       'user_id': _userId,
       'name': name,
       'phone': phone,
-      'total_debt': totalDebt,
+      'total_debt': initialDebt,
+      'created_at': DateTime.now().toIso8601String(),
     };
-    if (id != null) data['id'] = id;
 
-    if (_isOnline) {
+    if (_isOnline && _userId.isNotEmpty) {
       try {
-        final res =
-            await _db.from('user_customers').upsert(data).select().single();
+        final res = await _db
+            .from('user_customers')
+            .insert(payload)
+            .select()
+            .single();
         final customer = CustomerModel.fromJson(res);
-
-        // تحديث الكاش المحلي
-        await _localDb.upsert('customers', customer.toLocalJson(_userId));
-
-        // ── Propagate name/phone changes to all invoices of this customer ──
-        if (id != null) {
-          try {
-            await _db
-                .from('user_invoices')
-                .update({
-                  'customer_name': name,
-                  'customer_phone': phone,
-                })
-                .eq('user_id', _userId)
-                .eq('customer_id', id);
-          } catch (_) {
-            // لو فشل التحديث على الفواتير لا نمنع حفظ الزبون نفسه
-          }
+        if (!kIsWeb) {
+          await _localDb.upsert('customers', customer.toLocalJson(_userId));
         }
-
         return customer;
-      } catch (_) {
-        // أونلاين لكن فشل → نحفظ محلياً + pending
-        return _upsertOffline(data, id);
+      } catch (e) {
+        return _upsertOffline(payload, null);
       }
     } else {
-      return _upsertOffline(data, id);
+      return _upsertOffline(payload, null);
+    }
+  }
+
+  Future<CustomerModel> updateCustomer({
+    required String id,
+    required String name,
+    String? phone,
+  }) async {
+    final payload = {
+      'name': name,
+      'phone': phone,
+    };
+
+    if (_isOnline && _userId.isNotEmpty) {
+      try {
+        final res = await _db
+            .from('user_customers')
+            .update(payload)
+            .eq('id', id)
+            .eq('user_id', _userId)
+            .select()
+            .single();
+        final customer = CustomerModel.fromJson(res);
+        if (!kIsWeb) {
+          await _localDb.upsert('customers', customer.toLocalJson(_userId));
+        }
+        return customer;
+      } catch (_) {
+        return _upsertOffline({'id': id, ...payload}, id);
+      }
+    } else {
+      return _upsertOffline({'id': id, ...payload}, id);
+    }
+  }
+
+  Future<void> updateDebt(String id, double newDebt) async {
+    if (_isOnline && _userId.isNotEmpty) {
+      try {
+        await _db
+            .from('user_customers')
+            .update({'total_debt': newDebt})
+            .eq('id', id)
+            .eq('user_id', _userId);
+      } catch (_) {
+        if (!kIsWeb) {
+          final db = await _localDb.database;
+          await db.update(
+            'customers',
+            {'total_debt': newDebt},
+            where: 'id = ? AND user_id = ?',
+            whereArgs: [id, _userId],
+          );
+          await _localDb.addPendingOperation(
+            tableName: 'user_customers',
+            operation: 'update',
+            recordId: id,
+            payload: {'total_debt': newDebt, 'user_id': _userId},
+          );
+        }
+      }
+    } else {
+      if (!kIsWeb) {
+        final db = await _localDb.database;
+        await db.update(
+          'customers',
+          {'total_debt': newDebt},
+          where: 'id = ? AND user_id = ?',
+          whereArgs: [id, _userId],
+        );
+        await _localDb.addPendingOperation(
+          tableName: 'user_customers',
+          operation: 'update',
+          recordId: id,
+          payload: {'total_debt': newDebt, 'user_id': _userId},
+        );
+      }
     }
   }
 
   Future<void> deleteCustomer(String id) async {
-    // حذف من الكاش المحلي فوراً
-    await _localDb.deleteById('customers', id);
-
-    if (_isOnline) {
+    if (_isOnline && _userId.isNotEmpty) {
       try {
         await _db
             .from('user_customers')
             .delete()
-            .eq('user_id', _userId)
-            .eq('id', id);
-        return;
+            .eq('id', id)
+            .eq('user_id', _userId);
       } catch (_) {
-        // فشل الحذف من السحابة → نضيف pending
+        if (!kIsWeb) {
+          await _localDb.deleteById('customers', id);
+          await _localDb.addPendingOperation(
+            tableName: 'user_customers',
+            operation: 'delete',
+            recordId: id,
+            payload: {'id': id, 'user_id': _userId},
+          );
+        }
+      }
+    } else {
+      if (!kIsWeb) {
+        await _localDb.deleteById('customers', id);
+        await _localDb.addPendingOperation(
+          tableName: 'user_customers',
+          operation: 'delete',
+          recordId: id,
+          payload: {'id': id, 'user_id': _userId},
+        );
       }
     }
-
-    // حفظ عملية الحذف كمعلقة
-    await _localDb.addPendingOperation(
-      tableName: 'user_customers',
-      operation: 'delete',
-      recordId: id,
-      payload: {'id': id},
-    );
-  }
-
-  Future<void> updateDebt(String customerId, double newDebt) async {
-    final debt = newDebt < 0 ? 0.0 : newDebt;
-
-    // تحديث محلي فوري
-    final db = await _localDb.database;
-    await db.update(
-      'customers',
-      {'total_debt': debt},
-      where: 'id = ? AND user_id = ?',
-      whereArgs: [customerId, _userId],
-    );
-
-    if (_isOnline) {
-      try {
-        await _db
-            .from('user_customers')
-            .update({'total_debt': debt})
-            .eq('user_id', _userId)
-            .eq('id', customerId);
-        return;
-      } catch (_) {
-        // فشل → pending
-      }
-    }
-
-    await _localDb.addPendingOperation(
-      tableName: 'user_customers',
-      operation: 'update',
-      recordId: customerId,
-      payload: {'total_debt': debt, 'user_id': _userId},
-    );
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -243,31 +316,62 @@ class CustomerRepository {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Future<void> _cacheCustomers(List<CustomerModel> customers) async {
-    await _localDb.clearTable('customers', _userId);
-    if (customers.isNotEmpty) {
-      await _localDb.upsertAll(
-        'customers',
-        customers.map((c) => c.toLocalJson(_userId)).toList(),
-      );
+    if (_userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = customers.map((c) => c.toJson()).toList();
+      await prefs.setString('cached_customers_$_userId', jsonEncode(jsonList));
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        await _localDb.clearTable('customers', _userId);
+        if (customers.isNotEmpty) {
+          await _localDb.upsertAll(
+            'customers',
+            customers.map((c) => c.toLocalJson(_userId)).toList(),
+          );
+        }
+      } catch (_) {}
     }
   }
 
   Future<List<CustomerModel>> _getFromCache() async {
-    final rows = await _localDb.getAll('customers', _userId);
-    final customers = rows.map((r) => CustomerModel.fromJson(r)).toList();
-    customers.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return customers;
+    if (_userId.isEmpty) return [];
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_customers_$_userId');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List;
+        final list = decoded
+            .map((e) => CustomerModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return list;
+      }
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('customers', _userId);
+        final customers = rows.map((r) => CustomerModel.fromJson(r)).toList();
+        customers.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return customers;
+      } catch (_) {}
+    }
+
+    return [];
   }
 
   Future<CustomerModel?> _getByIdFromCache(String id) async {
-    final row = await _localDb.getById('customers', id);
-    if (row == null) return null;
-    return CustomerModel.fromJson(row);
+    final all = await _getFromCache();
+    final match = all.where((c) => c.id == id);
+    return match.isNotEmpty ? match.first : null;
   }
 
   Future<CustomerModel> _upsertOffline(
       Map<String, dynamic> data, String? id) async {
-    // إنشاء معرف جديد UUID إذا لم يُوفَّر لضمان التوافق مع نوع uuid في Postgres
     final effectiveId = id ?? const Uuid().v4();
     data['id'] = effectiveId;
     data['created_at'] = DateTime.now().toIso8601String();

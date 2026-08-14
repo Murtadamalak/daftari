@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/invoice_repository.dart';
 import 'app_providers.dart';
+import 'auth_provider.dart';
 
 // ─── Filter Enums ─────────────────────────────────────────────────────────────
 
@@ -67,12 +68,13 @@ final invoiceStatusFilterProvider =
 final invoiceSortFieldProvider =
     StateProvider<InvoiceSortField>((ref) => InvoiceSortField.invoiceNumber);
 final invoiceSortAscendingProvider = StateProvider<bool>((ref) => false);
-
 // ─── Data Provider ────────────────────────────────────────────────────────────
 
 /// All invoices from Supabase.
 final allInvoicesProvider =
     FutureProvider.autoDispose<List<InvoiceModel>>((ref) {
+  final authState = ref.watch(authProvider);
+  if (authState.user == null) return [];
   final repo = ref.watch(invoiceRepositoryProvider);
   return repo.getAllInvoices();
 });

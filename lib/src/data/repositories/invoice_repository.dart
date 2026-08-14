@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'customer_repository.dart';
@@ -29,9 +32,9 @@ class InvoiceItemModel {
   });
 
   factory InvoiceItemModel.fromJson(Map<String, dynamic> j) {
-    final rawName = j['product_name'] as String? ?? '';
+    final rawName = j['product_name']?.toString() ?? '';
     String baseName = rawName;
-    String note = j['note'] as String? ?? '';
+    String note = j['note']?.toString() ?? '';
 
     if (note.isEmpty && rawName.contains(' [') && rawName.endsWith(']')) {
       final idx = rawName.lastIndexOf(' [');
@@ -40,17 +43,29 @@ class InvoiceItemModel {
     }
 
     return InvoiceItemModel(
-      id: j['id'] as String? ?? '',
-      invoiceId: j['invoice_id'] as String? ?? '',
+      id: j['id']?.toString() ?? '',
+      invoiceId: j['invoice_id']?.toString() ?? '',
       productName: baseName,
-      unit: j['unit'] as String? ?? 'قطعة',
+      unit: j['unit']?.toString() ?? 'قطعة',
       qty: (j['qty'] as num?)?.toDouble() ?? 1.0,
       unitPrice: (j['unit_price'] as num?)?.toDouble() ?? 0.0,
-      priceType: j['price_type'] as String? ?? 'retail',
+      priceType: j['price_type']?.toString() ?? 'retail',
       total: (j['total'] as num?)?.toDouble() ?? 0.0,
       note: note,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'invoice_id': invoiceId,
+        'product_name': productName,
+        'unit': unit,
+        'qty': qty,
+        'unit_price': unitPrice,
+        'price_type': priceType,
+        'total': total,
+        'note': note,
+      };
 }
 
 class InvoiceModel {
@@ -114,39 +129,86 @@ class InvoiceModel {
 
     final rawNum = j['num'];
     return InvoiceModel(
-      id: j['id'] as String,
+      id: j['id']?.toString() ?? '',
       num:
           rawNum is int ? rawNum : int.tryParse(rawNum?.toString() ?? '0') ?? 0,
-      date: DateTime.parse(j['date'] as String),
-      customerId: j['customer_id'] as String?,
-      customerName: j['customer_name'] as String,
-      customerPhone: j['customer_phone'] as String?,
+      date: DateTime.tryParse(j['date']?.toString() ?? '') ?? DateTime.now(),
+      customerId: j['customer_id']?.toString(),
+      customerName: j['customer_name']?.toString() ?? 'زبون نقدي',
+      customerPhone: j['customer_phone']?.toString(),
       subtotal: toDouble('subtotal'),
       discount: toDouble('discount'),
       grandTotal: toDouble('grand_total'),
       paid: toDouble('paid'),
       debt: toDouble('debt'),
-      payType: j['pay_type'] as String? ?? 'cash',
-      note: j['note'] as String?,
-      status: j['status'] as String? ?? 'paid',
-      shopName: j['shop_name'] as String? ?? '',
-      shopPhone: j['shop_phone'] as String?,
-      ownerName: j['owner_name'] as String?,
-      shopLogoPath: j['shop_logo_path'] as String?,
+      payType: j['pay_type']?.toString() ?? 'cash',
+      note: j['note']?.toString(),
+      status: j['status']?.toString() ?? 'paid',
+      shopName: j['shop_name']?.toString() ?? '',
+      shopPhone: j['shop_phone']?.toString(),
+      ownerName: j['owner_name']?.toString(),
+      shopLogoPath: j['shop_logo_path']?.toString(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'num': num,
+        'date': date.toIso8601String(),
+        'customer_id': customerId,
+        'customer_name': customerName,
+        'customer_phone': customerPhone,
+        'subtotal': subtotal,
+        'discount': discount,
+        'grand_total': grandTotal,
+        'paid': paid,
+        'debt': debt,
+        'pay_type': payType,
+        'note': note,
+        'status': status,
+        'shop_name': shopName,
+        'shop_phone': shopPhone,
+        'owner_name': ownerName,
+        'shop_logo_path': shopLogoPath,
+      };
+
+  Map<String, dynamic> toLocalMap(String userId) => {
+        'id': id,
+        'user_id': userId,
+        'num': num,
+        'date': date.toIso8601String(),
+        'customer_id': customerId,
+        'customer_name': customerName,
+        'customer_phone': customerPhone,
+        'subtotal': subtotal,
+        'discount': discount,
+        'grand_total': grandTotal,
+        'paid': paid,
+        'debt': debt,
+        'pay_type': payType,
+        'note': note,
+        'status': status,
+        'shop_name': shopName,
+        'shop_phone': shopPhone,
+        'owner_name': ownerName,
+        'shop_logo_path': shopLogoPath,
+      };
 }
 
 class InvoiceRepository {
   final SupabaseClient _db = Supabase.instance.client;
   final _localDb = OfflineDatabase.instance;
 
-  String get _userId => _db.auth.currentUser!.id;
+  String get _userId => _db.auth.currentUser?.id ?? '';
   bool get _isOnline => ConnectivityService.instance.isOnline;
 
   // ── Read ─────────────────────────────────────────────────────────────────
 
   Future<List<InvoiceModel>> getAllInvoices() async {
+    if (_userId.isEmpty) {
+      return _getInvoicesFromCache();
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -163,6 +225,7 @@ class InvoiceRepository {
 
         return invoices;
       } catch (e) {
+        debugPrint('[InvoiceRepo] Error fetching invoices from cloud: $e');
         // فشل حتى وهو أونلاين → نقرأ من الكاش
         return _getInvoicesFromCache();
       }
@@ -1247,65 +1310,75 @@ class InvoiceRepository {
 
   /// تخزين جميع الفواتير في الكاش المحلي
   Future<void> _cacheInvoices(List<InvoiceModel> invoices) async {
-    await _localDb.clearTable('invoices', _userId);
-    if (invoices.isNotEmpty) {
-      await _localDb.upsertAll(
-        'invoices',
-        invoices
-            .map((inv) => {
-                  'id': inv.id,
-                  'user_id': _userId,
-                  'num': inv.num,
-                  'date': inv.date.toIso8601String(),
-                  'customer_id': inv.customerId,
-                  'customer_name': inv.customerName,
-                  'customer_phone': inv.customerPhone,
-                  'subtotal': inv.subtotal,
-                  'discount': inv.discount,
-                  'grand_total': inv.grandTotal,
-                  'paid': inv.paid,
-                  'debt': inv.debt,
-                  'pay_type': inv.payType,
-                  'note': inv.note,
-                  'status': inv.status,
-                  'shop_name': inv.shopName,
-                  'shop_phone': inv.shopPhone,
-                  'owner_name': inv.ownerName,
-                  'shop_logo_path': inv.shopLogoPath,
-                })
-            .toList(),
-      );
+    if (_userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = invoices.map((inv) => inv.toJson()).toList();
+      await prefs.setString('cached_invoices_$_userId', jsonEncode(jsonList));
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        await _localDb.clearTable('invoices', _userId);
+        if (invoices.isNotEmpty) {
+          await _localDb.upsertAll(
+            'invoices',
+            invoices.map((inv) => inv.toLocalMap(_userId)).toList(),
+          );
+        }
+      } catch (_) {}
     }
   }
 
   /// جلب جميع الفواتير من الكاش المحلي
   Future<List<InvoiceModel>> _getInvoicesFromCache() async {
-    final rows = await _localDb.getAll('invoices', _userId);
-    final invoices = rows.map((r) {
-      // نتأكد من أن الحقول المطلوبة موجودة بالشكل الصحيح
-      return InvoiceModel.fromJson({
-        ...r,
-        'grand_total': r['grand_total'] ?? 0,
-      });
-    }).toList();
-    // ترتيب حسب رقم الفاتورة تنازلياً
-    invoices.sort((a, b) => b.num.compareTo(a.num));
-    return invoices;
+    if (_userId.isEmpty) return [];
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_invoices_$_userId');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List;
+        final invoices = decoded
+            .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        invoices.sort((a, b) => b.num.compareTo(a.num));
+        return invoices;
+      }
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('invoices', _userId);
+        final invoices = rows.map((r) {
+          return InvoiceModel.fromJson({
+            ...r,
+            'grand_total': r['grand_total'] ?? 0,
+          });
+        }).toList();
+        invoices.sort((a, b) => b.num.compareTo(a.num));
+        return invoices;
+      } catch (_) {}
+    }
+
+    return [];
   }
 
   /// جلب فاتورة واحدة من الكاش المحلي بمعرفها
   Future<InvoiceModel?> _getInvoiceByIdFromCache(String id) async {
-    final row = await _localDb.getById('invoices', id);
-    if (row == null) return null;
-    return InvoiceModel.fromJson({
-      ...row,
-      'grand_total': row['grand_total'] ?? 0,
-    });
+    final all = await _getInvoicesFromCache();
+    final match = all.where((i) => i.id == id);
+    return match.isNotEmpty ? match.first : null;
   }
 
   /// جلب بنود فاتورة من الكاش المحلي
   Future<List<InvoiceItemModel>> _getItemsFromCache(String invoiceId) async {
-    final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
-    return rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
+    if (kIsWeb) return [];
+    try {
+      final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
+      return rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
+    } catch (_) {
+      return [];
+    }
   }
 }

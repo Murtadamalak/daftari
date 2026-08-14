@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -26,15 +29,26 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> j) => ProductModel(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        unit: j['unit'] as String? ?? 'قطعة',
-        barcode: j['barcode'] as String?,
+        id: j['id']?.toString() ?? '',
+        name: j['name']?.toString() ?? '',
+        unit: j['unit']?.toString() ?? 'قطعة',
+        barcode: j['barcode']?.toString(),
         retailPrice: (j['retail_price'] as num?)?.toDouble() ?? 0.0,
         wholesalePrice: (j['wholesale_price'] as num?)?.toDouble(),
         stock: (j['stock'] as num?)?.toDouble(),
-        createdAt: DateTime.parse(j['created_at'] as String),
+        createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'unit': unit,
+        'barcode': barcode,
+        'retail_price': retailPrice,
+        'wholesale_price': wholesalePrice,
+        'stock': stock,
+        'created_at': createdAt.toIso8601String(),
+      };
 
   /// تحويل إلى صف للقاعدة المحلية
   Map<String, dynamic> toLocalJson(String userId) => {
@@ -64,10 +78,14 @@ class ProductRepository {
   final SupabaseClient _db = Supabase.instance.client;
   final _localDb = OfflineDatabase.instance;
 
-  String get _userId => _db.auth.currentUser!.id;
+  String get _userId => _db.auth.currentUser?.id ?? '';
   bool get _isOnline => ConnectivityService.instance.isOnline;
 
   Future<List<ProductModel>> getAllProducts() async {
+    if (_userId.isEmpty) {
+      return _getFromCache();
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -82,7 +100,7 @@ class ProductRepository {
 
         return products;
       } catch (e) {
-        // فشل الاتصال → نقرأ من الكاش
+        debugPrint('[ProductRepo] Error fetching products: $e');
         return _getFromCache();
       }
     } else {
@@ -91,6 +109,10 @@ class ProductRepository {
   }
 
   Future<ProductModel?> getById(String id) async {
+    if (_userId.isEmpty) {
+      return _getByIdFromCache(id);
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -110,6 +132,10 @@ class ProductRepository {
   }
 
   Future<ProductModel?> findByBarcode(String barcode) async {
+    if (_userId.isEmpty) {
+      return _findByBarcodeFromCache(barcode);
+    }
+
     if (_isOnline) {
       try {
         final res = await _db
@@ -121,7 +147,6 @@ class ProductRepository {
         if (res == null) return null;
         return ProductModel.fromJson(res);
       } catch (_) {
-        // fallback إلى الكاش
         return _findByBarcodeFromCache(barcode);
       }
     } else {
@@ -138,18 +163,37 @@ class ProductRepository {
     double? wholesalePrice,
     double? stock,
   }) async {
-    // If we are editing an existing product, keep a copy of the old data
-    // so we can propagate name/unit changes to all existing invoice items.
-    ProductModel? oldProduct;
-    if (id != null) {
-      try {
-        oldProduct = await getById(id);
-      } catch (_) {
-        oldProduct = null;
-      }
+    if (id != null && id.isNotEmpty) {
+      return updateProduct(
+        id: id,
+        name: name,
+        unit: unit,
+        barcode: barcode,
+        retailPrice: retailPrice,
+        wholesalePrice: wholesalePrice,
+        stock: stock,
+      );
+    } else {
+      return createProduct(
+        name: name,
+        unit: unit,
+        barcode: barcode,
+        retailPrice: retailPrice,
+        wholesalePrice: wholesalePrice,
+        stock: stock,
+      );
     }
+  }
 
-    final data = <String, dynamic>{
+  Future<ProductModel> createProduct({
+    required String name,
+    required String unit,
+    String? barcode,
+    required double retailPrice,
+    double? wholesalePrice,
+    double? stock,
+  }) async {
+    final payload = {
       'user_id': _userId,
       'name': name,
       'unit': unit,
@@ -157,80 +201,174 @@ class ProductRepository {
       'retail_price': retailPrice,
       'wholesale_price': wholesalePrice,
       'stock': stock,
+      'created_at': DateTime.now().toIso8601String(),
     };
-    if (id != null) data['id'] = id;
 
-    if (_isOnline) {
+    if (_isOnline && _userId.isNotEmpty) {
       try {
-        final res =
-            await _db.from('user_products').upsert(data).select().single();
-        final updated = ProductModel.fromJson(res);
-
-        // تحديث الكاش
-        await _localDb.upsert('products', updated.toLocalJson(_userId));
-
-        // ── Propagate name/unit changes to existing invoice items ──
-        if (oldProduct != null &&
-            (oldProduct.name != updated.name ||
-                oldProduct.unit != updated.unit)) {
-          try {
-            await _db
-                .from('user_invoice_items')
-                .update({
-                  'product_name': updated.name,
-                  'unit': updated.unit,
-                })
-                .eq('user_id', _userId)
-                .eq('product_name', oldProduct.name);
-          } catch (_) {
-            // نتجاهل أي خطأ هنا حتى لا نفشل حفظ المنتج نفسه
-          }
+        final res = await _db
+            .from('user_products')
+            .insert(payload)
+            .select()
+            .single();
+        final product = ProductModel.fromJson(res);
+        if (!kIsWeb) {
+          await _localDb.upsert('products', product.toLocalJson(_userId));
         }
-
-        return updated;
-      } catch (_) {
-        // فشل → حفظ محلي + pending
-        return _upsertOffline(data, id);
+        return product;
+      } catch (e) {
+        return _upsertOffline(payload, null);
       }
     } else {
-      return _upsertOffline(data, id);
+      return _upsertOffline(payload, null);
+    }
+  }
+
+  Future<ProductModel> updateProduct({
+    required String id,
+    required String name,
+    required String unit,
+    String? barcode,
+    required double retailPrice,
+    double? wholesalePrice,
+    double? stock,
+  }) async {
+    final payload = {
+      'name': name,
+      'unit': unit,
+      'barcode': barcode,
+      'retail_price': retailPrice,
+      'wholesale_price': wholesalePrice,
+      'stock': stock,
+    };
+
+    if (_isOnline && _userId.isNotEmpty) {
+      try {
+        final res = await _db
+            .from('user_products')
+            .update(payload)
+            .eq('id', id)
+            .eq('user_id', _userId)
+            .select()
+            .single();
+        final product = ProductModel.fromJson(res);
+        if (!kIsWeb) {
+          await _localDb.upsert('products', product.toLocalJson(_userId));
+        }
+        return product;
+      } catch (_) {
+        return _upsertOffline({'id': id, ...payload}, id);
+      }
+    } else {
+      return _upsertOffline({'id': id, ...payload}, id);
     }
   }
 
   Future<void> deleteProduct(String id) async {
-    // حذف من الكاش فوراً
-    await _localDb.deleteById('products', id);
-
-    if (_isOnline) {
+    if (_isOnline && _userId.isNotEmpty) {
       try {
         await _db
             .from('user_products')
             .delete()
-            .eq('user_id', _userId)
-            .eq('id', id);
-        return;
+            .eq('id', id)
+            .eq('user_id', _userId);
       } catch (_) {
-        // فشل → pending
+        if (!kIsWeb) {
+          await _localDb.deleteById('products', id);
+          await _localDb.addPendingOperation(
+            tableName: 'user_products',
+            operation: 'delete',
+            recordId: id,
+            payload: {'id': id, 'user_id': _userId},
+          );
+        }
+      }
+    } else {
+      if (!kIsWeb) {
+        await _localDb.deleteById('products', id);
+        await _localDb.addPendingOperation(
+          tableName: 'user_products',
+          operation: 'delete',
+          recordId: id,
+          payload: {'id': id, 'user_id': _userId},
+        );
       }
     }
+  }
 
-    await _localDb.addPendingOperation(
-      tableName: 'user_products',
-      operation: 'delete',
-      recordId: id,
-      payload: {'id': id},
-    );
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  عمليات الكاش المحلي
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Future<void> _cacheProducts(List<ProductModel> products) async {
+    if (_userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = products.map((p) => p.toJson()).toList();
+      await prefs.setString('cached_products_$_userId', jsonEncode(jsonList));
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        await _localDb.clearTable('products', _userId);
+        if (products.isNotEmpty) {
+          await _localDb.upsertAll(
+            'products',
+            products.map((p) => p.toLocalJson(_userId)).toList(),
+          );
+        }
+      } catch (_) {}
+    }
+  }
+
+  Future<List<ProductModel>> _getFromCache() async {
+    if (_userId.isEmpty) return [];
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_products_$_userId');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List;
+        final list = decoded
+            .map((e) => ProductModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        list.sort((a, b) => a.name.compareTo(b.name));
+        return list;
+      }
+    } catch (_) {}
+
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('products', _userId);
+        final products = rows.map((r) => ProductModel.fromJson(r)).toList();
+        products.sort((a, b) => a.name.compareTo(b.name));
+        return products;
+      } catch (_) {}
+    }
+
+    return [];
+  }
+
+  Future<ProductModel?> _getByIdFromCache(String id) async {
+    final all = await _getFromCache();
+    final match = all.where((p) => p.id == id);
+    return match.isNotEmpty ? match.first : null;
+  }
+
+  Future<ProductModel?> _findByBarcodeFromCache(String barcode) async {
+    final all = await _getFromCache();
+    final match = all.where((p) => p.barcode == barcode);
+    return match.isNotEmpty ? match.first : null;
   }
 
   /// Bulk decrease stock for multiple products
   Future<void> decreaseStockBulk(
       List<Map<String, dynamic>> productsAndQuantities) async {
-    // productsAndQuantities should have 'productId' and 'quantity'
     for (var item in productsAndQuantities) {
       final productId = item['productId'] as String;
       final quantity = item['quantity'] as double;
 
-      if (_isOnline) {
+      if (_isOnline && _userId.isNotEmpty) {
         try {
           final currentRes = await _db
               .from('user_products')
@@ -249,60 +387,27 @@ class ProductRepository {
                 .eq('user_id', _userId)
                 .eq('id', productId);
 
-            // تحديث الكاش
-            final db = await _localDb.database;
-            await db.update(
-              'products',
-              {'stock': newStock},
-              where: 'id = ? AND user_id = ?',
-              whereArgs: [productId, _userId],
-            );
+            if (!kIsWeb) {
+              final db = await _localDb.database;
+              await db.update(
+                'products',
+                {'stock': newStock},
+                where: 'id = ? AND user_id = ?',
+                whereArgs: [productId, _userId],
+              );
+            }
           }
         } catch (_) {
-          // fallback إلى تحديث محلي + pending
-          await _decreaseStockOffline(productId, quantity);
+          if (!kIsWeb) {
+            await _decreaseStockOffline(productId, quantity);
+          }
         }
       } else {
-        await _decreaseStockOffline(productId, quantity);
+        if (!kIsWeb) {
+          await _decreaseStockOffline(productId, quantity);
+        }
       }
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  //  عمليات الكاش المحلي
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  Future<void> _cacheProducts(List<ProductModel> products) async {
-    await _localDb.clearTable('products', _userId);
-    if (products.isNotEmpty) {
-      await _localDb.upsertAll(
-        'products',
-        products.map((p) => p.toLocalJson(_userId)).toList(),
-      );
-    }
-  }
-
-  Future<List<ProductModel>> _getFromCache() async {
-    final rows = await _localDb.getAll('products', _userId);
-    final products = rows.map((r) => ProductModel.fromJson(r)).toList();
-    products.sort((a, b) => a.name.compareTo(b.name));
-    return products;
-  }
-
-  Future<ProductModel?> _getByIdFromCache(String id) async {
-    final row = await _localDb.getById('products', id);
-    if (row == null) return null;
-    return ProductModel.fromJson(row);
-  }
-
-  Future<ProductModel?> _findByBarcodeFromCache(String barcode) async {
-    final rows = await _localDb.query(
-      'products',
-      where: 'user_id = ? AND barcode = ?',
-      whereArgs: [_userId, barcode],
-    );
-    if (rows.isEmpty) return null;
-    return ProductModel.fromJson(rows.first);
   }
 
   Future<ProductModel> _upsertOffline(
@@ -312,19 +417,21 @@ class ProductRepository {
     data['created_at'] = DateTime.now().toIso8601String();
 
     final product = ProductModel.fromJson(data);
-    await _localDb.upsert('products', product.toLocalJson(_userId));
-
-    await _localDb.addPendingOperation(
-      tableName: 'user_products',
-      operation: id != null ? 'update' : 'insert',
-      recordId: effectiveId,
-      payload: data,
-    );
+    if (!kIsWeb) {
+      await _localDb.upsert('products', product.toLocalJson(_userId));
+      await _localDb.addPendingOperation(
+        tableName: 'user_products',
+        operation: id != null ? 'update' : 'insert',
+        recordId: effectiveId,
+        payload: data,
+      );
+    }
 
     return product;
   }
 
   Future<void> _decreaseStockOffline(String productId, double quantity) async {
+    if (kIsWeb) return;
     final db = await _localDb.database;
     final rows = await db.query(
       'products',
@@ -354,6 +461,7 @@ class ProductRepository {
   }
 
   Future<void> decreaseStockOfflineByName(String productName, double quantity) async {
+    if (kIsWeb) return;
     String baseName = productName;
     if (productName.contains(' [') && productName.endsWith(']')) {
       final idx = productName.lastIndexOf(' [');

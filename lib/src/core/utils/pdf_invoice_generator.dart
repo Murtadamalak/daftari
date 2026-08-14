@@ -14,6 +14,8 @@ import '../../data/repositories/customer_repository.dart';
 // PDF Generator
 // ─────────────────────────────────────────────────────────────────────────────
 
+const _appName = 'نظام دفتري لإدارة الحسابات';
+
 class PdfInvoiceGenerator {
   PdfInvoiceGenerator._();
 

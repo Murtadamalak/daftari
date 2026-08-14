@@ -158,6 +158,7 @@ class OfflineDatabase {
 
   /// إدخال أو تحديث صف في جدول ما
   Future<void> upsert(String table, Map<String, dynamic> data) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
@@ -165,6 +166,7 @@ class OfflineDatabase {
   /// إدخال أو تحديث مجموعة صفوف دفعة واحدة
   Future<void> upsertAll(
       String table, List<Map<String, dynamic>> rows) async {
+    if (kIsWeb) return;
     final db = await database;
     final batch = db.batch();
     for (final row in rows) {
@@ -175,12 +177,14 @@ class OfflineDatabase {
 
   /// حذف صف بحسب المعرف
   Future<void> deleteById(String table, String id) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
   /// حذف جميع الصفوف التي تطابق userId في جدول معين
   Future<void> clearTable(String table, String userId) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete(table, where: 'user_id = ?', whereArgs: [userId]);
   }
@@ -188,12 +192,14 @@ class OfflineDatabase {
   /// جلب جميع صفوف الجدول لمستخدم معين
   Future<List<Map<String, dynamic>>> getAll(
       String table, String userId) async {
+    if (kIsWeb) return [];
     final db = await database;
     return db.query(table, where: 'user_id = ?', whereArgs: [userId]);
   }
 
   /// جلب صف واحد بمعرفه
   Future<Map<String, dynamic>?> getById(String table, String id) async {
+    if (kIsWeb) return null;
     final db = await database;
     final rows = await db.query(table, where: 'id = ?', whereArgs: [id]);
     return rows.isNotEmpty ? rows.first : null;
@@ -206,6 +212,7 @@ class OfflineDatabase {
     List<dynamic>? whereArgs,
     String? orderBy,
   }) async {
+    if (kIsWeb) return [];
     final db = await database;
     return db.query(
       table,
@@ -221,6 +228,7 @@ class OfflineDatabase {
 
   /// حذف جميع بنود فاتورة معينة
   Future<void> deleteInvoiceItems(String invoiceId, String userId) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete(
       'invoice_items',
@@ -232,6 +240,7 @@ class OfflineDatabase {
   /// جلب بنود فاتورة معينة
   Future<List<Map<String, dynamic>>> getInvoiceItems(
       String invoiceId, String userId) async {
+    if (kIsWeb) return [];
     final db = await database;
     return db.query(
       'invoice_items',
@@ -251,6 +260,7 @@ class OfflineDatabase {
     required String recordId,
     required Map<String, dynamic> payload,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert('pending_operations', {
       'table_name': tableName,
@@ -264,12 +274,14 @@ class OfflineDatabase {
 
   /// جلب جميع العمليات المعلقة مرتبة حسب وقت الإنشاء
   Future<List<Map<String, dynamic>>> getPendingOperations() async {
+    if (kIsWeb) return [];
     final db = await database;
     return db.query('pending_operations', orderBy: 'created_at ASC');
   }
 
   /// عدد العمليات المعلقة
   Future<int> getPendingCount() async {
+    if (kIsWeb) return 0;
     final db = await database;
     final result =
         await db.rawQuery('SELECT COUNT(*) as cnt FROM pending_operations');
@@ -278,12 +290,14 @@ class OfflineDatabase {
 
   /// حذف عملية معلقة بعد مزامنتها بنجاح
   Future<void> deletePendingOperation(int id) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete('pending_operations', where: 'id = ?', whereArgs: [id]);
   }
 
   /// تحديث عدد المحاولات الفاشلة
   Future<void> incrementRetryCount(int id) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.rawUpdate(
       'UPDATE pending_operations SET retry_count = retry_count + 1 WHERE id = ?',
@@ -293,6 +307,7 @@ class OfflineDatabase {
 
   /// حذف عمليات فشلت أكثر من الحد المسموح
   Future<void> pruneFailedOperations({int maxRetries = 10}) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete(
       'pending_operations',
@@ -307,6 +322,7 @@ class OfflineDatabase {
 
   /// حفظ وقت آخر مزامنة ناجحة
   Future<void> setLastSyncTime(String tableName, DateTime time) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert(
       'sync_meta',
@@ -320,6 +336,7 @@ class OfflineDatabase {
 
   /// جلب وقت آخر مزامنة ناجحة
   Future<DateTime?> getLastSyncTime(String tableName) async {
+    if (kIsWeb) return null;
     final db = await database;
     final rows = await db.query(
       'sync_meta',
@@ -332,6 +349,7 @@ class OfflineDatabase {
 
   /// تنظيف جميع البيانات عند تسجيل الخروج
   Future<void> clearAllData() async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete('invoice_items');
     await db.delete('invoices');
@@ -344,6 +362,7 @@ class OfflineDatabase {
 
   /// إغلاق قاعدة البيانات
   Future<void> close() async {
+    if (kIsWeb) return;
     if (_db != null && _db!.isOpen) {
       await _db!.close();
       _db = null;

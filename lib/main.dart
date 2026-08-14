@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -11,36 +12,62 @@ import 'src/data/local/offline_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('ar', null);
-  await initializeDateFormatting('en', null);
+  try {
+    await initializeDateFormatting('ar', null);
+    await initializeDateFormatting('en', null);
+  } catch (e) {
+    debugPrint('DateFormatting error: $e');
+  }
 
-  await Supabase.initialize(
-    url: 'https://imzpnabhpaihvisazhay.supabase.co',
-    anonKey: 'sb_publishable_XZjwycMZHs1ci-GItcb8gQ_NSbnyiEj',
-  );
+  try {
+    await Supabase.initialize(
+      url: 'https://imzpnabhpaihvisazhay.supabase.co',
+      anonKey: 'sb_publishable_XZjwycMZHs1ci-GItcb8gQ_NSbnyiEj',
+    );
+  } catch (e) {
+    debugPrint('Supabase initialize error: $e');
+  }
 
-  // ── تهيئة قاعدة البيانات المحلية ──
-  await OfflineDatabase.instance.database;
-
-  // ── تهيئة خدمة مراقبة الاتصال ──
-  await ConnectivityService.instance.initialize();
-
-  // Check if user opted out of "remember me" — if so, sign them out on cold start.
-  // This runs once before the app UI is built.
-  final prefs = await SharedPreferences.getInstance();
-  final rememberMe = prefs.getBool('rememberMe') ?? false;
-  if (!rememberMe) {
-    // Sign out silently if there's a persisted session but user didn't want it
-    final existingSession = Supabase.instance.client.auth.currentSession;
-    if (existingSession != null) {
-      await Supabase.instance.client.auth.signOut();
+  // ── تهيئة قاعدة البيانات المحلية (للأجهزة المحمولة وسطح المكتب) ──
+  if (!kIsWeb) {
+    try {
+      await OfflineDatabase.instance.database;
+    } catch (e) {
+      debugPrint('Offline database error: $e');
     }
   }
 
+  // ── تهيئة خدمة مراقبة الاتصال ──
+  try {
+    await ConnectivityService.instance.initialize();
+  } catch (e) {
+    debugPrint('Connectivity service error: $e');
+  }
+
+  // Check if user opted out of "remember me" — if so, sign them out on cold start.
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final rememberMe = prefs.getBool('rememberMe') ?? false;
+    if (!rememberMe) {
+      final existingSession = Supabase.instance.client.auth.currentSession;
+      if (existingSession != null) {
+        await Supabase.instance.client.auth.signOut();
+      }
+    }
+  } catch (e) {
+    debugPrint('Session check error: $e');
+  }
+
   // ── تهيئة محرك المزامنة (بعد التحقق من المستخدم) ──
-  final currentUser = Supabase.instance.client.auth.currentUser;
-  if (currentUser != null) {
-    await SyncService.instance.initialize();
+  if (!kIsWeb) {
+    try {
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        await SyncService.instance.initialize();
+      }
+    } catch (e) {
+      debugPrint('Sync service error: $e');
+    }
   }
 
   runApp(

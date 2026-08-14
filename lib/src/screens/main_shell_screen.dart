@@ -652,8 +652,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
       ),
     );
   }
-
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

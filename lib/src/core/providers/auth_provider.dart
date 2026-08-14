@@ -41,6 +41,8 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
         Supabase.instance.client.auth.currentUser;
     if (currentUser != null) {
       _processUser(currentUser);
+    } else {
+      state = const AppAuthState(role: AuthRole.guest, isLoading: false);
     }
 
     Supabase.instance.client.auth.onAuthStateChange.listen((data) async {

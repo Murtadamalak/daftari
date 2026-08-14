@@ -44,7 +44,7 @@ class SyncService {
 
   /// تهيئة المزامنة: الاشتراك بتغيّرات الاتصال + مزامنة دورية
   Future<void> initialize() async {
-    if (_initialized || _userId.isEmpty) return;
+    if (kIsWeb || _initialized || _userId.isEmpty) return;
     _initialized = true;
 
     // مراقبة تغيّر حالة الاتصال
@@ -70,7 +70,7 @@ class SyncService {
 
   /// تشغيل مزامنة كاملة (رفع المعلقات + سحب من السحابة)
   Future<void> syncAll() async {
-    if (_isSyncing || _userId.isEmpty) return;
+    if (kIsWeb || _isSyncing || _userId.isEmpty) return;
     _isSyncing = true;
     _emitStatus(SyncStatus.syncing);
 

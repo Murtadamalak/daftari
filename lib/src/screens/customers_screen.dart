@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 import '../core/providers/app_providers.dart';
+import '../core/providers/auth_provider.dart';
 import '../core/providers/settings_provider.dart';
 
 import '../core/theme/app_theme.dart';
@@ -23,6 +24,14 @@ String _fmt(double v) => '${_amtFmt.format(v)} د.ع';
 // ── Data and Search Providers ──
 
 final debtSearchDataProvider = FutureProvider.autoDispose((ref) async {
+  final authState = ref.watch(authProvider);
+  if (authState.user == null) {
+    return (
+      customers: <CustomerModel>[],
+      invoices: <InvoiceModel>[],
+      items: <InvoiceItemModel>[],
+    );
+  }
   final custRepo = ref.watch(customerRepositoryProvider);
   final invRepo = ref.watch(invoiceRepositoryProvider);
 

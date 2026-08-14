@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/product_repository.dart';
 import 'app_providers.dart';
+import 'auth_provider.dart';
 
 /// Search query state (by name or barcode).
 final productSearchQueryProvider = StateProvider<String>((ref) => '');
 
 /// Async list of all products (Future-based, no stream – Supabase).
 final productsProvider = FutureProvider.autoDispose<List<ProductModel>>((ref) {
+  final authState = ref.watch(authProvider);
+  if (authState.user == null) return [];
   final repo = ref.watch(productRepositoryProvider);
   return repo.getAllProducts();
 });

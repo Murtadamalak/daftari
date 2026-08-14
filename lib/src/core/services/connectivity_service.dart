@@ -24,7 +24,7 @@ class ConnectivityService {
   bool _initialized = false;
 
   /// هل الجهاز متصل بالإنترنت حالياً
-  bool get isOnline => _isOnline;
+  bool get isOnline => kIsWeb ? true : _isOnline;
 
   /// إعادة حالة الاتصال كـ Stream
   Stream<bool> get onConnectivityChanged => _controller.stream;

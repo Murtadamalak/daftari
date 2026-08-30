@@ -1,5 +1,5 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './store/AuthContext';
 import { Layout } from './components/Layout';
 import Login from './pages/Login';
@@ -21,6 +21,7 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
+        <Analytics />
       </BrowserRouter>
     </AuthProvider>
   );

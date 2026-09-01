@@ -1,0 +1,1432 @@
+﻿diff --git a/lib/src/screens/create_invoice_screen.dart b/lib/src/screens/create_invoice_screen_d303962.dart
+index 5c6871f..5911d99 100644
+--- a/lib/src/screens/create_invoice_screen.dart
++++ b/lib/src/screens/create_invoice_screen_d303962.dart
+@@ -1,4 +1,4 @@
+-import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
++ي╗┐import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+ import 'dart:ui' as ui;
+ import 'package:flutter/material.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+@@ -20,10 +20,10 @@ import 'customers_screen.dart';
+ import 'delayed_debts_screen.dart';
+ import '../core/providers/invoices_provider.dart';
+ 
+-// ظ¤ظ¤ظ¤ Number formatter ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬ Number formatter ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ final _fmt = NumberFormat('#,###');
+ 
+-/// Fetch all customers ظ¤ used in the customer-picker step.
++/// Fetch all customers ╪╕┬┬ج used in the customer-picker step.
+ final _customersStreamProvider =
+     FutureProvider.autoDispose<List<CustomerModel>>((ref) {
+   final repo = ref.watch(customerRepositoryProvider);
+@@ -36,8 +36,8 @@ class CreateInvoiceScreen extends ConsumerStatefulWidget {
+     this.invoiceId,
+   });
+ 
+-  /// If null ظْ ╪ح┘╪┤╪د╪ة ┘╪د╪ز┘ê╪▒╪ر ╪ش╪»┘è╪»╪ر.
+-  /// ╪ح╪░╪د ┘â╪د┘ ┘ç┘╪د┘â id ظْ ╪ز╪╣╪»┘è┘ ┘╪د╪ز┘ê╪▒╪ر ┘┘é╪»┘è╪ر ┘é╪د╪خ┘à╪ر.
++  /// If null ╪╕┬┘ْ ظـز╪صظ¤ء┬ظـزظ¤جظـز╪»ظـز╪ر ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗ظـز╪▒.
++  /// ظـز╪صظـزظûّظـز╪» ظ¤ء├تظـز╪»ظ¤ء┬ ظ¤ء├دظ¤ء┬ظـز╪»ظ¤ء├ت id ╪╕┬┘ْ ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذظـز╪▒ ظ¤ء├رظـز╪»ظـز╪«ظ¤ء├بظـز╪▒.
+   final String? invoiceId;
+ 
+   bool get isEditing => invoiceId != null;
+@@ -54,7 +54,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+ 
+   bool _isSaving = false;
+ 
+-  // ╪ذ┘è╪د┘╪د╪ز ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪د┘╪ث╪╡┘┘è╪ر ╪╣┘╪» ╪د┘╪ز╪╣╪»┘è┘ (┘╪│╪ز╪«╪»┘à┘ç╪د ┘╪ص╪│╪د╪ذ ┘╪▒┘ê┘é╪د╪ز ╪د┘┘à╪«╪▓┘ê┘)
++  // ظـز╪░ظ¤ء├ذظـز╪»ظ¤ء┬ظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪سظـزظـةظ¤ء┬ظ¤ء├ذظـز╪▒ ظـزظـثظ¤ء┬ظـز┬╗ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ (ظ¤ء┬ظـزظ¤éظـز╪▓ظـز┬سظـز┬╗ظ¤ء├بظ¤ء├دظـز╪» ظ¤ء┬ظـز╪╡ظـزظ¤éظـز╪»ظـز╪░ ظ¤ء┬ظـزظûْظ¤ء├زظ¤ء├رظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬سظـزظûôظ¤ء├زظ¤ء┬)
+   InvoiceModel? _originalInvoice;
+   List<InvoiceItemModel> _originalItems = const [];
+ 
+@@ -84,7 +84,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+         child: SafeArea(
+           child: Column(
+             children: [
+-              // ظ¤ظ¤ Custom AppBar ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++              // ╪╕┬ج┬╪╕┬ج┬ Custom AppBar ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+               Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                 child: SizedBox(
+@@ -107,10 +107,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+                 ),
+               ),
+ 
+-              // ظ¤ظ¤ Step indicator at top ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++              // ╪╕┬ج┬╪╕┬ج┬ Step indicator at top ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+               _StepHeader(currentStep: _currentStep),
+ 
+-              // ظ¤ظ¤ Step content ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++              // ╪╕┬ج┬╪╕┬ج┬ Step content ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+               Expanded(
+                 child: SingleChildScrollView(
+                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+@@ -139,7 +139,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+         ),
+       ),
+ 
+-      // ظ¤ظ¤ Bottom action bar ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++      // ╪╕┬ج┬╪╕┬ج┬ Bottom action bar ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+       bottomNavigationBar: _BottomActionBar(
+         currentStep: _currentStep,
+         isLastStep: isLastStep,
+@@ -168,18 +168,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       if (inv == null) {
+         if (mounted) {
+           Navigator.of(context).pop();
+-          AppSnackBar.error(context, '╪ز╪╣╪░┘ّ╪▒ ╪ز╪ص┘à┘è┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر');
++          AppSnackBar.error(context, 'ظـز╪▓ظـزظـثظـزظûّظ¤ء┘ّظـزظûْ ظـز╪▓ظـز╪╡ظ¤ء├بظ¤ء├ذظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒');
+         }
+         return;
+       }
+ 
+-      // ┘╪د ┘╪│┘à╪ص ╪ذ╪ز╪╣╪»┘è┘ ┘┘ê╪د╪ز┘è╪▒ ╪د┘╪ز╪│╪»┘è╪» ┘┘é╪╖ (┘┘è╪│╪ز ┘à╪ذ┘è╪╣╪د╪ز)
+-      if (inv.payType == '╪ز╪│╪»┘è╪» ╪»┘è┘') {
++      // ظ¤ء┬ظـز╪» ظ¤ء┬ظـزظ¤éظ¤ء├بظـز╪╡ ظـز╪░ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ ظ¤ء┬ظ¤ء├زظـز╪»ظـز╪▓ظ¤ء├ذظـزظûْ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظ¤ء┬ظ¤ء├رظـزظـû (ظ¤ء┬ظ¤ء├ذظـزظ¤éظـز╪▓ ظ¤ء├بظـز╪░ظ¤ء├ذظـزظـثظـز╪»ظـز╪▓)
++      if (inv.payType == 'ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز┬╗ظ¤ء├ذظ¤ء┬') {
+         if (mounted) {
+           Navigator.of(context).pop();
+           AppSnackBar.error(
+             context,
+-            '┘╪د ┘è┘à┘â┘ ╪ز╪╣╪»┘è┘ ┘┘ê╪د╪ز┘è╪▒ ╪ز╪│╪»┘è╪» ╪د┘╪»┘è┘╪î ╪╣╪»┘ّ┘ ┘╪د╪ز┘ê╪▒╪ر ╪د┘┘à╪ذ┘è╪╣╪د╪ز ╪د┘╪ث╪╡┘┘è╪ر.',
++            'ظ¤ء┬ظـز╪» ظ¤ء├ذظ¤ء├بظ¤ء├تظ¤ء┬ ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ ظ¤ء┬ظ¤ء├زظـز╪»ظـز╪▓ظ¤ء├ذظـزظûْ ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء├ذظ¤ء┬ظـز├« ظـزظـثظـز┬╗ظ¤ء┘ّظ¤ء┬ ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء├ذظـزظـثظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز╪سظـزظـةظ¤ء┬ظ¤ء├ذظـز╪▒.',
+           );
+         }
+         return;
+@@ -189,10 +189,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       final productsRepo = ref.read(productRepositoryProvider);
+       final allProducts = await productsRepo.getAllProducts();
+ 
+-      // ╪ص┘ê┘ّ┘ ╪╣┘╪د╪╡╪▒ ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪ح┘┘ë CartItem ╪»╪د╪«┘ ╪ص╪د┘╪ر ╪ح┘╪┤╪د╪ة ╪د┘┘╪د╪ز┘ê╪▒╪ر
++      // ظـز╪╡ظ¤ء├زظ¤ء┘ّظ¤ء┬ ظـزظـثظ¤ء┬ظـز╪»ظـزظـةظـزظûْ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظـز╪صظ¤ء┬ظ¤ء├س CartItem ظـز┬╗ظـز╪»ظـز┬سظ¤ء┬ ظـز╪╡ظـز╪»ظ¤ء┬ظـز╪▒ ظـز╪صظ¤ء┬ظـزظ¤جظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒
+       final cartItems = <CartItem>[];
+       for (final it in items) {
+-        // ┘╪ص╪د┘ê┘ ╪ح┘è╪ش╪د╪» ╪د┘┘à┘╪ز╪ش ╪ذ┘┘╪│ ╪د┘╪د╪│┘à ┘┘┘ê╪╡┘ê┘ ┘┘┘à╪«╪▓┘ê┘ ┘ê┘à╪╣╪▒┘ّ┘ ╪د┘┘à┘╪ز╪ش
++        // ظ¤ء┬ظـز╪╡ظـز╪»ظ¤ء├زظ¤ء┬ ظـز╪صظ¤ء├ذظـز╪┤ظـز╪»ظـز┬╗ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ ظـز╪░ظ¤ء┬ظ¤ء┬ظـزظ¤é ظـز╪»ظ¤ء┬ظـز╪»ظـزظ¤éظ¤ء├ب ظ¤ء┬ظ¤ء┬ظ¤ء├زظـزظـةظ¤ء├زظ¤ء┬ ظ¤ء┬ظ¤ء┬ظ¤ء├بظـز┬سظـزظûôظ¤ء├زظ¤ء┬ ظ¤ء├زظ¤ء├بظـزظـثظـزظûْظ¤ء┘ّظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤
+         final match = allProducts.firstWhere(
+           (p) => p.name == it.productName,
+           orElse: () => ProductModel(
+@@ -218,9 +218,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       final notifier = ref.read(invoiceCreationProvider.notifier);
+       notifier.clear();
+       notifier.setDiscount(
+-          inv.discount); // ╪│┘è┘╪╣╪د╪» ╪د╪ص╪ز╪│╪د╪ذ ╪د┘╪ح╪ش┘à╪د┘┘è ╪ز┘┘é╪د╪خ┘è╪د┘ï ┘┘è┘à╪د ╪ذ╪╣╪»
++          inv.discount); // ظـزظ¤éظ¤ء├ذظ¤ء┬ظـزظـثظـز╪»ظـز┬╗ ظـز╪»ظـز╪╡ظـز╪▓ظـزظ¤éظـز╪»ظـز╪░ ظـز╪»ظ¤ء┬ظـز╪صظـز╪┤ظ¤ء├بظـز╪»ظ¤ء┬ظ¤ء├ذ ظـز╪▓ظ¤ء┬ظ¤ء├رظـز╪»ظـز╪«ظ¤ء├ذظـز╪»ظ¤ء├» ظ¤ء┬ظ¤ء├ذظ¤ء├بظـز╪» ظـز╪░ظـزظـثظـز┬╗
+ 
+-      // ╪ز╪╣╪ذ╪خ╪ر ╪د┘╪▓╪ذ┘ê┘ ┘┘è ╪ص╪د┘╪ر ╪د┘╪ز╪╣╪»┘è┘ (╪ح┘ ┘ê╪ش╪»)
++      // ظـز╪▓ظـزظـثظـز╪░ظـز╪«ظـز╪▒ ظـز╪»ظ¤ء┬ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظ¤ء┬ظ¤ء├ذ ظـز╪╡ظـز╪»ظ¤ء┬ظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ (ظـز╪صظ¤ء┬ ظ¤ء├زظـز╪┤ظـز┬╗)
+       if (inv.customerId != null) {
+         final custRepo = ref.read(customerRepositoryProvider);
+         final customer = await custRepo.getById(inv.customerId!);
+@@ -229,7 +229,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+         }
+       }
+ 
+-      // ┘╪╢╪ذ╪╖ ╪╖╪▒┘è┘é╪ر ╪د┘╪»┘╪╣ ┘┘è ╪د┘╪ص╪د┘╪ر (┘┘╪د╪│╪ز╪«╪»╪د┘à ╪د┘╪»╪د╪«┘┘è ┘┘é╪╖)
++      // ظ¤ء┬ظـزظـتظـز╪░ظـزظـû ظـزظـûظـزظûْظ¤ء├ذظ¤ء├رظـز╪▒ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـث ظ¤ء├زظـز╪╡ظ¤ء├رظ¤ء┬ "ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـزظـثظ¤ء┬ظـز┬╗ ظـز╪صظ¤ء┬ظـزظ¤جظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒" ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظـز╪╡ظـز╪»ظ¤ء┬ظـز╪▒
+       if (inv.payType == 'cash') {
+         notifier.setPaymentMethod(PaymentMethod.cash);
+       } else if (inv.payType == 'debt') {
+@@ -237,13 +237,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       } else {
+         notifier.setPaymentMethod(PaymentMethod.partial);
+       }
+-
+-      // ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è = ╪ح╪ش┘à╪د┘┘è ╪د┘┘╪د╪ز┘ê╪▒╪ر - ╪د┘╪»┘è┘ ╪د┘╪ص╪د┘┘è
+-      // ┘è╪┤┘à┘ ╪د┘╪»┘╪╣╪ر ╪د┘╪ث┘ê┘┘ë + ╪ش┘à┘è╪╣ ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪د┘┘╪د╪ص┘é╪ر
++      // ظ¤ء┬ظـزظ¤éظـز╪▓ظـز┬سظـز┬╗ظ¤ء├ب ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء┬ظ¤ء├ذ (grandTotal - debt) ظـز╪░ظـز┬╗ظ¤ء┬ظـز╪»ظ¤ء├» ظ¤ء├بظ¤ء┬ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـثظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪سظ¤ء├زظ¤ء┬ظ¤ء├س ظ¤ء┬ظ¤ء├رظـزظـû
+       final totalPaid = inv.currentPaid;
+       notifier.setReceivedAmount(totalPaid);
+ 
+-      // ┘╪ص┘é┘ ╪د┘╪╣┘╪د╪╡╪▒ ┘┘è ╪د┘╪ص╪د┘╪ر
++      // ظ¤ء┬ظـز╪╡ظ¤ء├رظ¤ء┬ ظـز╪»ظ¤ء┬ظـزظـثظ¤ء┬ظـز╪»ظـزظـةظـزظûْ ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظـز╪╡ظـز╪»ظ¤ء┬ظـز╪▒
+       for (final c in cartItems) {
+         notifier.addProduct(c.product);
+         notifier.updateQuantity(c.product.id, c.quantity);
+@@ -255,15 +253,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+ 
+       _discountCtrl.text =
+           inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
+-      // ┘┘à┘╪ث ╪د┘╪ص┘é┘ ╪ذ╪د┘┘à╪ذ┘╪║ ╪د┘┘â┘┘è ╪د┘┘à╪»┘┘ê╪╣ (0 ظْ ┘╪د╪▒╪║)
+-      _receivedCtrl.text = totalPaid <= 0.001 ? '' : totalPaid.toStringAsFixed(0);
++      _receivedCtrl.text = totalPaid == 0 ? '' : totalPaid.toStringAsFixed(0);
+ 
+       _originalInvoice = inv;
+       _originalItems = items;
+     } catch (e) {
+       if (mounted) {
+         Navigator.of(context).pop();
+-        AppSnackBar.error(context, '╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ز╪ص┘à┘è┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر: $e');
++        AppSnackBar.error(context, 'ظـز┬سظـزظـûظـز╪س ظـز╪سظـز╪│ظ¤ء┬ظـز╪»ظـز╪ر ظـز╪▓ظـز╪╡ظ¤ء├بظ¤ء├ذظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒: $e');
+       }
+     }
+   }
+@@ -271,23 +268,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+   void _onNext() {
+     final state = ref.read(invoiceCreationProvider);
+     if (_currentStep == 1 && state.items.isEmpty) {
+-      _showToast('╪ث╪╢┘ ┘à┘╪ز╪ش╪د┘ï ┘ê╪د╪ص╪»╪د┘ï ╪╣┘┘ë ╪د┘╪ث┘é┘');
++      _showToast('ظـز╪سظـزظـتظ¤ء┬ ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظ¤ء├» ظ¤ء├زظـز╪»ظـز╪╡ظـز┬╗ظـز╪»ظ¤ء├» ظـزظـثظ¤ء┬ظ¤ء├س ظـز╪»ظ¤ء┬ظـز╪سظ¤ء├رظ¤ء┬');
+       return;
+     }
+     if (_currentStep == 2) {
+       if (!widget.isEditing &&
+           state.paymentMethod == PaymentMethod.partial &&
+           (state.receivedAmount == null || state.receivedAmount! <= 0)) {
+-        _showToast('╪ث╪»╪«┘ ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪│╪ز┘┘à');
++        _showToast('ظـز╪سظـز┬╗ظـز┬سظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـزظ¤éظـز╪▓ظ¤ء┬ظ¤ء├ب');
+         return;
+       }
+       if (widget.isEditing) {
+-        // ╪ح╪░╪د ╪ث╪»╪«┘ ╪د┘┘à╪│╪ز╪«╪»┘à ┘à╪ذ┘╪║╪د┘ï ╪ث┘â╪ذ╪▒ ┘à┘ ╪د┘╪ح╪ش┘à╪د┘┘è╪î ┘╪╢╪ذ╪╖┘ç ╪ز┘┘é╪د╪خ┘è╪د┘ï
+         final totalPaid = state.receivedAmount ?? 0.0;
+         final total = state.grandTotal;
+         if (totalPaid > total + 0.01) {
+-          ref.read(invoiceCreationProvider.notifier).setReceivedAmount(total);
+-          _receivedCtrl.text = total.toStringAsFixed(0);
++          _showToast(
++              'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء┬ظ¤ء├ذ ظ¤ء┬ظـز╪» ظ¤ء├ذظ¤ء├بظ¤ء├تظ¤ء┬ ظـز╪سظ¤ء┬ ظ¤ء├ذظ¤ء├تظ¤ء├زظ¤ء┬ ظـز╪سظ¤ء├تظـز╪░ظـزظûْ ظ¤ء├بظ¤ء┬ ظ¤ء├رظ¤ء├ذظ¤ء├بظـز╪▒ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒.');
++          return;
+         }
+       }
+       if (widget.isEditing) {
+@@ -313,17 +310,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+     final ok = await showDialog<bool>(
+       context: context,
+       builder: (_) => AlertDialog(
+-        title: const Text('╪ز╪ش╪د┘ç┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر╪ا'),
+-        content: const Text('╪│┘è╪ز┘à ╪ص╪░┘ ╪ش┘à┘è╪╣ ╪د┘╪ذ┘è╪د┘╪د╪ز ╪د┘┘à╪»╪«┘╪ر.'),
++        title: const Text('ظـز╪▓ظـز╪┤ظـز╪»ظ¤ء├دظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ظـز╪د'),
++        content: const Text('ظـزظ¤éظ¤ء├ذظـز╪▓ظ¤ء├ب ظـز╪╡ظـزظûّظ¤ء┬ ظـز╪┤ظ¤ء├بظ¤ء├ذظـزظـث ظـز╪»ظ¤ء┬ظـز╪░ظ¤ء├ذظـز╪»ظ¤ء┬ظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظـز┬سظ¤ء┬ظـز╪▒.'),
+         actions: [
+           TextButton(
+               onPressed: () => Navigator.pop(context, false),
+-              child: const Text('╪ح┘╪║╪د╪ة')),
++              child: const Text('ظـز╪صظ¤ء┬ظـزظـّظـز╪»ظـز╪ر')),
+           FilledButton(
+             style: FilledButton.styleFrom(
+                 backgroundColor: const Color(0xFFEF4444)),
+             onPressed: () => Navigator.pop(context, true),
+-            child: const Text('╪ز╪ش╪د┘ç┘'),
++            child: const Text('ظـز╪▓ظـز╪┤ظـز╪»ظ¤ء├دظ¤ء┬'),
+           ),
+         ],
+       ),
+@@ -362,14 +359,16 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       final customer = invoiceState.customer;
+ 
+       final items = invoiceState.items.map((item) {
++        final displayName = item.note.trim().isNotEmpty
++            ? '${item.product.name} [${item.note.trim()}]'
++            : item.product.name;
+         return <String, dynamic>{
+-          'product_name': item.product.name,
++          'product_name': displayName,
+           'unit': item.product.unit,
+           'qty': item.quantity,
+           'unit_price': item.effectivePrice,
+           'price_type': item.isWholesale ? 'wholesale' : 'retail',
+           'total': item.total,
+-          'note': item.note.trim(),
+         };
+       }).toList();
+ 
+@@ -383,7 +382,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       }
+ 
+       await repo.createInvoice(
+-        customerName: customer?.name ?? '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
++        customerName: customer?.name ?? 'ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذ',
+         customerId: customer?.id,
+         customerPhone: customer?.phone,
+         subtotal: invoiceState.subtotal,
+@@ -425,17 +424,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       invoiceNotifier.clear();
+       if (mounted) {
+         Navigator.of(context).pop();
+-        AppSnackBar.success(context, '╪ز┘à ╪ص┘╪╕ ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪ذ┘╪ش╪د╪ص ظ£ô');
++        AppSnackBar.success(context, 'ظـز╪▓ظ¤ء├ب ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظـز╪░ظ¤ء┬ظـز╪┤ظـز╪»ظـز╪╡ ╪╕┬ث├┤');
+       }
+     } catch (e) {
+       if (mounted) {
+         setState(() => _isSaving = false);
+-        _showToast('╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪د┘╪ص┘╪╕: $e');
++        _showToast('ظـز┬سظـزظـûظـز╪س ظـز╪سظـز╪│ظ¤ء┬ظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظـز╪╡ظ¤ء┬ظـزظــ: $e');
+       }
+     }
+   }
+ 
+-  /// ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘╪د╪ز ╪╣┘┘ë ┘╪د╪ز┘ê╪▒╪ر ┘┘é╪»┘è╪ر ┘é╪د╪خ┘à╪ر ┘à╪╣ ╪╢╪ذ╪╖ ╪د┘┘à╪«╪▓┘ê┘ ╪ذ╪»┘ê┘ ╪د┘╪ز╪ث╪س┘è╪▒ ╪╣┘┘ë ╪»┘è┘ê┘ ┘é╪»┘è┘à╪ر.
++  /// ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ظـز╪»ظـز╪▓ ظـزظـثظ¤ء┬ظ¤ء├س ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذظـز╪▒ ظ¤ء├رظـز╪»ظـز╪«ظ¤ء├بظـز╪▒ ظ¤ء├بظـزظـث ظـزظـتظـز╪░ظـزظـû ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬سظـزظûôظ¤ء├زظ¤ء┬ ظـز╪░ظـز┬╗ظ¤ء├زظ¤ء┬ ظـز╪»ظ¤ء┬ظـز╪▓ظـز╪سظـز╪│ظ¤ء├ذظـزظûْ ظـزظـثظ¤ء┬ظ¤ء├س ظـز┬╗ظ¤ء├ذظ¤ء├زظ¤ء┬ ظ¤ء├رظـز┬╗ظ¤ء├ذظ¤ء├بظـز╪▒.
+   Future<void> _saveEditedInvoice() async {
+     if (_isSaving || _originalInvoice == null) return;
+     setState(() => _isSaving = true);
+@@ -444,56 +443,62 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+       final invoiceState = ref.read(invoiceCreationProvider);
+       final repo = ref.read(invoiceRepositoryProvider);
+ 
+-      // ┘╪ص╪│╪ذ ╪د┘╪ح╪ش┘à╪د┘┘è╪د╪ز ╪د┘╪ش╪»┘è╪»╪ر ╪ذ┘╪د╪ة┘ï ╪╣┘┘ë ╪ص╪د┘╪ر ╪د┘╪ح┘╪┤╪د╪ة ╪د┘╪ص╪د┘┘è╪ر
++      // ظ¤ء┬ظـز╪╡ظـزظ¤éظـز╪░ ظـز╪»ظ¤ء┬ظـز╪صظـز╪┤ظ¤ء├بظـز╪»ظ¤ء┬ظ¤ء├ذظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗ظـز╪▒ ظـز╪░ظ¤ء┬ظـز╪»ظـز╪رظ¤ء├» ظـزظـثظ¤ء┬ظ¤ء├س ظـز╪╡ظـز╪»ظ¤ء┬ظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪صظ¤ء┬ظـزظ¤جظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظـز╪╡ظـز╪»ظ¤ء┬ظ¤ء├ذظـز╪▒
+       final subtotal = invoiceState.subtotal;
+       final discount = invoiceState.discount;
+       final grandTotal = invoiceState.grandTotal;
+ 
+       final original = _originalInvoice!;
+ 
+-      // ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è ╪د┘╪░┘è ┘è╪▒┘è╪»┘ç ╪د┘┘à╪│╪ز╪«╪»┘à (┘è╪┤┘à┘ ┘â┘ ╪د┘╪»┘╪╣╪د╪ز)
+-      // ╪ح╪░╪د ┘┘à ┘è┘╪»╪«┘ ╪د┘┘à╪│╪ز╪«╪»┘à ╪┤┘è╪خ╪د┘ï╪î ┘╪│╪ز╪«╪»┘à ╪د┘╪ص╪د┘╪ر ╪د┘╪ث╪╡┘┘è╪ر
+-      final rawDesiredPaid = invoiceState.receivedAmount ?? original.currentPaid;
+-      // ┘╪╢┘à┘ ╪ث┘┘ç ┘╪د ┘è╪ز╪ش╪د┘ê╪▓ ╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘┘ç╪د╪خ┘è
+-      final desiredTotalPaid = rawDesiredPaid.clamp(0.0, grandTotal);
++      // ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظـزظûّظ¤ء├ذ ظ¤ء├ذظـزظûْظ¤ء├ذظـز┬╗ظ¤ء├د ظـز╪»ظ¤ء┬ظ¤ء├بظـزظ¤éظـز╪▓ظـز┬سظـز┬╗ظ¤ء├ب (ظ¤ء├ذظـزظ¤جظ¤ء├بظ¤ء┬ ظ¤ء├تظ¤ء┬ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـثظـز╪»ظـز╪▓)
++      final desiredTotalPaid = invoiceState.receivedAmount ?? original.currentPaid;
+ 
+-      // ┘╪ص╪│╪ذ ┘à╪ش┘à┘ê╪╣ ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪د┘┘à┘┘╪╡┘╪ر (╪│╪ش┘╪د╪ز '╪ز╪│╪»┘è╪» ╪»┘è┘')
+-      // ╪ص╪ز┘ë ┘╪د ┘┘â╪▒╪▒┘ç╪د ╪╣┘╪» ╪ح╪╣╪د╪»╪ر ╪د╪ص╪ز╪│╪د╪ذ ╪د┘╪»┘è┘ê┘
++      // ظ¤ء┬ظـز╪╡ظـزظ¤éظـز╪░ ظ¤ء├بظـز╪┤ظ¤ء├بظ¤ء├زظـزظـث ظـز┬╗ظ¤ء┬ظـزظـثظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظ¤ء┬ظـزظـةظ¤ء┬ظـز╪▒ (ظـزظ¤éظـز╪┤ظ¤ء┬ظـز╪»ظـز╪▓ 'ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز┬╗ظ¤ء├ذظ¤ء┬')
++      // ظـز╪╡ظـز╪▓ظ¤ء├س ظ¤ء┬ظـز╪» ظ¤ء┬ظ¤ء├تظـزظûْظـزظûْظ¤ء├دظـز╪» ظـزظـثظ¤ء┬ظـز┬╗ ظـز╪صظـزظـثظـز╪»ظـز┬╗ظـز╪▒ ظـز╪»ظـز╪╡ظـز╪▓ظـزظ¤éظـز╪»ظـز╪░ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء├ذظ¤ء├زظ¤ء┬
+       double extraPayments = 0.0;
+       if (original.customerId != null) {
+-        final paymentRecords =
+-            await repo.getPaymentRecordsByCustomer(original.customerId!);
++        final paymentRecords = await repo.getPaymentRecordsByCustomer(original.customerId!);
+         extraPayments = paymentRecords.fold(0.0, (sum, p) => sum + p.paid);
+       }
+ 
+-      // ╪د┘┘ paid ┘┘è ┘é╪د╪╣╪»╪ر ╪د┘╪ذ┘è╪د┘╪د╪ز = ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è - ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪د┘┘à┘┘╪╡┘╪ر
+-      // ┘╪ث┘ recalculateCustomerDebt ╪│╪ز╪╢┘è┘ ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪ز┘┘é╪د╪خ┘è╪د┘ï ╪╣┘╪» ╪ح╪╣╪د╪»╪ر ╪د┘╪ص╪│╪د╪ذ
+-      final paidForDb =
+-          (desiredTotalPaid - extraPayments).clamp(0.0, grandTotal);
+-
+-      // ╪د┘╪»┘è┘ ╪د┘┘à╪ذ╪»╪خ┘è (╪│┘è┘╪╣╪د╪» ╪د╪ص╪ز╪│╪د╪ذ┘ç ┘┘è recalculateCustomerDebt)
+-      final debt = (grandTotal - paidForDb).clamp(0.0, grandTotal);
+-
+-      // ظ¤ظ¤ظ¤ ╪ز╪ص╪»┘è╪» ┘┘ê╪╣ ╪د┘╪»┘╪╣ ┘ê╪د┘╪ص╪د┘╪ر ╪ذ┘╪د╪ة┘ï ╪╣┘┘ë ╪د┘┘à╪ذ┘╪║ ╪د┘┘â┘┘è ╪د┘┘à╪╖┘┘ê╪ذ ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
+-      // ┘╪│╪ز╪«╪»┘à desiredTotalPaid (┘╪د paidForDb) ┘╪ث┘┘ç ┘è╪╣╪ذ┘ّ╪▒ ╪╣┘ ┘┘è╪ر ╪د┘┘à╪│╪ز╪«╪»┘à
+-      final bool fullyPaid = desiredTotalPaid >= grandTotal - 0.01;
+-      final bool nothingPaid = desiredTotalPaid <= 0.01;
+-
+-      final String status =
+-          fullyPaid ? 'paid' : (nothingPaid ? 'unpaid' : 'partial');
+-      final String payType =
+-          fullyPaid ? 'cash' : (nothingPaid ? 'debt' : 'partial');
++      // ظـز╪»ظ¤ء┬ظ¤ء┬ paid ظ¤ء┬ظ¤ء├ذ ظ¤ء├رظـز╪»ظـزظـثظـز┬╗ظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪░ظ¤ء├ذظـز╪»ظ¤ء┬ظـز╪»ظـز╪▓ = ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء┬ظ¤ء├ذ - ظـز┬╗ظ¤ء┬ظـزظـثظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظ¤ء┬ظـزظـةظ¤ء┬ظـز╪▒
++      // ظ¤ء┬ظـز╪سظ¤ء┬ recalculateCustomerDebt ظـزظ¤éظـز╪▓ظـزظـتظ¤ء├ذظ¤ء┬ ظـز┬╗ظ¤ء┬ظـزظـثظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ ظـز╪▓ظ¤ء┬ظ¤ء├رظـز╪»ظـز╪«ظ¤ء├ذظـز╪»ظ¤ء├»
++      var paidForDb = desiredTotalPaid - extraPayments;
++      if (paidForDb < 0) paidForDb = 0;
++      if (paidForDb > grandTotal) paidForDb = grandTotal;
++
++      // ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء├ذظ¤ء┬ ظ¤ء├ذظ¤ء┬ظـز╪╡ظـزظ¤éظـز╪░ ظـز╪░ظـزظـثظـز┬╗ recalculateCustomerDebt ظ¤ء┬ظ¤ء├تظ¤ء┬ ظ¤ء┬ظـزظـتظـزظـث ظ¤ء├رظ¤ء├ذظ¤ء├بظـز╪▒ ظ¤ء├بظـز╪░ظـز┬╗ظـز╪«ظ¤ء├ذظـز╪▒
++      var debt = grandTotal - paidForDb;
++      if (debt < 0) debt = 0;
++
++      String status;
++      String payType;
++      if (debt <= 0.01 && extraPayments <= 0.01) {
++        // ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪░ظـز╪»ظ¤ء┬ظ¤ء├تظـز╪»ظ¤ء├بظ¤ء┬ ظ¤ء├بظ¤ء┬ ظـز╪»ظ¤ء┬ظـز╪░ظـز┬╗ظـز╪»ظ¤ء├ذظـز╪▒ (ظـز╪░ظـز┬╗ظ¤ء├زظ¤ء┬ ظـز╪▓ظـزظ¤éظـز┬╗ظ¤ء├ذظـز┬╗ظـز╪»ظـز╪▓)
++        status = 'paid';
++        payType = 'cash';
++      } else if (paidForDb <= 0.01 && extraPayments <= 0.01) {
++        // ظ¤ء┬ظ¤ء├ب ظ¤ء├ذظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـث ظـزظ¤جظ¤ء├ذظـز╪ر
++        status = 'unpaid';
++        payType = 'debt';
++      } else {
++        // ظـز┬╗ظ¤ء┬ظـزظـث ظـز╪┤ظـزظûôظـز╪«ظ¤ء├ذ
++        status = 'partial';
++        payType = 'partial';
++      }
+ 
+-      // ┘╪ذ┘┘è ╪د┘╪╣┘╪د╪╡╪▒ ╪د┘╪ش╪»┘è╪»╪ر ╪ذ┘┘╪│ ╪┤┘â┘ ╪د┘╪ح┘╪┤╪د╪ة ╪د┘╪╣╪د╪»┘è
++      // ظ¤ء┬ظـز╪░ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظـزظـثظ¤ء┬ظـز╪»ظـزظـةظـزظûْ ظـز╪»ظ¤ء┬ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗ظـز╪▒ ظـز╪░ظ¤ء┬ظ¤ء┬ظـزظ¤é ظـزظ¤جظ¤ء├تظ¤ء┬ ظـز╪»ظ¤ء┬ظـز╪صظ¤ء┬ظـزظ¤جظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظـزظـثظـز╪»ظـز┬╗ظ¤ء├ذ
+       final items = invoiceState.items.map((item) {
++        final displayName = item.note.trim().isNotEmpty
++            ? '${item.product.name} [${item.note.trim()}]'
++            : item.product.name;
+         return <String, dynamic>{
+-          'product_name': item.product.name,
++          'product_name': displayName,
+           'unit': item.product.unit,
+           'qty': item.quantity,
+           'unit_price': item.effectivePrice,
+           'price_type': item.isWholesale ? 'wholesale' : 'retail',
+           'total': item.total,
+-          'note': item.note.trim(),
+         };
+       }).toList();
+ 
+@@ -501,7 +506,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+         original: original,
+         originalItems: _originalItems,
+         customerId: invoiceState.customer?.id,
+-        customerName: invoiceState.customer?.name ?? '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
++        customerName: invoiceState.customer?.name ?? 'ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذ',
+         customerPhone: invoiceState.customer?.phone,
+         subtotal: subtotal,
+         discount: discount,
+@@ -521,26 +526,26 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
+ 
+       if (mounted) {
+         Navigator.of(context).pop();
+-        AppSnackBar.success(context, '╪ز┘à ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘╪د╪ز ╪╣┘┘ë ╪د┘┘╪د╪ز┘ê╪▒╪ر ظ£ô');
++        AppSnackBar.success(context, 'ظـز╪▓ظ¤ء├ب ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬ظـز╪»ظـز╪▓ ظـزظـثظ¤ء┬ظ¤ء├س ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒ ╪╕┬ث├┤');
+       }
+     } catch (e) {
+       if (mounted) {
+         setState(() => _isSaving = false);
+-        _showToast('╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘: $e');
++        _showToast('ظـز┬سظـزظـûظـز╪س ظـز╪سظـز╪│ظ¤ء┬ظـز╪»ظـز╪ر ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظـز╪▓ظـزظـثظـز┬╗ظ¤ء├ذظ¤ء┬: $e');
+       }
+     }
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Step Header
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _StepHeader extends StatelessWidget {
+   const _StepHeader({required this.currentStep});
+   final int currentStep;
+ 
+-  static const _steps = ['╪د┘╪▓╪ذ┘ê┘', '╪د┘┘à┘╪ز╪ش╪د╪ز', '╪د┘╪»┘╪╣'];
++  static const _steps = ['ظـز╪»ظ¤ء┬ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬', 'ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظـز╪▓', 'ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـث'];
+   static const _icons = [
+     Icons.person_outline,
+     Icons.shopping_cart_outlined,
+@@ -624,9 +629,9 @@ class _StepHeader extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Bottom Action Bar
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _BottomActionBar extends StatelessWidget {
+   const _BottomActionBar({
+@@ -656,7 +661,7 @@ class _BottomActionBar extends StatelessWidget {
+       borderRadius: BorderRadius.circular(24),
+       child: Row(
+         children: [
+-          // ظ¤ظ¤ Back button ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Back button ╪╕┬ج┬╪╕┬ج┬
+           if (currentStep > 0)
+             Padding(
+               padding: const EdgeInsets.only(left: 8),
+@@ -664,7 +669,7 @@ class _BottomActionBar extends StatelessWidget {
+                 onPressed: isSaving ? null : onBack,
+                 icon: const Icon(Icons.arrow_forward_ios, size: 14),
+                 label: const Text(
+-                  '╪▒╪ش┘ê╪╣',
++                  'ظـزظûْظـز╪┤ظ¤ء├زظـزظـث',
+                   style: TextStyle(fontFamily: 'KOMedia'),
+                 ),
+                 style: OutlinedButton.styleFrom(
+@@ -673,7 +678,7 @@ class _BottomActionBar extends StatelessWidget {
+               ),
+             ),
+ 
+-          // ظ¤ظ¤ Next / Save button ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Next / Save button ╪╕┬ج┬╪╕┬ج┬
+           Expanded(
+             child: FilledButton.icon(
+               onPressed: isSaving ? null : onNext,
+@@ -694,8 +699,8 @@ class _BottomActionBar extends StatelessWidget {
+                 children: [
+                   Text(
+                     isSaving
+-                        ? '╪ش╪د╪▒┘è ╪د┘╪ص┘╪╕...'
+-                        : (isLastStep ? '╪ص┘╪╕ ╪د┘┘╪د╪ز┘ê╪▒╪ر' : '╪د┘╪ز╪د┘┘è'),
++                        ? 'ظـز╪┤ظـز╪»ظـزظûْظ¤ء├ذ ظـز╪»ظ¤ء┬ظـز╪╡ظ¤ء┬ظـزظــ...'
++                        : (isLastStep ? 'ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظ¤ء┬ظـز╪»ظـز╪▓ظ¤ء├زظـزظûْظـز╪▒' : 'ظـز╪»ظ¤ء┬ظـز╪▓ظـز╪»ظ¤ء┬ظ¤ء├ذ'),
+                     style: const TextStyle(fontFamily: 'KOMedia'),
+                   ),
+                   if (currentStep == 1 && itemCount > 0) ...[
+@@ -708,7 +713,7 @@ class _BottomActionBar extends StatelessWidget {
+                         borderRadius: BorderRadius.circular(12),
+                       ),
+                       child: Text(
+-                        '$itemCount ظت ${_fmt.format(grandTotal)} IQD',
++                        '$itemCount ╪╕┬╪ز ${_fmt.format(grandTotal)} IQD',
+                         style: const TextStyle(
+                           fontFamily: 'KOMedia',
+                           fontSize: 12,
+@@ -726,9 +731,9 @@ class _BottomActionBar extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Step 1: Customer
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _CustomerStep extends ConsumerWidget {
+   const _CustomerStep();
+@@ -761,7 +766,7 @@ class _CustomerStep extends ConsumerWidget {
+ 
+       if (context.mounted) {
+         ref.read(invoiceCreationProvider.notifier).setCustomer(result);
+-        AppSnackBar.success(context, '╪ز┘à╪ز ╪ح╪╢╪د┘╪ر ${result.name} ╪ذ┘╪ش╪د╪ص ظ£ô');
++        AppSnackBar.success(context, 'ظـز╪▓ظ¤ء├بظـز╪▓ ظـز╪صظـزظـتظـز╪»ظ¤ء┬ظـز╪▒ ${result.name} ظـز╪░ظ¤ء┬ظـز╪┤ظـز╪»ظـز╪╡ ╪╕┬ث├┤');
+       }
+     }
+   }
+@@ -776,25 +781,25 @@ class _CustomerStep extends ConsumerWidget {
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         if (isCashOnly) ...[
+-          // ظ¤ظ¤ Cash customer card ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Cash customer card ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+           _QuickOptionCard(
+             icon: Icons.payments_outlined,
+             iconColor: AppColors.success,
+-            title: '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
+-            subtitle: '╪ذ╪»┘ê┘ ╪ص╪│╪د╪ذ ┘à╪│╪ش┘ّ┘',
++            title: 'ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذ',
++            subtitle: 'ظـز╪░ظـز┬╗ظ¤ء├زظ¤ء┬ ظـز╪╡ظـزظ¤éظـز╪»ظـز╪░ ظ¤ء├بظـزظ¤éظـز╪┤ظ¤ء┘ّظ¤ء┬',
+             isSelected: true,
+             onTap: () => invoiceNotifier.setCustomer(null),
+           ),
+ 
+           const SizedBox(height: 16),
+ 
+-          // ظ¤ظ¤ Selection Buttons ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Selection Buttons ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+           Row(
+             children: [
+               Expanded(
+                 child: _ActionButton(
+                   icon: Icons.person_search_outlined,
+-                  label: '╪ذ╪ص╪س ╪╣┘ ╪▓╪ذ┘ê┘',
++                  label: 'ظـز╪░ظـز╪╡ظـز╪│ ظـزظـثظ¤ء┬ ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬',
+                   color: AppColors.primary,
+                   onTap: () => _pickCustomer(context, ref),
+                 ),
+@@ -803,7 +808,7 @@ class _CustomerStep extends ConsumerWidget {
+               Expanded(
+                 child: _ActionButton(
+                   icon: Icons.person_add_outlined,
+-                  label: '╪ح╪╢╪د┘╪ر ╪▓╪ذ┘ê┘',
++                  label: 'ظـز╪صظـزظـتظـز╪»ظ¤ء┬ظـز╪▒ ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬',
+                   color: AppColors.accent,
+                   onTap: () => _showAddCustomerDialog(context, ref),
+                 ),
+@@ -811,11 +816,11 @@ class _CustomerStep extends ConsumerWidget {
+             ],
+           ),
+         ] else ...[
+-          // ظ¤ظ¤ Selected customer info ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Selected customer info ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+           Padding(
+             padding: const EdgeInsets.only(bottom: 12, right: 4),
+             child: Text(
+-              '╪د┘╪▓╪ذ┘ê┘ ╪د┘┘à╪«╪ز╪د╪▒:',
++              'ظـز╪»ظ¤ء┬ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬سظـز╪▓ظـز╪»ظـزظûْ:',
+               style: GoogleFonts.almarai(
+                 fontSize: 14,
+                 fontWeight: FontWeight.bold,
+@@ -834,7 +839,7 @@ class _CustomerStep extends ConsumerWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ Quick option card ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬ Quick option card ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _QuickOptionCard extends StatelessWidget {
+   const _QuickOptionCard({
+@@ -942,7 +947,7 @@ class _QuickOptionCard extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ Customer Search Picker Bottom Sheet ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬ Customer Search Picker Bottom Sheet ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _CustomerSearchPicker extends StatefulWidget {
+   const _CustomerSearchPicker({required this.customers});
+@@ -997,7 +1002,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
+               children: [
+                 Expanded(
+                   child: Text(
+-                    '╪د╪«╪ز╪▒ ╪▓╪ذ┘ê┘╪د┘ï',
++                    'ظـز╪»ظـز┬سظـز╪▓ظـزظûْ ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ظـز╪»ظ¤ء├»',
+                     style: GoogleFonts.almarai(
+                       fontSize: 18,
+                       fontWeight: FontWeight.bold,
+@@ -1019,7 +1024,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
+               autofocus: true,
+               onChanged: (v) => setState(() => _query = v),
+               decoration: InputDecoration(
+-                hintText: '╪ذ╪ص╪س ╪ذ╪د╪│┘à ╪د┘╪▓╪ذ┘ê┘ ╪ث┘ê ╪▒┘é┘à ╪د┘┘ç╪د╪ز┘...',
++                hintText: 'ظـز╪░ظـز╪╡ظـز╪│ ظـز╪░ظـز╪»ظـزظ¤éظ¤ء├ب ظـز╪»ظ¤ء┬ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظـز╪سظ¤ء├ز ظـزظûْظ¤ء├رظ¤ء├ب ظـز╪»ظ¤ء┬ظ¤ء├دظـز╪»ظـز╪▓ظ¤ء┬...',
+                 prefixIcon: const Icon(Icons.search),
+                 filled: true,
+                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
+@@ -1043,7 +1048,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
+                         Icon(Icons.person_search,
+                             size: 64, color: Colors.grey.withOpacity(0.5)),
+                         const SizedBox(height: 16),
+-                        Text('┘╪د ╪ز┘ê╪ش╪» ┘╪ز╪د╪خ╪ش',
++                        Text('ظ¤ء┬ظـز╪» ظـز╪▓ظ¤ء├زظـز╪┤ظـز┬╗ ظ¤ء┬ظـز╪▓ظـز╪»ظـز╪«ظـز╪┤',
+                             style: TextStyle(color: Colors.grey.shade500)),
+                       ],
+                     ),
+@@ -1143,7 +1148,7 @@ class _CustomerGridItem extends StatelessWidget {
+                 ),
+               ),
+               Text(
+-                '╪»┘è┘ ┘à╪│╪ز╪ص┘é',
++                'ظـز┬╗ظ¤ء├ذظ¤ء┬ ظ¤ء├بظـزظ¤éظـز╪▓ظـز╪╡ظ¤ء├ر',
+                 style: GoogleFonts.almarai(
+                   fontSize: 10,
+                   color: AppColors.danger.withOpacity(0.8),
+@@ -1153,7 +1158,7 @@ class _CustomerGridItem extends StatelessWidget {
+               Padding(
+                 padding: const EdgeInsets.only(top: 4),
+                 child: Text(
+-                  '┘╪د ┘è┘ê╪ش╪» ╪»┘è┘ê┘',
++                  'ظ¤ء┬ظـز╪» ظ¤ء├ذظ¤ء├زظـز╪┤ظـز┬╗ ظـز┬╗ظ¤ء├ذظ¤ء├زظ¤ء┬',
+                   style: GoogleFonts.almarai(
+                     fontSize: 10,
+                     color: Colors.green,
+@@ -1167,7 +1172,7 @@ class _CustomerGridItem extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ Add Customer Dialog ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬ Add Customer Dialog ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _AddCustomerDialog extends ConsumerStatefulWidget {
+   const _AddCustomerDialog();
+@@ -1197,7 +1202,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+           Icon(Icons.person_add_outlined, color: AppColors.primary),
+           SizedBox(width: 10),
+           Text(
+-            '╪▓╪ذ┘ê┘ ╪ش╪»┘è╪»',
++            'ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗',
+             style: TextStyle(fontFamily: 'KOMedia'),
+           ),
+         ],
+@@ -1211,9 +1216,9 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+               controller: _nameCtrl,
+               autofocus: true,
+               validator: (v) =>
+-                  (v == null || v.trim().isEmpty) ? '╪د┘╪د╪│┘à ┘à╪╖┘┘ê╪ذ' : null,
++                  (v == null || v.trim().isEmpty) ? 'ظـز╪»ظ¤ء┬ظـز╪»ظـزظ¤éظ¤ء├ب ظ¤ء├بظـزظـûظ¤ء┬ظ¤ء├زظـز╪░' : null,
+               decoration: const InputDecoration(
+-                labelText: '╪د╪│┘à ╪د┘╪▓╪ذ┘ê┘ *',
++                labelText: 'ظـز╪»ظـزظ¤éظ¤ء├ب ظـز╪»ظ¤ء┬ظـزظûôظـز╪░ظ¤ء├زظ¤ء┬ *',
+                 prefixIcon: Icon(Icons.person_outline),
+               ),
+             ),
+@@ -1222,7 +1227,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+               controller: _phoneCtrl,
+               keyboardType: TextInputType.phone,
+               decoration: const InputDecoration(
+-                labelText: '╪▒┘é┘à ╪د┘┘ç╪د╪ز┘ (╪د╪«╪ز┘è╪د╪▒┘è)',
++                labelText: 'ظـزظûْظ¤ء├رظ¤ء├ب ظـز╪»ظ¤ء┬ظ¤ء├دظـز╪»ظـز╪▓ظ¤ء┬ (ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْظ¤ء├ذ)',
+                 prefixIcon: Icon(Icons.phone_outlined),
+               ),
+             ),
+@@ -1234,7 +1239,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+         OutlinedButton(
+           onPressed: _saving ? null : () => Navigator.pop(context),
+           child: const Text(
+-            '╪ح┘╪║╪د╪ة',
++            'ظـز╪صظ¤ء┬ظـزظـّظـز╪»ظـز╪ر',
+             style: TextStyle(fontFamily: 'KOMedia'),
+           ),
+         ),
+@@ -1247,7 +1252,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+                   child: CircularProgressIndicator(
+                       strokeWidth: 2, color: Colors.white))
+               : const Text(
+-                  '╪ص┘╪╕ ┘ê╪د╪«╪ز╪▒',
++                  'ظـز╪╡ظ¤ء┬ظـزظــ ظ¤ء├زظـز╪»ظـز┬سظـز╪▓ظـزظûْ',
+                   style: TextStyle(fontFamily: 'KOMedia'),
+                 ),
+         ),
+@@ -1267,7 +1272,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
+       if (mounted) Navigator.pop(context, saved);
+     } catch (e) {
+       setState(() => _saving = false);
+-      if (mounted) AppSnackBar.error(context, '╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪د┘╪ص┘╪╕: $e');
++      if (mounted) AppSnackBar.error(context, 'ظـز┬سظـزظـûظـز╪س ظـز╪سظـز╪│ظ¤ء┬ظـز╪»ظـز╪ر ظـز╪»ظ¤ء┬ظـز╪╡ظ¤ء┬ظـزظــ: $e');
+     }
+   }
+ }
+@@ -1340,7 +1345,7 @@ class _CustomerInfoCard extends StatelessWidget {
+                 if (customer.totalDebt > 0) ...[
+                   const SizedBox(height: 4),
+                   Text(
+-                    '╪»┘è┘ ╪ص╪د┘┘è: ${NumberFormat('#,###').format(customer.totalDebt)} IQD',
++                    'ظـز┬╗ظ¤ء├ذظ¤ء┬ ظـز╪╡ظـز╪»ظ¤ء┬ظ¤ء├ذ: ${NumberFormat('#,###').format(customer.totalDebt)} IQD',
+                     style: const TextStyle(
+                       fontFamily: 'KOMedia',
+                       color: AppColors.danger,
+@@ -1398,9 +1403,9 @@ class _CustomerInfoCard extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Step 2: Products
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _ProductsStep extends ConsumerWidget {
+   @override
+@@ -1411,13 +1416,13 @@ class _ProductsStep extends ConsumerWidget {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.stretch,
+       children: [
+-        // ظ¤ظ¤ Action buttons ظ¤ظ¤
++        // ╪╕┬ج┬╪╕┬ج┬ Action buttons ╪╕┬ج┬╪╕┬ج┬
+         Row(
+           children: [
+             Expanded(
+               child: _ActionButton(
+                 icon: Icons.qr_code_scanner,
+-                label: '┘à╪│╪ص ╪ذ╪د╪▒┘â┘ê╪»',
++                label: 'ظ¤ء├بظـزظ¤éظـز╪╡ ظـز╪░ظـز╪»ظـزظûْظ¤ء├تظ¤ء├زظـز┬╗',
+                 color: AppColors.primary,
+                 onTap: () => _scanBarcode(context, ref),
+               ),
+@@ -1426,7 +1431,7 @@ class _ProductsStep extends ConsumerWidget {
+             Expanded(
+               child: _ActionButton(
+                 icon: Icons.playlist_add,
+-                label: '╪د╪«╪ز┘è╪د╪▒ ┘à┘╪ز╪ش',
++                label: 'ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْ ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤',
+                 color: AppColors.accent,
+                 onTap: () => _pickProduct(context, ref),
+               ),
+@@ -1436,7 +1441,7 @@ class _ProductsStep extends ConsumerWidget {
+ 
+         const SizedBox(height: 16),
+ 
+-        // ظ¤ظ¤ Cart items ظ¤ظ¤
++        // ╪╕┬ج┬╪╕┬ج┬ Cart items ╪╕┬ج┬╪╕┬ج┬
+         if (invoiceState.items.isEmpty)
+           _EmptyCartHint()
+         else ...[
+@@ -1446,10 +1451,10 @@ class _ProductsStep extends ConsumerWidget {
+             child: Row(
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+               children: [
+-                Text('${invoiceState.items.length} ┘à┘╪ز╪ش╪د╪ز ┘┘è ╪د┘╪│┘╪ر',
++                Text('${invoiceState.items.length} ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظـز╪▓ ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظـزظ¤éظ¤ء┬ظـز╪▒',
+                     style: Theme.of(context).textTheme.titleSmall?.copyWith(fontFamily: 'KOMedia')),
+                 Text(
+-                  '╪د┘╪ح╪ش┘à╪د┘┘è: ${_fmt.format(invoiceState.subtotal)} IQD',
++                  'ظـز╪»ظ¤ء┬ظـز╪صظـز╪┤ظ¤ء├بظـز╪»ظ¤ء┬ظ¤ء├ذ: ${_fmt.format(invoiceState.subtotal)} IQD',
+                   style: const TextStyle(
+                       fontFamily: 'KOMedia',
+                       color: AppColors.primary,
+@@ -1490,11 +1495,11 @@ class _ProductsStep extends ConsumerWidget {
+     if (match != null) {
+       ref.read(invoiceCreationProvider.notifier).addProduct(match);
+       if (context.mounted) {
+-        AppSnackBar.success(context, '╪ز┘à╪ز ╪ح╪╢╪د┘╪ر ${match.name}');
++        AppSnackBar.success(context, 'ظـز╪▓ظ¤ء├بظـز╪▓ ظـز╪صظـزظـتظـز╪»ظ¤ء┬ظـز╪▒ ${match.name}');
+       }
+     } else {
+       if (context.mounted) {
+-        AppSnackBar.error(context, '╪د┘┘à┘╪ز╪ش ╪║┘è╪▒ ┘à┘ê╪ش┘ê╪» ┘┘è ┘é╪د╪╣╪»╪ر ╪د┘╪ذ┘è╪د┘╪د╪ز');
++        AppSnackBar.error(context, 'ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ ظـزظـّظ¤ء├ذظـزظûْ ظ¤ء├بظ¤ء├زظـز╪┤ظ¤ء├زظـز┬╗ ظ¤ء┬ظ¤ء├ذ ظ¤ء├رظـز╪»ظـزظـثظـز┬╗ظـز╪▒ ظـز╪»ظ¤ء┬ظـز╪░ظ¤ء├ذظـز╪»ظ¤ء┬ظـز╪»ظـز╪▓');
+       }
+     }
+   }
+@@ -1609,7 +1614,7 @@ class _EmptyCartHint extends StatelessWidget {
+           ),
+           const SizedBox(height: 16),
+           Text(
+-            '╪د┘╪│┘╪ر ┘╪د╪▒╪║╪ر',
++            'ظـز╪»ظ¤ء┬ظـزظ¤éظ¤ء┬ظـز╪▒ ظ¤ء┬ظـز╪»ظـزظûْظـزظـّظـز╪▒',
+             style: TextStyle(
+               fontFamily: 'KOMedia',
+               fontSize: 16,
+@@ -1619,7 +1624,7 @@ class _EmptyCartHint extends StatelessWidget {
+           ),
+           const SizedBox(height: 6),
+           Text(
+-            '╪د┘à╪│╪ص ╪د┘╪ذ╪د╪▒┘â┘ê╪» ╪ث┘ê ╪د╪«╪ز╪▒ ┘à┘╪ز╪ش╪د┘ï',
++            'ظـز╪»ظ¤ء├بظـزظ¤éظـز╪╡ ظـز╪»ظ¤ء┬ظـز╪░ظـز╪»ظـزظûْظ¤ء├تظ¤ء├زظـز┬╗ ظـز╪سظ¤ء├ز ظـز╪»ظـز┬سظـز╪▓ظـزظûْ ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظ¤ء├»',
+             style: TextStyle(
+               fontFamily: 'Cairo',
+               fontSize: 13,
+@@ -1700,7 +1705,7 @@ class _CartItemCardState extends State<_CartItemCard> {
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          // ظ¤ظ¤ Product name + remove ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Product name + remove ╪╕┬ج┬╪╕┬ج┬
+           Row(
+             children: [
+               Expanded(
+@@ -1733,7 +1738,7 @@ class _CartItemCardState extends State<_CartItemCard> {
+           ),
+           const SizedBox(height: 8),
+ 
+-          // ظ¤ظ¤ Item Note Input Field ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Item Note Input Field ╪╕┬ج┬╪╕┬ج┬
+           TextFormField(
+             controller: _noteCtrl,
+             onChanged: widget.onNoteChange,
+@@ -1745,7 +1750,7 @@ class _CartItemCardState extends State<_CartItemCard> {
+             decoration: InputDecoration(
+               isDense: true,
+               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+-              hintText: '╪ث╪╢┘ ┘à┘╪د╪ص╪╕╪ر ┘┘ç╪░╪د ╪د┘┘à┘╪ز╪ش...',
++              hintText: 'ظـز╪سظـزظـتظ¤ء┬ ظ¤ء├بظ¤ء┬ظـز╪»ظـز╪╡ظـزظــظـز╪▒ ظ¤ء┬ظ¤ء├دظـزظûّظـز╪» ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤...',
+               hintStyle: TextStyle(
+                 fontSize: 11,
+                 fontFamily: 'Cairo',
+@@ -1770,7 +1775,7 @@ class _CartItemCardState extends State<_CartItemCard> {
+           ),
+           const SizedBox(height: 12),
+ 
+-          // ظ¤ظ¤ Price type + quantity ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Price type + quantity ╪╕┬ج┬╪╕┬ج┬
+           Row(
+             children: [
+               // Price type toggle
+@@ -1787,7 +1792,7 @@ class _CartItemCardState extends State<_CartItemCard> {
+                     borderRadius: BorderRadius.circular(8),
+                   ),
+                   child: Text(
+-                    '┘à┘╪▒╪»',
++                    'ظ¤ء├بظ¤ء┬ظـزظûْظـز┬╗',
+                     style: TextStyle(
+                       fontFamily: 'KOMedia',
+                       fontSize: 11,
+@@ -1812,12 +1817,12 @@ class _CartItemCardState extends State<_CartItemCard> {
+           Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 1),
+           const SizedBox(height: 12),
+ 
+-          // ظ¤ظ¤ Price summary ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Price summary ╪╕┬ج┬╪╕┬ج┬
+           Row(
+             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+             children: [
+               Text(
+-                '${_fmt.format(widget.item.effectivePrice)} IQD ├ù ${widget.item.quantity.toStringAsFixed(widget.item.quantity == widget.item.quantity.truncate() ? 0 : 2)}',
++                '${_fmt.format(widget.item.effectivePrice)} IQD ظ¤£├╣ ${widget.item.quantity.toStringAsFixed(widget.item.quantity == widget.item.quantity.truncate() ? 0 : 2)}',
+                 style: TextStyle(
+                   fontFamily: 'Cairo',
+                   color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+@@ -1861,12 +1866,12 @@ class _PriceTypeToggle extends StatelessWidget {
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           _Tab(
+-            label: '┘à┘╪▒╪»',
++            label: 'ظ¤ء├بظ¤ء┬ظـزظûْظـز┬╗',
+             isActive: !isWholesale,
+             onTap: () => onChanged(false),
+           ),
+           _Tab(
+-            label: '╪ش┘à┘╪ر',
++            label: 'ظـز╪┤ظ¤ء├بظ¤ء┬ظـز╪▒',
+             isActive: isWholesale,
+             onTap: () => onChanged(true),
+           ),
+@@ -1968,13 +1973,13 @@ class _StepBtn extends StatelessWidget {
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Product Picker Bottom Sheet
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Product Picker Bottom Sheet
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _ProductPickerSheet extends ConsumerStatefulWidget {
+   const _ProductPickerSheet({required this.products});
+@@ -2063,7 +2068,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
+               children: [
+                 Expanded(
+                   child: Text(
+-                    '╪د╪«╪ز╪▒ ┘à┘╪ز╪ش╪د┘ï',
++                    'ظـز╪»ظـز┬سظـز╪▓ظـزظûْ ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظ¤ء├»',
+                     style: GoogleFonts.almarai(
+                       fontSize: 18,
+                       fontWeight: FontWeight.bold,
+@@ -2074,7 +2079,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
+                   onPressed: () => _quickAddProduct(context),
+                   icon: const Icon(Icons.add, size: 18),
+                   label: const Text(
+-                    '┘à┘╪ز╪ش ╪ش╪»┘è╪»',
++                    'ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗',
+                     style: TextStyle(fontFamily: 'Cairo', fontSize: 12),
+                   ),
+                   style: FilledButton.styleFrom(
+@@ -2099,7 +2104,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
+               autofocus: true,
+               onChanged: (v) => setState(() => _query = v),
+               decoration: InputDecoration(
+-                hintText: '╪ذ╪ص╪س ┘┘è ╪د┘┘à┘╪ز╪ش╪د╪ز...',
++                hintText: 'ظـز╪░ظـز╪╡ظـز╪│ ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ظـز╪»ظـز╪▓...',
+                 prefixIcon: const Icon(Icons.search),
+                 filled: true,
+                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
+@@ -2115,7 +2120,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
+             child: filtered.isEmpty
+                 ? Center(
+                     child: Text(
+-                      '┘╪د ╪ز┘ê╪ش╪» ┘╪ز╪د╪خ╪ش',
++                      'ظ¤ء┬ظـز╪» ظـز╪▓ظ¤ء├زظـز╪┤ظـز┬╗ ظ¤ء┬ظـز╪▓ظـز╪»ظـز╪«ظـز╪┤',
+                       style: TextStyle(
+                         fontFamily: 'Cairo',
+                         color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+@@ -2201,7 +2206,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+   final _nameCtrl = TextEditingController();
+   final _retailCtrl = TextEditingController();
+   final _wholesaleCtrl = TextEditingController();
+-  final _unitCtrl = TextEditingController(text: '┘é╪╖╪╣╪ر');
++  final _unitCtrl = TextEditingController(text: 'ظ¤ء├رظـزظـûظـزظـثظـز╪▒');
+   final _barcodeCtrl = TextEditingController();
+   final _stockCtrl = TextEditingController();
+ 
+@@ -2225,7 +2230,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+       backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
+       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+       title: Text(
+-        '╪ح╪╢╪د┘╪ر ┘à┘╪ز╪ش ╪ش╪»┘è╪»',
++        'ظـز╪صظـزظـتظـز╪»ظ¤ء┬ظـز╪▒ ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ ظـز╪┤ظـز┬╗ظ¤ء├ذظـز┬╗',
+         style: GoogleFonts.almarai(fontWeight: FontWeight.bold, fontSize: 16),
+         textAlign: TextAlign.center,
+       ),
+@@ -2239,24 +2244,24 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+                 controller: _nameCtrl,
+                 textDirection: ui.TextDirection.rtl,
+                 decoration: const InputDecoration(
+-                  labelText: '╪د╪│┘à ╪د┘┘à┘╪ز╪ش *',
+-                  hintText: '┘à╪س╪د┘: ╪ص┘┘è╪ذ ╪د┘┘à╪▒╪د╪╣┘è 1 ┘╪ز╪▒',
++                  labelText: 'ظـز╪»ظـزظ¤éظ¤ء├ب ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ *',
++                  hintText: 'ظ¤ء├بظـز╪│ظـز╪»ظ¤ء┬: ظـز╪╡ظ¤ء┬ظ¤ء├ذظـز╪░ ظـز╪»ظ¤ء┬ظ¤ء├بظـزظûْظـز╪»ظـزظـثظ¤ء├ذ 1 ظ¤ء┬ظـز╪▓ظـزظûْ',
+                   prefixIcon: Icon(Icons.shopping_bag_outlined),
+                 ),
+-                validator: (v) => (v == null || v.trim().isEmpty) ? '╪د╪│┘à ╪د┘┘à┘╪ز╪ش ┘à╪╖┘┘ê╪ذ' : null,
++                validator: (v) => (v == null || v.trim().isEmpty) ? 'ظـز╪»ظـزظ¤éظ¤ء├ب ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤ ظ¤ء├بظـزظـûظ¤ء┬ظ¤ء├زظـز╪░' : null,
+               ),
+               const SizedBox(height: 12),
+               TextFormField(
+                 controller: _retailCtrl,
+                 keyboardType: TextInputType.number,
+                 decoration: const InputDecoration(
+-                  labelText: '╪│╪╣╪▒ ╪د┘┘à┘╪▒╪» *',
+-                  hintText: '╪│╪╣╪▒ ╪د┘╪ذ┘è╪╣ ╪ذ╪د┘┘à┘╪▒╪»',
++                  labelText: 'ظـزظ¤éظـزظـثظـزظûْ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـزظûْظـز┬╗ *',
++                  hintText: 'ظـزظ¤éظـزظـثظـزظûْ ظـز╪»ظ¤ء┬ظـز╪░ظ¤ء├ذظـزظـث ظـز╪░ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـزظûْظـز┬╗',
+                   prefixIcon: Icon(Icons.monetization_on_outlined),
+                 ),
+                 validator: (v) {
+-                  if (v == null || v.trim().isEmpty) return '╪│╪╣╪▒ ╪د┘┘à┘╪▒╪» ┘à╪╖┘┘ê╪ذ';
+-                  if (double.tryParse(v) == null) return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
++                  if (v == null || v.trim().isEmpty) return 'ظـزظ¤éظـزظـثظـزظûْ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـزظûْظـز┬╗ ظ¤ء├بظـزظـûظ¤ء┬ظ¤ء├زظـز╪░';
++                  if (double.tryParse(v) == null) return 'ظـز╪سظـز┬╗ظـز┬سظ¤ء┬ ظـزظûْظ¤ء├رظ¤ء├ب ظـزظـةظـز╪╡ظ¤ء├ذظـز╪╡';
+                   return null;
+                 },
+               ),
+@@ -2265,13 +2270,13 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+                 controller: _wholesaleCtrl,
+                 keyboardType: TextInputType.number,
+                 decoration: const InputDecoration(
+-                  labelText: '╪│╪╣╪▒ ╪د┘╪ش┘à┘╪ر (╪د╪«╪ز┘è╪د╪▒┘è)',
+-                  hintText: '╪│╪╣╪▒ ╪د┘╪ذ┘è╪╣ ╪ذ╪د┘╪ش┘à┘╪ر',
++                  labelText: 'ظـزظ¤éظـزظـثظـزظûْ ظـز╪»ظ¤ء┬ظـز╪┤ظ¤ء├بظ¤ء┬ظـز╪▒ (ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْظ¤ء├ذ)',
++                  hintText: 'ظـزظ¤éظـزظـثظـزظûْ ظـز╪»ظ¤ء┬ظـز╪░ظ¤ء├ذظـزظـث ظـز╪░ظـز╪»ظ¤ء┬ظـز╪┤ظ¤ء├بظ¤ء┬ظـز╪▒',
+                   prefixIcon: Icon(Icons.storefront_outlined),
+                 ),
+                 validator: (v) {
+                   if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
+-                    return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
++                    return 'ظـز╪سظـز┬╗ظـز┬سظ¤ء┬ ظـزظûْظ¤ء├رظ¤ء├ب ظـزظـةظـز╪╡ظ¤ء├ذظـز╪╡';
+                   }
+                   return null;
+                 },
+@@ -2281,8 +2286,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+                 controller: _unitCtrl,
+                 textDirection: ui.TextDirection.rtl,
+                 decoration: const InputDecoration(
+-                  labelText: '╪د┘┘ê╪ص╪»╪ر',
+-                  hintText: '┘é╪╖╪╣╪ر╪î ┘â╪▒╪ز┘ê┘╪î ┘â╪║...',
++                  labelText: 'ظـز╪»ظ¤ء┬ظ¤ء├زظـز╪╡ظـز┬╗ظـز╪▒',
++                  hintText: 'ظ¤ء├رظـزظـûظـزظـثظـز╪▒ظـز├« ظ¤ء├تظـزظûْظـز╪▓ظ¤ء├زظ¤ء┬ظـز├« ظ¤ء├تظـزظـّ...',
+                   prefixIcon: Icon(Icons.scale_outlined),
+                 ),
+               ),
+@@ -2290,8 +2295,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+               TextFormField(
+                 controller: _barcodeCtrl,
+                 decoration: const InputDecoration(
+-                  labelText: '╪د┘╪ذ╪د╪▒┘â┘ê╪» (╪د╪«╪ز┘è╪د╪▒┘è)',
+-                  hintText: '╪▒┘é┘à ╪د┘╪ذ╪د╪▒┘â┘ê╪»',
++                  labelText: 'ظـز╪»ظ¤ء┬ظـز╪░ظـز╪»ظـزظûْظ¤ء├تظ¤ء├زظـز┬╗ (ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْظ¤ء├ذ)',
++                  hintText: 'ظـزظûْظ¤ء├رظ¤ء├ب ظـز╪»ظ¤ء┬ظـز╪░ظـز╪»ظـزظûْظ¤ء├تظ¤ء├زظـز┬╗',
+                   prefixIcon: Icon(Icons.qr_code_outlined),
+                 ),
+               ),
+@@ -2300,13 +2305,13 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+                 controller: _stockCtrl,
+                 keyboardType: TextInputType.number,
+                 decoration: const InputDecoration(
+-                  labelText: '╪د┘┘à╪«╪▓┘ê┘ ╪د┘╪ث┘ê┘┘è (╪د╪«╪ز┘è╪د╪▒┘è)',
+-                  hintText: '╪د┘┘â┘à┘è╪ر ╪د┘┘à╪ز┘ê┘╪▒╪ر',
++                  labelText: 'ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬سظـزظûôظ¤ء├زظ¤ء┬ ظـز╪»ظ¤ء┬ظـز╪سظ¤ء├زظ¤ء┬ظ¤ء├ذ (ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْظ¤ء├ذ)',
++                  hintText: 'ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء├بظ¤ء├ذظـز╪▒ ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪▓ظ¤ء├زظ¤ء┬ظـزظûْظـز╪▒',
+                   prefixIcon: Icon(Icons.inventory_outlined),
+                 ),
+                 validator: (v) {
+                   if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
+-                    return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
++                    return 'ظـز╪سظـز┬╗ظـز┬سظ¤ء┬ ظـزظûْظ¤ء├رظ¤ء├ب ظـزظـةظـز╪╡ظ¤ء├ذظـز╪╡';
+                   }
+                   return null;
+                 },
+@@ -2318,14 +2323,14 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+       actions: [
+         TextButton(
+           onPressed: _isSaving ? null : () => Navigator.pop(context),
+-          child: const Text('╪ح┘╪║╪د╪ة'),
++          child: const Text('ظـز╪صظ¤ء┬ظـزظـّظـز╪»ظـز╪ر'),
+         ),
+         FilledButton(
+           onPressed: _isSaving ? null : _saveProduct,
+           style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+           child: _isSaving
+               ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+-              : const Text('╪ص┘╪╕'),
++              : const Text('ظـز╪╡ظ¤ء┬ظـزظــ'),
+         ),
+       ],
+     );
+@@ -2340,7 +2345,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+       final wholesale = _wholesaleCtrl.text.trim().isNotEmpty
+           ? double.parse(_wholesaleCtrl.text.trim())
+           : null;
+-      final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : '┘é╪╖╪╣╪ر';
++      final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : 'ظ¤ء├رظـزظـûظـزظـثظـز╪▒';
+       final barcode = _barcodeCtrl.text.trim().isNotEmpty ? _barcodeCtrl.text.trim() : null;
+       final stock = _stockCtrl.text.trim().isNotEmpty ? double.parse(_stockCtrl.text.trim()) : null;
+ 
+@@ -2351,15 +2356,15 @@ class _AddProductDialogState extends State<_AddProductDialog> {
+     } catch (e) {
+       if (mounted) {
+         setState(() => _isSaving = false);
+-        AppSnackBar.error(context, '╪ص╪»╪س ╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ص┘╪╕ ╪د┘┘à┘╪ز╪ش: $e');
++        AppSnackBar.error(context, 'ظـز╪╡ظـز┬╗ظـز╪│ ظـز┬سظـزظـûظـز╪س ظـز╪سظـز╪│ظ¤ء┬ظـز╪»ظـز╪ر ظـز╪╡ظ¤ء┬ظـزظــ ظـز╪»ظ¤ء┬ظ¤ء├بظ¤ء┬ظـز╪▓ظـز╪┤: $e');
+       }
+     }
+   }
+ }
+ 
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ // Step 3: Payment
+-// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++// ╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬╪╕┬ج┬
+ 
+ class _PaymentStep extends ConsumerWidget {
+   const _PaymentStep({
+@@ -2383,7 +2388,7 @@ class _PaymentStep extends ConsumerWidget {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.stretch,
+       children: [
+-        // ظ¤ظ¤ Totals summary card ظ¤ظ¤
++        // ╪╕┬ج┬╪╕┬ج┬ Totals summary card ╪╕┬ج┬╪╕┬ج┬
+         Container(
+           padding: const EdgeInsets.all(20),
+           decoration: BoxDecoration(
+@@ -2404,14 +2409,14 @@ class _PaymentStep extends ConsumerWidget {
+           child: Column(
+             children: [
+               _TotalRow(
+-                label: '╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘╪▒╪╣┘è',
++                label: 'ظـز╪»ظ¤ء┬ظـز╪صظـز╪┤ظ¤ء├بظـز╪»ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظ¤ء┬ظـزظûْظـزظـثظ¤ء├ذ',
+                 value: invoiceState.subtotal,
+                 size: 14,
+               ),
+               if (invoiceState.discount > 0) ...[
+                 const SizedBox(height: 8),
+                 _TotalRow(
+-                  label: '╪د┘╪«╪╡┘à',
++                  label: 'ظـز╪»ظ¤ء┬ظـز┬سظـزظـةظ¤ء├ب',
+                   value: -invoiceState.discount,
+                   size: 14,
+                   color: AppColors.warning,
+@@ -2422,7 +2427,7 @@ class _PaymentStep extends ConsumerWidget {
+                 child: Divider(color: isDark ? AppColors.darkDivider : AppColors.divider),
+               ),
+               _TotalRow(
+-                label: '╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘┘ç╪د╪خ┘è',
++                label: 'ظـز╪»ظ¤ء┬ظـز╪صظـز╪┤ظ¤ء├بظـز╪»ظ¤ء┬ظ¤ء├ذ ظـز╪»ظ¤ء┬ظ¤ء┬ظ¤ء├دظـز╪»ظـز╪«ظ¤ء├ذ',
+                 value: invoiceState.grandTotal,
+                 size: 20,
+                 bold: true,
+@@ -2434,12 +2439,12 @@ class _PaymentStep extends ConsumerWidget {
+ 
+         const SizedBox(height: 20),
+ 
+-        // ظ¤ظ¤ Discount field ظ¤ظ¤
++        // ╪╕┬ج┬╪╕┬ج┬ Discount field ╪╕┬ج┬╪╕┬ج┬
+         TextField(
+           controller: discountCtrl,
+           keyboardType: TextInputType.number,
+           decoration: const InputDecoration(
+-            labelText: '╪د┘╪«╪╡┘à (╪د╪«╪ز┘è╪د╪▒┘è)',
++            labelText: 'ظـز╪»ظ¤ء┬ظـز┬سظـزظـةظ¤ء├ب (ظـز╪»ظـز┬سظـز╪▓ظ¤ء├ذظـز╪»ظـزظûْظ¤ء├ذ)',
+             prefixIcon: Icon(Icons.discount_outlined),
+             suffixText: 'IQD',
+           ),
+@@ -2450,9 +2455,9 @@ class _PaymentStep extends ConsumerWidget {
+         const SizedBox(height: 24),
+ 
+         if (!isEditing) ...[
+-          // ظ¤ظ¤ Payment method ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Payment method ╪╕┬ج┬╪╕┬ج┬
+           Text(
+-            '╪╖╪▒┘è┘é╪ر ╪د┘╪»┘╪╣',
++            'ظـزظـûظـزظûْظ¤ء├ذظ¤ء├رظـز╪▒ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـث',
+             style: TextStyle(
+               fontFamily: 'KOMedia',
+               fontSize: 16,
+@@ -2484,7 +2489,7 @@ class _PaymentStep extends ConsumerWidget {
+             }).toList(),
+           ),
+ 
+-          // ظ¤ظ¤ Received amount (partial only) ظ¤ظ¤
++          // ╪╕┬ج┬╪╕┬ج┬ Received amount (partial only) ╪╕┬ج┬╪╕┬ج┬
+           if (invoiceState.paymentMethod == PaymentMethod.partial) ...[
+             const SizedBox(height: 20),
+             TextField(
+@@ -2492,12 +2497,12 @@ class _PaymentStep extends ConsumerWidget {
+               keyboardType: TextInputType.number,
+               autofocus: true,
+               decoration: InputDecoration(
+-                labelText: '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪│╪ز┘┘à',
++                labelText: 'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـزظ¤éظـز╪▓ظ¤ء┬ظ¤ء├ب',
+                 prefixIcon: const Icon(Icons.payments_outlined),
+                 suffixText: 'IQD',
+                 helperText: invoiceState.receivedAmount != null &&
+                         invoiceState.receivedAmount! > 0
+-                    ? '╪د┘┘à╪ز╪ذ┘é┘è: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
++                    ? 'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪▓ظـز╪░ظ¤ء├رظ¤ء├ذ: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
+                     : null,
+                 helperStyle: const TextStyle(
+                   fontFamily: 'KOMedia',
+@@ -2514,168 +2519,41 @@ class _PaymentStep extends ConsumerWidget {
+         if (isEditing && originalInvoice != null) ...[
+           const SizedBox(height: 24),
+           Builder(builder: (context) {
+-            final grandTotal = invoiceState.grandTotal;
+-            final totalPaid = (invoiceState.receivedAmount ?? originalInvoice!.currentPaid)
+-                .clamp(0.0, grandTotal);
+-            final remaining = grandTotal - totalPaid;
+-            final isFullyPaid = remaining <= 0.01;
+-
++            final totalPaid = invoiceState.receivedAmount ?? originalInvoice!.currentPaid;
++            final remaining = invoiceState.grandTotal - totalPaid;
+             return Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+-                // ظ¤ظ¤ ╪╣┘┘ê╪د┘ ╪د┘┘é╪│┘à ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
+-                Row(
+-                  children: [
+-                    Icon(
+-                      Icons.payments_outlined,
+-                      size: 20,
+-                      color: isDark ? Colors.white70 : AppColors.primary,
+-                    ),
+-                    const SizedBox(width: 8),
+-                    Text(
+-                      '╪ز╪╣╪»┘è┘ ┘à╪ذ┘╪║ ╪د┘╪»┘╪╣',
+-                      style: TextStyle(
+-                        fontFamily: 'KOMedia',
+-                        fontSize: 16,
+-                        fontWeight: FontWeight.w800,
+-                        color: isDark ? Colors.white : AppColors.textPrimary,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-
+-                const SizedBox(height: 8),
+-
+-                // ظ¤ظ¤ ╪ز┘┘à┘è╪ص ╪ز┘ê╪╢┘è╪ص┘è ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
+-                Container(
+-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+-                  decoration: BoxDecoration(
+-                    color: isDark
+-                        ? Colors.blue.withOpacity(0.1)
+-                        : Colors.blue.shade50,
+-                    borderRadius: BorderRadius.circular(10),
+-                    border: Border.all(
+-                      color: Colors.blue.withOpacity(0.25),
+-                    ),
+-                  ),
+-                  child: Row(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+-                    children: [
+-                      const Icon(Icons.info_outline,
+-                          size: 15, color: Colors.blue),
+-                      const SizedBox(width: 6),
+-                      Expanded(
+-                        child: Text(
+-                          '┘è╪┤┘à┘ ╪د┘┘à╪ذ┘╪║ ╪ث╪»┘╪د┘ç ╪ش┘à┘è╪╣ ╪د┘╪»┘╪╣╪د╪ز ┘à┘╪░ ╪ح┘╪┤╪د╪ة ╪د┘┘╪د╪ز┘ê╪▒╪ر ┘ê╪ص╪ز┘ë ╪د┘╪ت┘ (╪د┘╪»┘╪╣╪ر ╪د┘╪ث┘ê┘┘ë + ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪»)',
+-                          style: TextStyle(
+-                            fontFamily: 'Cairo',
+-                            fontSize: 11.5,
+-                            color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
+-                          ),
+-                        ),
+-                      ),
+-                    ],
++                Text(
++                  'ظـز╪░ظ¤ء├ذظـز╪»ظ¤ء┬ظـز╪»ظـز╪▓ ظـز╪»ظ¤ء┬ظـز┬╗ظ¤ء┬ظـزظـث:',
++                  style: TextStyle(
++                    fontFamily: 'KOMedia',
++                    fontSize: 16,
++                    fontWeight: FontWeight.w800,
++                    color: isDark ? Colors.white : AppColors.textPrimary,
+                   ),
+                 ),
+-
+                 const SizedBox(height: 16),
+-
+-                // ظ¤ظ¤ ╪ص┘é┘ ╪د┘┘à╪ذ┘╪║ + ╪▓╪▒ ╪│╪▒┘è╪╣ "┘à╪»┘┘ê╪╣ ╪ذ╪د┘┘â╪د┘à┘" ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
+-                Row(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Expanded(
+-                      child: TextField(
+-                        controller: receivedCtrl,
+-                        keyboardType: TextInputType.number,
+-                        decoration: InputDecoration(
+-                          labelText: '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è ╪ص╪ز┘ë ╪د┘╪ت┘',
+-                          prefixIcon: const Icon(Icons.attach_money_outlined),
+-                          suffixText: 'IQD',
+-                          helperText: isFullyPaid
+-                              ? '┘à╪»┘┘ê╪╣ ╪ذ╪د┘┘â╪د┘à┘ ظ£ô'
+-                              : remaining > 0
+-                                  ? '╪د┘╪ذ╪د┘é┘è ┘â╪»┘è┘: ${_fmt.format(remaining)} IQD'
+-                                  : null,
+-                          helperStyle: TextStyle(
+-                            fontFamily: 'KOMedia',
+-                            fontWeight: FontWeight.w800,
+-                            color: isFullyPaid
+-                                ? AppColors.success
+-                                : AppColors.danger,
+-                          ),
+-                        ),
+-                        onChanged: (val) {
+-                          final parsed = double.tryParse(val);
+-                          invoiceNotifier.setReceivedAmount(parsed);
+-                        },
+-                      ),
+-                    ),
+-                    const SizedBox(width: 8),
+-                    // ╪▓╪▒ ╪│╪▒┘è╪╣: ┘à╪»┘┘ê╪╣ ╪ذ╪د┘┘â╪د┘à┘
+-                    Padding(
+-                      padding: const EdgeInsets.only(top: 4),
+-                      child: Tooltip(
+-                        message: '╪╢╪ذ╪╖ ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪╣┘┘ë ╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘â╪د┘à┘',
+-                        child: InkWell(
+-                          onTap: isFullyPaid
+-                              ? null
+-                              : () {
+-                                  invoiceNotifier.setReceivedAmount(grandTotal);
+-                                  receivedCtrl.text =
+-                                      grandTotal.toStringAsFixed(0);
+-                                },
+-                          borderRadius: BorderRadius.circular(12),
+-                          child: AnimatedContainer(
+-                            duration: const Duration(milliseconds: 200),
+-                            padding: const EdgeInsets.symmetric(
+-                                horizontal: 12, vertical: 14),
+-                            decoration: BoxDecoration(
+-                              color: isFullyPaid
+-                                  ? AppColors.success.withOpacity(0.15)
+-                                  : (isDark
+-                                      ? AppColors.darkSurface
+-                                      : Colors.green.shade50),
+-                              borderRadius: BorderRadius.circular(12),
+-                              border: Border.all(
+-                                color: isFullyPaid
+-                                    ? AppColors.success
+-                                    : Colors.green.shade300,
+-                                width: isFullyPaid ? 2 : 1,
+-                              ),
+-                            ),
+-                            child: Column(
+-                              mainAxisSize: MainAxisSize.min,
+-                              children: [
+-                                Icon(
+-                                  isFullyPaid
+-                                      ? Icons.check_circle
+-                                      : Icons.check_circle_outline,
+-                                  size: 20,
+-                                  color: AppColors.success,
+-                                ),
+-                                const SizedBox(height: 2),
+-                                Text(
+-                                  '┘â╪د┘à┘',
+-                                  style: TextStyle(
+-                                    fontFamily: 'KOMedia',
+-                                    fontSize: 10,
+-                                    fontWeight: FontWeight.w800,
+-                                    color: AppColors.success,
+-                                  ),
+-                                ),
+-                              ],
+-                            ),
+-                          ),
+-                        ),
+-                      ),
++                TextField(
++                  controller: receivedCtrl,
++                  keyboardType: TextInputType.number,
++                  decoration: InputDecoration(
++                    labelText: 'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪»ظ¤ء┬ظ¤ء├تظ¤ء┬ظ¤ء├ذ',
++                    prefixIcon: const Icon(Icons.payments_outlined),
++                    suffixText: 'IQD',
++                    helperText: remaining > 0.01
++                        ? 'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪▓ظـز╪░ظ¤ء├رظ¤ء├ذ ظ¤ء├تظـز┬╗ظ¤ء├ذظ¤ء┬: ${_fmt.format(remaining)} IQD'
++                        : 'ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث ظـز╪░ظـز╪»ظ¤ء┬ظ¤ء├تظـز╪»ظ¤ء├بظ¤ء┬ ╪╕┬ث├┤',
++                    helperStyle: TextStyle(
++                      fontFamily: 'KOMedia',
++                      fontWeight: FontWeight.w800,
++                      color: remaining > 0.01 ? AppColors.danger : AppColors.success,
+                     ),
+-                  ],
++                  ),
++                  onChanged: (val) =>
++                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
+                 ),
+-
+-                const SizedBox(height: 16),
+-
+-                // ظ¤ظ¤ ╪ذ╪╖╪د┘é╪ر ╪د┘┘à┘╪«╪╡ ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
++                const SizedBox(height: 20),
+                 Container(
+                   padding: const EdgeInsets.all(16),
+                   decoration: BoxDecoration(
+@@ -2688,47 +2566,15 @@ class _PaymentStep extends ConsumerWidget {
+                   ),
+                   child: Column(
+                     children: [
+-                      // ╪ح╪ش┘à╪د┘┘è ╪د┘┘╪د╪ز┘ê╪▒╪ر
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                           Text(
+-                            '╪ح╪ش┘à╪د┘┘è ╪د┘┘╪د╪ز┘ê╪▒╪ر:',
++                            'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪░ظ¤ء┬ظـزظـّ ظـز╪»ظ¤ء┬ظ¤ء├بظـز┬╗ظ¤ء┬ظ¤ء├زظـزظـث:',
+                             style: TextStyle(
+                               fontFamily: 'Cairo',
+-                              fontSize: 13,
+-                              color: isDark
+-                                  ? AppColors.darkTextSecondary
+-                                  : AppColors.textSecondary,
+-                            ),
+-                          ),
+-                          Text(
+-                            '${_fmt.format(grandTotal)} IQD',
+-                            style: TextStyle(
+-                              fontFamily: 'KOMedia',
+-                              fontWeight: FontWeight.w800,
+-                              color: isDark ? Colors.white : AppColors.textPrimary,
+                               fontSize: 14,
+-                            ),
+-                          ),
+-                        ],
+-                      ),
+-                      Divider(
+-                        height: 20,
+-                        color: isDark ? AppColors.darkDivider : AppColors.divider,
+-                      ),
+-                      // ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣
+-                      Row(
+-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-                        children: [
+-                          Text(
+-                            '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è:',
+-                            style: TextStyle(
+-                              fontFamily: 'Cairo',
+-                              fontSize: 13,
+-                              color: isDark
+-                                  ? AppColors.darkTextSecondary
+-                                  : AppColors.textSecondary,
++                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                             ),
+                           ),
+                           Text(
+@@ -2743,30 +2589,23 @@ class _PaymentStep extends ConsumerWidget {
+                         ],
+                       ),
+                       const SizedBox(height: 8),
+-                      // ╪د┘╪ذ╪د┘é┘è ┘â╪»┘è┘
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                           Text(
+-                            '╪د┘╪ذ╪د┘é┘è ┘â╪»┘è┘:',
++                            'ظـز╪»ظ¤ء┬ظ¤ء├بظـز╪▓ظـز╪░ظ¤ء├رظ¤ء├ذ ظ¤ء├تظـز┬╗ظ¤ء├ذظ¤ء┬:',
+                             style: TextStyle(
+                               fontFamily: 'Cairo',
+-                              fontSize: 13,
+-                              color: isDark
+-                                  ? AppColors.darkTextSecondary
+-                                  : AppColors.textSecondary,
++                              fontSize: 14,
++                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                             ),
+                           ),
+                           Text(
+-                            isFullyPaid
+-                                ? '┘╪د ┘è┘ê╪ش╪» ╪»┘è┘ ظ£ô'
+-                                : '${_fmt.format(remaining)} IQD',
+-                            style: TextStyle(
++                            '${_fmt.format(remaining > 0 ? remaining : 0)} IQD',
++                            style: const TextStyle(
+                               fontFamily: 'KOMedia',
+                               fontWeight: FontWeight.w800,
+-                              color: isFullyPaid
+-                                  ? AppColors.success
+-                                  : AppColors.danger,
++                              color: AppColors.danger,
+                               fontSize: 15,
+                             ),
+                           ),
+@@ -2846,17 +2685,17 @@ class _PaymentMethodCard extends StatelessWidget {
+ 
+   static final _config = {
+     PaymentMethod.cash: _MethodConfig(
+-      label: '┘┘é╪»┘è',
++      label: 'ظ¤ء┬ظ¤ء├رظـز┬╗ظ¤ء├ذ',
+       icon: Icons.payments_outlined,
+       color: const Color(0xFF22C55E),
+     ),
+     PaymentMethod.debt: _MethodConfig(
+-      label: '╪ت╪ش┘',
++      label: 'ظـز╪زظـز╪┤ظ¤ء┬',
+       icon: Icons.schedule_outlined,
+       color: const Color(0xFFEF4444),
+     ),
+     PaymentMethod.partial: _MethodConfig(
+-      label: '╪ش╪▓╪خ┘è',
++      label: 'ظـز╪┤ظـزظûôظـز╪«ظ¤ء├ذ',
+       icon: Icons.splitscreen_outlined,
+       color: const Color(0xFFF59E0B),
+     ),

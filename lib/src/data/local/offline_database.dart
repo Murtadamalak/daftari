@@ -29,11 +29,6 @@ class OfflineDatabase {
   }
 
   Future<Database> _initDb() async {
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
-
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'daftar_offline_v2.db');
 

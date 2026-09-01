@@ -54,6 +54,7 @@ class InvoiceCreationState {
     this.discount = 0.0,
     this.paymentMethod = PaymentMethod.cash,
     this.receivedAmount,
+    this.invoiceNote,
   });
 
   final CustomerModel?
@@ -62,6 +63,7 @@ class InvoiceCreationState {
   final double discount;
   final PaymentMethod paymentMethod;
   final double? receivedAmount;
+  final String? invoiceNote;
 
   double get subtotal => items.fold(0, (sum, item) => sum + item.total);
 
@@ -77,6 +79,7 @@ class InvoiceCreationState {
     double? discount,
     PaymentMethod? paymentMethod,
     double? receivedAmount,
+    String? invoiceNote,
   }) {
     return InvoiceCreationState(
       customer: clearCustomer ? null : (customer ?? this.customer),
@@ -84,6 +87,7 @@ class InvoiceCreationState {
       discount: discount ?? this.discount,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       receivedAmount: receivedAmount ?? this.receivedAmount,
+      invoiceNote: invoiceNote ?? this.invoiceNote,
     );
   }
 }
@@ -171,6 +175,10 @@ class InvoiceCreationNotifier
 
   void setReceivedAmount(double? amount) {
     state = state.copyWith(receivedAmount: amount);
+  }
+
+  void setInvoiceNote(String? note) {
+    state = state.copyWith(invoiceNote: note);
   }
 
   void clear() {

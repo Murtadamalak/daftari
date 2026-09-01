@@ -46,7 +46,7 @@ class ExportHelper {
                   title: const Text('حفظ كملف'),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _saveFile(context, bytes, fileName, extension);
+                    _saveFile(context, bytes, fileName, extension, mimeType);
                   },
                 ),
                 ListTile(
@@ -72,11 +72,15 @@ class ExportHelper {
     );
   }
 
-  static Future<void> _saveFile(BuildContext context, Uint8List bytes, String fileName, String extension) async {
+  static Future<void> _saveFile(BuildContext context, Uint8List bytes, String fileName, String extension, String mimeType) async {
     try {
       if (kIsWeb) {
         // fallback to share on web for downloading
-        _shareFile(bytes, fileName, '', null);
+        if (extension.toLowerCase() == 'pdf' || extension.toLowerCase() == '.pdf') {
+          await Printing.sharePdf(bytes: bytes, filename: fileName);
+        } else {
+          await _shareFile(bytes, fileName, mimeType, null);
+        }
         return;
       }
 

@@ -1,4 +1,4 @@
-import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+﻿import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +20,10 @@ import 'customers_screen.dart';
 import 'delayed_debts_screen.dart';
 import '../core/providers/invoices_provider.dart';
 
-// ─── Number formatter ─────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ Number formatter ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 final _fmt = NumberFormat('#,###');
 
-/// Fetch all customers — used in the customer-picker step.
+/// Fetch all customers ظ¤ used in the customer-picker step.
 final _customersStreamProvider =
     FutureProvider.autoDispose<List<CustomerModel>>((ref) {
   final repo = ref.watch(customerRepositoryProvider);
@@ -36,8 +36,8 @@ class CreateInvoiceScreen extends ConsumerStatefulWidget {
     this.invoiceId,
   });
 
-  /// If null → إنشاء فاتورة جديدة.
-  /// إذا كان هناك id → تعديل فاتورة نقدية قائمة.
+  /// If null ظْ ╪ح┘╪┤╪د╪ة ┘╪د╪ز┘ê╪▒╪ر ╪ش╪»┘è╪»╪ر.
+  /// ╪ح╪░╪د ┘â╪د┘ ┘ç┘╪د┘â id ظْ ╪ز╪╣╪»┘è┘ ┘╪د╪ز┘ê╪▒╪ر ┘┘é╪»┘è╪ر ┘é╪د╪خ┘à╪ر.
   final String? invoiceId;
 
   bool get isEditing => invoiceId != null;
@@ -51,11 +51,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   int _currentStep = 0;
   final _discountCtrl = TextEditingController();
   final _receivedCtrl = TextEditingController();
-  final _noteCtrl = TextEditingController();
 
   bool _isSaving = false;
 
-  // بيانات الفاتورة الأصلية عند التعديل (نستخدمها لحساب فروقات المخزون)
+  // ╪ذ┘è╪د┘╪د╪ز ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪د┘╪ث╪╡┘┘è╪ر ╪╣┘╪» ╪د┘╪ز╪╣╪»┘è┘ (┘╪│╪ز╪«╪»┘à┘ç╪د ┘╪ص╪│╪د╪ذ ┘╪▒┘ê┘é╪د╪ز ╪د┘┘à╪«╪▓┘ê┘)
   InvoiceModel? _originalInvoice;
   List<InvoiceItemModel> _originalItems = const [];
 
@@ -63,7 +62,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   void dispose() {
     _discountCtrl.dispose();
     _receivedCtrl.dispose();
-    _noteCtrl.dispose();
     super.dispose();
   }
 
@@ -86,7 +84,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // ── Custom AppBar ───────────────────────────────────────────
+              // ظ¤ظ¤ Custom AppBar ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: SizedBox(
@@ -109,10 +107,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                 ),
               ),
 
-              // ── Step indicator at top ──────────────────────────────────────────
+              // ظ¤ظ¤ Step indicator at top ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
               _StepHeader(currentStep: _currentStep),
 
-              // ── Step content ──────────────────────────────────────────────────
+              // ظ¤ظ¤ Step content ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
@@ -129,7 +127,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                               : _PaymentStep(
                                   discountCtrl: _discountCtrl,
                                   receivedCtrl: _receivedCtrl,
-                                  noteCtrl: _noteCtrl,
                                   isEditing: widget.isEditing,
                                   originalInvoice: _originalInvoice,
                                 ),
@@ -142,7 +139,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         ),
       ),
 
-      // ── Bottom action bar ─────────────────────────────────────────────────
+      // ظ¤ظ¤ Bottom action bar ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
       bottomNavigationBar: _BottomActionBar(
         currentStep: _currentStep,
         isLastStep: isLastStep,
@@ -171,18 +168,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       if (inv == null) {
         if (mounted) {
           Navigator.of(context).pop();
-          AppSnackBar.error(context, 'تعذّر تحميل الفاتورة');
+          AppSnackBar.error(context, '╪ز╪╣╪░┘ّ╪▒ ╪ز╪ص┘à┘è┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر');
         }
         return;
       }
 
-      // لا نسمح بتعديل فواتير التسديد فقط (ليست مبيعات)
-      if (inv.payType == 'تسديد دين') {
+      // ┘╪د ┘╪│┘à╪ص ╪ذ╪ز╪╣╪»┘è┘ ┘┘ê╪د╪ز┘è╪▒ ╪د┘╪ز╪│╪»┘è╪» ┘┘é╪╖ (┘┘è╪│╪ز ┘à╪ذ┘è╪╣╪د╪ز)
+      if (inv.payType == '╪ز╪│╪»┘è╪» ╪»┘è┘') {
         if (mounted) {
           Navigator.of(context).pop();
           AppSnackBar.error(
             context,
-            'لا يمكن تعديل فواتير تسديد الدين، عدّل فاتورة المبيعات الأصلية.',
+            '┘╪د ┘è┘à┘â┘ ╪ز╪╣╪»┘è┘ ┘┘ê╪د╪ز┘è╪▒ ╪ز╪│╪»┘è╪» ╪د┘╪»┘è┘╪î ╪╣╪»┘ّ┘ ┘╪د╪ز┘ê╪▒╪ر ╪د┘┘à╪ذ┘è╪╣╪د╪ز ╪د┘╪ث╪╡┘┘è╪ر.',
           );
         }
         return;
@@ -192,10 +189,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final productsRepo = ref.read(productRepositoryProvider);
       final allProducts = await productsRepo.getAllProducts();
 
-      // حوّل عناصر الفاتورة إلى CartItem داخل حالة إنشاء الفاتورة
+      // ╪ص┘ê┘ّ┘ ╪╣┘╪د╪╡╪▒ ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪ح┘┘ë CartItem ╪»╪د╪«┘ ╪ص╪د┘╪ر ╪ح┘╪┤╪د╪ة ╪د┘┘╪د╪ز┘ê╪▒╪ر
       final cartItems = <CartItem>[];
       for (final it in items) {
-        // نحاول إيجاد المنتج بنفس الاسم للوصول للمخزون ومعرّف المنتج
+        // ┘╪ص╪د┘ê┘ ╪ح┘è╪ش╪د╪» ╪د┘┘à┘╪ز╪ش ╪ذ┘┘╪│ ╪د┘╪د╪│┘à ┘┘┘ê╪╡┘ê┘ ┘┘┘à╪«╪▓┘ê┘ ┘ê┘à╪╣╪▒┘ّ┘ ╪د┘┘à┘╪ز╪ش
         final match = allProducts.firstWhere(
           (p) => p.name == it.productName,
           orElse: () => ProductModel(
@@ -221,9 +218,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final notifier = ref.read(invoiceCreationProvider.notifier);
       notifier.clear();
       notifier.setDiscount(
-          inv.discount); // سيُعاد احتساب الإجمالي تلقائياً فيما بعد
+          inv.discount); // ╪│┘è┘╪╣╪د╪» ╪د╪ص╪ز╪│╪د╪ذ ╪د┘╪ح╪ش┘à╪د┘┘è ╪ز┘┘é╪د╪خ┘è╪د┘ï ┘┘è┘à╪د ╪ذ╪╣╪»
 
-      // تعبئة الزبون في حالة التعديل (إن وجد)
+      // ╪ز╪╣╪ذ╪خ╪ر ╪د┘╪▓╪ذ┘ê┘ ┘┘è ╪ص╪د┘╪ر ╪د┘╪ز╪╣╪»┘è┘ (╪ح┘ ┘ê╪ش╪»)
       if (inv.customerId != null) {
         final custRepo = ref.read(customerRepositoryProvider);
         final customer = await custRepo.getById(inv.customerId!);
@@ -232,7 +229,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         }
       }
 
-      // نضبط طريقة الدفع في الحالة (للاستخدام الداخلي فقط)
+      // ┘╪╢╪ذ╪╖ ╪╖╪▒┘è┘é╪ر ╪د┘╪»┘╪╣ ┘ê╪ص┘é┘ "╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪╣┘╪» ╪ح┘╪┤╪د╪ة ╪د┘┘╪د╪ز┘ê╪▒╪ر" ┘┘è ╪د┘╪ص╪د┘╪ر
       if (inv.payType == 'cash') {
         notifier.setPaymentMethod(PaymentMethod.cash);
       } else if (inv.payType == 'debt') {
@@ -240,13 +237,11 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       } else {
         notifier.setPaymentMethod(PaymentMethod.partial);
       }
-
-      // المبلغ المدفوع الكلي = إجمالي الفاتورة - الدين الحالي
-      // يشمل الدفعة الأولى + جميع دفعات التسديد اللاحقة
+      // ┘╪│╪ز╪«╪»┘à ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è (grandTotal - debt) ╪ذ╪»┘╪د┘ï ┘à┘ ╪د┘╪»┘╪╣╪ر ╪د┘╪ث┘ê┘┘ë ┘┘é╪╖
       final totalPaid = inv.currentPaid;
       notifier.setReceivedAmount(totalPaid);
 
-      // نحقن العناصر في الحالة
+      // ┘╪ص┘é┘ ╪د┘╪╣┘╪د╪╡╪▒ ┘┘è ╪د┘╪ص╪د┘╪ر
       for (final c in cartItems) {
         notifier.addProduct(c.product);
         notifier.updateQuantity(c.product.id, c.quantity);
@@ -258,18 +253,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       _discountCtrl.text =
           inv.discount == 0 ? '' : inv.discount.toStringAsFixed(0);
-      // نملأ الحقل بالمبلغ الكلي المدفوع (0 → فارغ)
-      _receivedCtrl.text = totalPaid <= 0.001 ? '' : totalPaid.toStringAsFixed(0);
-
-      notifier.setInvoiceNote(inv.note);
-      _noteCtrl.text = inv.note ?? '';
+      _receivedCtrl.text = totalPaid == 0 ? '' : totalPaid.toStringAsFixed(0);
 
       _originalInvoice = inv;
       _originalItems = items;
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        AppSnackBar.error(context, 'خطأ أثناء تحميل الفاتورة: $e');
+        AppSnackBar.error(context, '╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ز╪ص┘à┘è┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر: $e');
       }
     }
   }
@@ -277,23 +268,23 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   void _onNext() {
     final state = ref.read(invoiceCreationProvider);
     if (_currentStep == 1 && state.items.isEmpty) {
-      _showToast('أضف منتجاً واحداً على الأقل');
+      _showToast('╪ث╪╢┘ ┘à┘╪ز╪ش╪د┘ï ┘ê╪د╪ص╪»╪د┘ï ╪╣┘┘ë ╪د┘╪ث┘é┘');
       return;
     }
     if (_currentStep == 2) {
       if (!widget.isEditing &&
           state.paymentMethod == PaymentMethod.partial &&
           (state.receivedAmount == null || state.receivedAmount! <= 0)) {
-        _showToast('أدخل المبلغ المستلم');
+        _showToast('╪ث╪»╪«┘ ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪│╪ز┘┘à');
         return;
       }
       if (widget.isEditing) {
-        // إذا أدخل المستخدم مبلغاً أكبر من الإجمالي، نضبطه تلقائياً
         final totalPaid = state.receivedAmount ?? 0.0;
         final total = state.grandTotal;
         if (totalPaid > total + 0.01) {
-          ref.read(invoiceCreationProvider.notifier).setReceivedAmount(total);
-          _receivedCtrl.text = total.toStringAsFixed(0);
+          _showToast(
+              '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è ┘╪د ┘è┘à┘â┘ ╪ث┘ ┘è┘â┘ê┘ ╪ث┘â╪ذ╪▒ ┘à┘ ┘é┘è┘à╪ر ╪د┘┘╪د╪ز┘ê╪▒╪ر.');
+          return;
         }
       }
       if (widget.isEditing) {
@@ -319,17 +310,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('تجاهل الفاتورة؟'),
-        content: const Text('سيتم حذف جميع البيانات المدخلة.'),
+        title: const Text('╪ز╪ش╪د┘ç┘ ╪د┘┘╪د╪ز┘ê╪▒╪ر╪ا'),
+        content: const Text('╪│┘è╪ز┘à ╪ص╪░┘ ╪ش┘à┘è╪╣ ╪د┘╪ذ┘è╪د┘╪د╪ز ╪د┘┘à╪»╪«┘╪ر.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء')),
+              child: const Text('╪ح┘╪║╪د╪ة')),
           FilledButton(
             style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444)),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('تجاهل'),
+            child: const Text('╪ز╪ش╪د┘ç┘'),
           ),
         ],
       ),
@@ -368,14 +359,16 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final customer = invoiceState.customer;
 
       final items = invoiceState.items.map((item) {
+        final displayName = item.note.trim().isNotEmpty
+            ? '${item.product.name} [${item.note.trim()}]'
+            : item.product.name;
         return <String, dynamic>{
-          'product_name': item.product.name,
+          'product_name': displayName,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
           'price_type': item.isWholesale ? 'wholesale' : 'retail',
           'total': item.total,
-          'note': item.note.trim(),
         };
       }).toList();
 
@@ -389,7 +382,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       }
 
       await repo.createInvoice(
-        customerName: customer?.name ?? 'زبون نقدي',
+        customerName: customer?.name ?? '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
         customerId: customer?.id,
         customerPhone: customer?.phone,
         subtotal: invoiceState.subtotal,
@@ -405,7 +398,6 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         shopLogoPath: settings.logoPath,
         items: items,
         additionalDebt: additionalDebt,
-        note: invoiceState.invoiceNote,
       );
 
       // Decrement stock for the items sold
@@ -432,17 +424,17 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       invoiceNotifier.clear();
       if (mounted) {
         Navigator.of(context).pop();
-        AppSnackBar.success(context, 'تم حفظ الفاتورة بنجاح ✓');
+        AppSnackBar.success(context, '╪ز┘à ╪ص┘╪╕ ╪د┘┘╪د╪ز┘ê╪▒╪ر ╪ذ┘╪ش╪د╪ص ظ£ô');
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        _showToast('خطأ أثناء الحفظ: $e');
+        _showToast('╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪د┘╪ص┘╪╕: $e');
       }
     }
   }
 
-  /// حفظ التعديلات على فاتورة نقدية قائمة مع ضبط المخزون بدون التأثير على ديون قديمة.
+  /// ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘╪د╪ز ╪╣┘┘ë ┘╪د╪ز┘ê╪▒╪ر ┘┘é╪»┘è╪ر ┘é╪د╪خ┘à╪ر ┘à╪╣ ╪╢╪ذ╪╖ ╪د┘┘à╪«╪▓┘ê┘ ╪ذ╪»┘ê┘ ╪د┘╪ز╪ث╪س┘è╪▒ ╪╣┘┘ë ╪»┘è┘ê┘ ┘é╪»┘è┘à╪ر.
   Future<void> _saveEditedInvoice() async {
     if (_isSaving || _originalInvoice == null) return;
     setState(() => _isSaving = true);
@@ -451,56 +443,62 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final invoiceState = ref.read(invoiceCreationProvider);
       final repo = ref.read(invoiceRepositoryProvider);
 
-      // نحسب الإجماليات الجديدة بناءً على حالة الإنشاء الحالية
+      // ┘╪ص╪│╪ذ ╪د┘╪ح╪ش┘à╪د┘┘è╪د╪ز ╪د┘╪ش╪»┘è╪»╪ر ╪ذ┘╪د╪ة┘ï ╪╣┘┘ë ╪ص╪د┘╪ر ╪د┘╪ح┘╪┤╪د╪ة ╪د┘╪ص╪د┘┘è╪ر
       final subtotal = invoiceState.subtotal;
       final discount = invoiceState.discount;
       final grandTotal = invoiceState.grandTotal;
 
       final original = _originalInvoice!;
 
-      // المبلغ المدفوع الكلي الذي يريده المستخدم (يشمل كل الدفعات)
-      // إذا لم يُدخل المستخدم شيئاً، نستخدم الحالة الأصلية
-      final rawDesiredPaid = invoiceState.receivedAmount ?? original.currentPaid;
-      // نضمن أنه لا يتجاوز الإجمالي النهائي
-      final desiredTotalPaid = rawDesiredPaid.clamp(0.0, grandTotal);
+      // ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è ╪د┘╪░┘è ┘è╪▒┘è╪»┘ç ╪د┘┘à╪│╪ز╪«╪»┘à (┘è╪┤┘à┘ ┘â┘ ╪د┘╪»┘╪╣╪د╪ز)
+      final desiredTotalPaid = invoiceState.receivedAmount ?? original.currentPaid;
 
-      // نحسب مجموع دفعات التسديد المنفصلة (سجلات 'تسديد دين')
-      // حتى لا نكررها عند إعادة احتساب الديون
+      // ┘╪ص╪│╪ذ ┘à╪ش┘à┘ê╪╣ ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪د┘┘à┘┘╪╡┘╪ر (╪│╪ش┘╪د╪ز '╪ز╪│╪»┘è╪» ╪»┘è┘')
+      // ╪ص╪ز┘ë ┘╪د ┘┘â╪▒╪▒┘ç╪د ╪╣┘╪» ╪ح╪╣╪د╪»╪ر ╪د╪ص╪ز╪│╪د╪ذ ╪د┘╪»┘è┘ê┘
       double extraPayments = 0.0;
       if (original.customerId != null) {
-        final paymentRecords =
-            await repo.getPaymentRecordsByCustomer(original.customerId!);
+        final paymentRecords = await repo.getPaymentRecordsByCustomer(original.customerId!);
         extraPayments = paymentRecords.fold(0.0, (sum, p) => sum + p.paid);
       }
 
-      // الـ paid في قاعدة البيانات = المبلغ المدفوع الكلي - دفعات التسديد المنفصلة
-      // لأن recalculateCustomerDebt ستضيف دفعات التسديد تلقائياً عند إعادة الحساب
-      final paidForDb =
-          (desiredTotalPaid - extraPayments).clamp(0.0, grandTotal);
+      // ╪د┘┘ paid ┘┘è ┘é╪د╪╣╪»╪ر ╪د┘╪ذ┘è╪د┘╪د╪ز = ╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è - ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪د┘┘à┘┘╪╡┘╪ر
+      // ┘╪ث┘ recalculateCustomerDebt ╪│╪ز╪╢┘è┘ ╪»┘╪╣╪د╪ز ╪د┘╪ز╪│╪»┘è╪» ╪ز┘┘é╪د╪خ┘è╪د┘ï
+      var paidForDb = desiredTotalPaid - extraPayments;
+      if (paidForDb < 0) paidForDb = 0;
+      if (paidForDb > grandTotal) paidForDb = grandTotal;
 
-      // الدين المبدئي (سيُعاد احتسابه في recalculateCustomerDebt)
-      final debt = (grandTotal - paidForDb).clamp(0.0, grandTotal);
+      // ╪د┘╪»┘è┘ ┘è┘╪ص╪│╪ذ ╪ذ╪╣╪» recalculateCustomerDebt ┘┘â┘ ┘╪╢╪╣ ┘é┘è┘à╪ر ┘à╪ذ╪»╪خ┘è╪ر
+      var debt = grandTotal - paidForDb;
+      if (debt < 0) debt = 0;
 
-      // ─── تحديد نوع الدفع والحالة بناءً على المبلغ الكلي المطلوب ─────────
-      // نستخدم desiredTotalPaid (لا paidForDb) لأنه يعبّر عن نية المستخدم
-      final bool fullyPaid = desiredTotalPaid >= grandTotal - 0.01;
-      final bool nothingPaid = desiredTotalPaid <= 0.01;
+      String status;
+      String payType;
+      if (debt <= 0.01 && extraPayments <= 0.01) {
+        // ┘à╪»┘┘ê╪╣ ╪ذ╪د┘┘â╪د┘à┘ ┘à┘ ╪د┘╪ذ╪»╪د┘è╪ر (╪ذ╪»┘ê┘ ╪ز╪│╪»┘è╪»╪د╪ز)
+        status = 'paid';
+        payType = 'cash';
+      } else if (paidForDb <= 0.01 && extraPayments <= 0.01) {
+        // ┘┘à ┘è┘╪»┘╪╣ ╪┤┘è╪ة
+        status = 'unpaid';
+        payType = 'debt';
+      } else {
+        // ╪»┘╪╣ ╪ش╪▓╪خ┘è
+        status = 'partial';
+        payType = 'partial';
+      }
 
-      final String status =
-          fullyPaid ? 'paid' : (nothingPaid ? 'unpaid' : 'partial');
-      final String payType =
-          fullyPaid ? 'cash' : (nothingPaid ? 'debt' : 'partial');
-
-      // نبني العناصر الجديدة بنفس شكل الإنشاء العادي
+      // ┘╪ذ┘┘è ╪د┘╪╣┘╪د╪╡╪▒ ╪د┘╪ش╪»┘è╪»╪ر ╪ذ┘┘╪│ ╪┤┘â┘ ╪د┘╪ح┘╪┤╪د╪ة ╪د┘╪╣╪د╪»┘è
       final items = invoiceState.items.map((item) {
+        final displayName = item.note.trim().isNotEmpty
+            ? '${item.product.name} [${item.note.trim()}]'
+            : item.product.name;
         return <String, dynamic>{
-          'product_name': item.product.name,
+          'product_name': displayName,
           'unit': item.product.unit,
           'qty': item.quantity,
           'unit_price': item.effectivePrice,
           'price_type': item.isWholesale ? 'wholesale' : 'retail',
           'total': item.total,
-          'note': item.note.trim(),
         };
       }).toList();
 
@@ -508,7 +506,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         original: original,
         originalItems: _originalItems,
         customerId: invoiceState.customer?.id,
-        customerName: invoiceState.customer?.name ?? 'زبون نقدي',
+        customerName: invoiceState.customer?.name ?? '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
         customerPhone: invoiceState.customer?.phone,
         subtotal: subtotal,
         discount: discount,
@@ -528,26 +526,26 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
       if (mounted) {
         Navigator.of(context).pop();
-        AppSnackBar.success(context, 'تم حفظ التعديلات على الفاتورة ✓');
+        AppSnackBar.success(context, '╪ز┘à ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘╪د╪ز ╪╣┘┘ë ╪د┘┘╪د╪ز┘ê╪▒╪ر ظ£ô');
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        _showToast('خطأ أثناء حفظ التعديل: $e');
+        _showToast('╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ص┘╪╕ ╪د┘╪ز╪╣╪»┘è┘: $e');
       }
     }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Step Header
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _StepHeader extends StatelessWidget {
   const _StepHeader({required this.currentStep});
   final int currentStep;
 
-  static const _steps = ['الزبون', 'المنتجات', 'الدفع'];
+  static const _steps = ['╪د┘╪▓╪ذ┘ê┘', '╪د┘┘à┘╪ز╪ش╪د╪ز', '╪د┘╪»┘╪╣'];
   static const _icons = [
     Icons.person_outline,
     Icons.shopping_cart_outlined,
@@ -631,9 +629,9 @@ class _StepHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Bottom Action Bar
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _BottomActionBar extends StatelessWidget {
   const _BottomActionBar({
@@ -663,7 +661,7 @@ class _BottomActionBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: Row(
         children: [
-          // ── Back button ──
+          // ظ¤ظ¤ Back button ظ¤ظ¤
           if (currentStep > 0)
             Padding(
               padding: const EdgeInsets.only(left: 8),
@@ -671,7 +669,7 @@ class _BottomActionBar extends StatelessWidget {
                 onPressed: isSaving ? null : onBack,
                 icon: const Icon(Icons.arrow_forward_ios, size: 14),
                 label: const Text(
-                  'رجوع',
+                  '╪▒╪ش┘ê╪╣',
                   style: TextStyle(fontFamily: 'KOMedia'),
                 ),
                 style: OutlinedButton.styleFrom(
@@ -680,7 +678,7 @@ class _BottomActionBar extends StatelessWidget {
               ),
             ),
 
-          // ── Next / Save button ──
+          // ظ¤ظ¤ Next / Save button ظ¤ظ¤
           Expanded(
             child: FilledButton.icon(
               onPressed: isSaving ? null : onNext,
@@ -701,8 +699,8 @@ class _BottomActionBar extends StatelessWidget {
                 children: [
                   Text(
                     isSaving
-                        ? 'جاري الحفظ...'
-                        : (isLastStep ? 'حفظ الفاتورة' : 'التالي'),
+                        ? '╪ش╪د╪▒┘è ╪د┘╪ص┘╪╕...'
+                        : (isLastStep ? '╪ص┘╪╕ ╪د┘┘╪د╪ز┘ê╪▒╪ر' : '╪د┘╪ز╪د┘┘è'),
                     style: const TextStyle(fontFamily: 'KOMedia'),
                   ),
                   if (currentStep == 1 && itemCount > 0) ...[
@@ -715,7 +713,7 @@ class _BottomActionBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '$itemCount • ${_fmt.format(grandTotal)} IQD',
+                        '$itemCount ظت ${_fmt.format(grandTotal)} IQD',
                         style: const TextStyle(
                           fontFamily: 'KOMedia',
                           fontSize: 12,
@@ -733,9 +731,9 @@ class _BottomActionBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Step 1: Customer
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _CustomerStep extends ConsumerWidget {
   const _CustomerStep();
@@ -768,7 +766,7 @@ class _CustomerStep extends ConsumerWidget {
 
       if (context.mounted) {
         ref.read(invoiceCreationProvider.notifier).setCustomer(result);
-        AppSnackBar.success(context, 'تمت إضافة ${result.name} بنجاح ✓');
+        AppSnackBar.success(context, '╪ز┘à╪ز ╪ح╪╢╪د┘╪ر ${result.name} ╪ذ┘╪ش╪د╪ص ظ£ô');
       }
     }
   }
@@ -783,25 +781,25 @@ class _CustomerStep extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (isCashOnly) ...[
-          // ── Cash customer card ──────────────────────────────────────────────
+          // ظ¤ظ¤ Cash customer card ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
           _QuickOptionCard(
             icon: Icons.payments_outlined,
             iconColor: AppColors.success,
-            title: 'زبون نقدي',
-            subtitle: 'بدون حساب مسجّل',
+            title: '╪▓╪ذ┘ê┘ ┘┘é╪»┘è',
+            subtitle: '╪ذ╪»┘ê┘ ╪ص╪│╪د╪ذ ┘à╪│╪ش┘ّ┘',
             isSelected: true,
             onTap: () => invoiceNotifier.setCustomer(null),
           ),
 
           const SizedBox(height: 16),
 
-          // ── Selection Buttons ──────────────────────────────────────────────
+          // ظ¤ظ¤ Selection Buttons ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
           Row(
             children: [
               Expanded(
                 child: _ActionButton(
                   icon: Icons.person_search_outlined,
-                  label: 'بحث عن زبون',
+                  label: '╪ذ╪ص╪س ╪╣┘ ╪▓╪ذ┘ê┘',
                   color: AppColors.primary,
                   onTap: () => _pickCustomer(context, ref),
                 ),
@@ -810,7 +808,7 @@ class _CustomerStep extends ConsumerWidget {
               Expanded(
                 child: _ActionButton(
                   icon: Icons.person_add_outlined,
-                  label: 'إضافة زبون',
+                  label: '╪ح╪╢╪د┘╪ر ╪▓╪ذ┘ê┘',
                   color: AppColors.accent,
                   onTap: () => _showAddCustomerDialog(context, ref),
                 ),
@@ -818,11 +816,11 @@ class _CustomerStep extends ConsumerWidget {
             ],
           ),
         ] else ...[
-          // ── Selected customer info ────────────────────────────────────────
+          // ظ¤ظ¤ Selected customer info ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
           Padding(
             padding: const EdgeInsets.only(bottom: 12, right: 4),
             child: Text(
-              'الزبون المختار:',
+              '╪د┘╪▓╪ذ┘ê┘ ╪د┘┘à╪«╪ز╪د╪▒:',
               style: GoogleFonts.almarai(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -841,7 +839,7 @@ class _CustomerStep extends ConsumerWidget {
   }
 }
 
-// ── Quick option card ────────────────────────────────────────────────────────
+// ظ¤ظ¤ Quick option card ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _QuickOptionCard extends StatelessWidget {
   const _QuickOptionCard({
@@ -949,7 +947,7 @@ class _QuickOptionCard extends StatelessWidget {
   }
 }
 
-// ── Customer Search Picker Bottom Sheet ──────────────────────────────────────
+// ظ¤ظ¤ Customer Search Picker Bottom Sheet ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _CustomerSearchPicker extends StatefulWidget {
   const _CustomerSearchPicker({required this.customers});
@@ -1004,7 +1002,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
               children: [
                 Expanded(
                   child: Text(
-                    'اختر زبوناً',
+                    '╪د╪«╪ز╪▒ ╪▓╪ذ┘ê┘╪د┘ï',
                     style: GoogleFonts.almarai(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1026,7 +1024,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
               autofocus: true,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'بحث باسم الزبون أو رقم الهاتف...',
+                hintText: '╪ذ╪ص╪س ╪ذ╪د╪│┘à ╪د┘╪▓╪ذ┘ê┘ ╪ث┘ê ╪▒┘é┘à ╪د┘┘ç╪د╪ز┘...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
@@ -1050,7 +1048,7 @@ class _CustomerSearchPickerState extends State<_CustomerSearchPicker> {
                         Icon(Icons.person_search,
                             size: 64, color: Colors.grey.withOpacity(0.5)),
                         const SizedBox(height: 16),
-                        Text('لا توجد نتائج',
+                        Text('┘╪د ╪ز┘ê╪ش╪» ┘╪ز╪د╪خ╪ش',
                             style: TextStyle(color: Colors.grey.shade500)),
                       ],
                     ),
@@ -1150,7 +1148,7 @@ class _CustomerGridItem extends StatelessWidget {
                 ),
               ),
               Text(
-                'دين مستحق',
+                '╪»┘è┘ ┘à╪│╪ز╪ص┘é',
                 style: GoogleFonts.almarai(
                   fontSize: 10,
                   color: AppColors.danger.withOpacity(0.8),
@@ -1160,7 +1158,7 @@ class _CustomerGridItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'لا يوجد ديون',
+                  '┘╪د ┘è┘ê╪ش╪» ╪»┘è┘ê┘',
                   style: GoogleFonts.almarai(
                     fontSize: 10,
                     color: Colors.green,
@@ -1174,7 +1172,7 @@ class _CustomerGridItem extends StatelessWidget {
   }
 }
 
-// ── Add Customer Dialog ──────────────────────────────────────────────────────
+// ظ¤ظ¤ Add Customer Dialog ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _AddCustomerDialog extends ConsumerStatefulWidget {
   const _AddCustomerDialog();
@@ -1204,7 +1202,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
           Icon(Icons.person_add_outlined, color: AppColors.primary),
           SizedBox(width: 10),
           Text(
-            'زبون جديد',
+            '╪▓╪ذ┘ê┘ ╪ش╪»┘è╪»',
             style: TextStyle(fontFamily: 'KOMedia'),
           ),
         ],
@@ -1218,9 +1216,9 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
               controller: _nameCtrl,
               autofocus: true,
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'الاسم مطلوب' : null,
+                  (v == null || v.trim().isEmpty) ? '╪د┘╪د╪│┘à ┘à╪╖┘┘ê╪ذ' : null,
               decoration: const InputDecoration(
-                labelText: 'اسم الزبون *',
+                labelText: '╪د╪│┘à ╪د┘╪▓╪ذ┘ê┘ *',
                 prefixIcon: Icon(Icons.person_outline),
               ),
             ),
@@ -1229,7 +1227,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                labelText: 'رقم الهاتف (اختياري)',
+                labelText: '╪▒┘é┘à ╪د┘┘ç╪د╪ز┘ (╪د╪«╪ز┘è╪د╪▒┘è)',
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
             ),
@@ -1241,7 +1239,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
         OutlinedButton(
           onPressed: _saving ? null : () => Navigator.pop(context),
           child: const Text(
-            'إلغاء',
+            '╪ح┘╪║╪د╪ة',
             style: TextStyle(fontFamily: 'KOMedia'),
           ),
         ),
@@ -1254,7 +1252,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
               : const Text(
-                  'حفظ واختر',
+                  '╪ص┘╪╕ ┘ê╪د╪«╪ز╪▒',
                   style: TextStyle(fontFamily: 'KOMedia'),
                 ),
         ),
@@ -1274,7 +1272,7 @@ class _AddCustomerDialogState extends ConsumerState<_AddCustomerDialog> {
       if (mounted) Navigator.pop(context, saved);
     } catch (e) {
       setState(() => _saving = false);
-      if (mounted) AppSnackBar.error(context, 'خطأ أثناء الحفظ: $e');
+      if (mounted) AppSnackBar.error(context, '╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪د┘╪ص┘╪╕: $e');
     }
   }
 }
@@ -1347,7 +1345,7 @@ class _CustomerInfoCard extends StatelessWidget {
                 if (customer.totalDebt > 0) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'دين حالي: ${NumberFormat('#,###').format(customer.totalDebt)} IQD',
+                    '╪»┘è┘ ╪ص╪د┘┘è: ${NumberFormat('#,###').format(customer.totalDebt)} IQD',
                     style: const TextStyle(
                       fontFamily: 'KOMedia',
                       color: AppColors.danger,
@@ -1405,9 +1403,9 @@ class _CustomerInfoCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Step 2: Products
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _ProductsStep extends ConsumerWidget {
   @override
@@ -1418,33 +1416,24 @@ class _ProductsStep extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Action buttons ──
+        // ظ¤ظ¤ Action buttons ظ¤ظ¤
         Row(
           children: [
             Expanded(
               child: _ActionButton(
                 icon: Icons.qr_code_scanner,
-                label: 'مسح',
+                label: '┘à╪│╪ص ╪ذ╪د╪▒┘â┘ê╪»',
                 color: AppColors.primary,
                 onTap: () => _scanBarcode(context, ref),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
               child: _ActionButton(
                 icon: Icons.playlist_add,
-                label: 'اختيار',
+                label: '╪د╪«╪ز┘è╪د╪▒ ┘à┘╪ز╪ش',
                 color: AppColors.accent,
                 onTap: () => _pickProduct(context, ref),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.add_box_outlined,
-                label: 'إضافة',
-                color: AppColors.success,
-                onTap: () => _quickAddProduct(context, ref),
               ),
             ),
           ],
@@ -1452,7 +1441,7 @@ class _ProductsStep extends ConsumerWidget {
 
         const SizedBox(height: 16),
 
-        // ── Cart items ──
+        // ظ¤ظ¤ Cart items ظ¤ظ¤
         if (invoiceState.items.isEmpty)
           _EmptyCartHint()
         else ...[
@@ -1462,10 +1451,10 @@ class _ProductsStep extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${invoiceState.items.length} منتجات في السلة',
+                Text('${invoiceState.items.length} ┘à┘╪ز╪ش╪د╪ز ┘┘è ╪د┘╪│┘╪ر',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(fontFamily: 'KOMedia')),
                 Text(
-                  'الإجمالي: ${_fmt.format(invoiceState.subtotal)} IQD',
+                  '╪د┘╪ح╪ش┘à╪د┘┘è: ${_fmt.format(invoiceState.subtotal)} IQD',
                   style: const TextStyle(
                       fontFamily: 'KOMedia',
                       color: AppColors.primary,
@@ -1506,11 +1495,11 @@ class _ProductsStep extends ConsumerWidget {
     if (match != null) {
       ref.read(invoiceCreationProvider.notifier).addProduct(match);
       if (context.mounted) {
-        AppSnackBar.success(context, 'تمت إضافة ${match.name}');
+        AppSnackBar.success(context, '╪ز┘à╪ز ╪ح╪╢╪د┘╪ر ${match.name}');
       }
     } else {
       if (context.mounted) {
-        AppSnackBar.error(context, 'المنتج غير موجود في قاعدة البيانات');
+        AppSnackBar.error(context, '╪د┘┘à┘╪ز╪ش ╪║┘è╪▒ ┘à┘ê╪ش┘ê╪» ┘┘è ┘é╪د╪╣╪»╪ر ╪د┘╪ذ┘è╪د┘╪د╪ز');
       }
     }
   }
@@ -1528,32 +1517,6 @@ class _ProductsStep extends ConsumerWidget {
     );
     if (selected != null) {
       ref.read(invoiceCreationProvider.notifier).addProduct(selected);
-    }
-  }
-
-  Future<void> _quickAddProduct(BuildContext context, WidgetRef ref) async {
-    final repo = ref.read(productRepositoryProvider);
-    final newProduct = await showDialog<ProductModel>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _AddProductDialog(
-        onSave: (name, retail, wholesale, unit, barcode, stock) async {
-          final saved = await repo.upsertProduct(
-            name: name,
-            retailPrice: retail,
-            wholesalePrice: wholesale,
-            unit: unit,
-            barcode: barcode,
-            stock: stock,
-          );
-          ref.invalidate(productsProvider);
-          return saved;
-        },
-      ),
-    );
-
-    if (newProduct != null && context.mounted) {
-      ref.read(invoiceCreationProvider.notifier).addProduct(newProduct);
     }
   }
 }
@@ -1651,7 +1614,7 @@ class _EmptyCartHint extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'السلة فارغة',
+            '╪د┘╪│┘╪ر ┘╪د╪▒╪║╪ر',
             style: TextStyle(
               fontFamily: 'KOMedia',
               fontSize: 16,
@@ -1661,7 +1624,7 @@ class _EmptyCartHint extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'امسح الباركود أو اختر منتجاً',
+            '╪د┘à╪│╪ص ╪د┘╪ذ╪د╪▒┘â┘ê╪» ╪ث┘ê ╪د╪«╪ز╪▒ ┘à┘╪ز╪ش╪د┘ï',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 13,
@@ -1742,7 +1705,7 @@ class _CartItemCardState extends State<_CartItemCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Product name + remove ──
+          // ظ¤ظ¤ Product name + remove ظ¤ظ¤
           Row(
             children: [
               Expanded(
@@ -1775,7 +1738,7 @@ class _CartItemCardState extends State<_CartItemCard> {
           ),
           const SizedBox(height: 8),
 
-          // ── Item Note Input Field ──
+          // ظ¤ظ¤ Item Note Input Field ظ¤ظ¤
           TextFormField(
             controller: _noteCtrl,
             onChanged: widget.onNoteChange,
@@ -1787,7 +1750,7 @@ class _CartItemCardState extends State<_CartItemCard> {
             decoration: InputDecoration(
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              hintText: 'أضف ملاحظة لهذا المنتج...',
+              hintText: '╪ث╪╢┘ ┘à┘╪د╪ص╪╕╪ر ┘┘ç╪░╪د ╪د┘┘à┘╪ز╪ش...',
               hintStyle: TextStyle(
                 fontSize: 11,
                 fontFamily: 'Cairo',
@@ -1812,7 +1775,7 @@ class _CartItemCardState extends State<_CartItemCard> {
           ),
           const SizedBox(height: 12),
 
-          // ── Price type + quantity ──
+          // ظ¤ظ¤ Price type + quantity ظ¤ظ¤
           Row(
             children: [
               // Price type toggle
@@ -1829,7 +1792,7 @@ class _CartItemCardState extends State<_CartItemCard> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'مفرد',
+                    '┘à┘╪▒╪»',
                     style: TextStyle(
                       fontFamily: 'KOMedia',
                       fontSize: 11,
@@ -1854,12 +1817,12 @@ class _CartItemCardState extends State<_CartItemCard> {
           Divider(color: isDark ? AppColors.darkDivider : AppColors.divider, height: 1),
           const SizedBox(height: 12),
 
-          // ── Price summary ──
+          // ظ¤ظ¤ Price summary ظ¤ظ¤
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_fmt.format(widget.item.effectivePrice)} IQD × ${widget.item.quantity.toStringAsFixed(widget.item.quantity == widget.item.quantity.truncate() ? 0 : 2)}',
+                '${_fmt.format(widget.item.effectivePrice)} IQD ├ù ${widget.item.quantity.toStringAsFixed(widget.item.quantity == widget.item.quantity.truncate() ? 0 : 2)}',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
@@ -1903,12 +1866,12 @@ class _PriceTypeToggle extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _Tab(
-            label: 'مفرد',
+            label: '┘à┘╪▒╪»',
             isActive: !isWholesale,
             onTap: () => onChanged(false),
           ),
           _Tab(
-            label: 'جملة',
+            label: '╪ش┘à┘╪ر',
             isActive: isWholesale,
             onTap: () => onChanged(true),
           ),
@@ -2010,13 +1973,13 @@ class _StepBtn extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Product Picker Bottom Sheet
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Product Picker Bottom Sheet
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _ProductPickerSheet extends ConsumerStatefulWidget {
   const _ProductPickerSheet({required this.products});
@@ -2105,7 +2068,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'اختر منتجاً',
+                    '╪د╪«╪ز╪▒ ┘à┘╪ز╪ش╪د┘ï',
                     style: GoogleFonts.almarai(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -2116,7 +2079,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
                   onPressed: () => _quickAddProduct(context),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text(
-                    'منتج جديد',
+                    '┘à┘╪ز╪ش ╪ش╪»┘è╪»',
                     style: TextStyle(fontFamily: 'Cairo', fontSize: 12),
                   ),
                   style: FilledButton.styleFrom(
@@ -2141,7 +2104,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
               autofocus: true,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'بحث في المنتجات...',
+                hintText: '╪ذ╪ص╪س ┘┘è ╪د┘┘à┘╪ز╪ش╪د╪ز...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
@@ -2157,7 +2120,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
             child: filtered.isEmpty
                 ? Center(
                     child: Text(
-                      'لا توجد نتائج',
+                      '┘╪د ╪ز┘ê╪ش╪» ┘╪ز╪د╪خ╪ش',
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
@@ -2243,7 +2206,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
   final _nameCtrl = TextEditingController();
   final _retailCtrl = TextEditingController();
   final _wholesaleCtrl = TextEditingController();
-  final _unitCtrl = TextEditingController(text: 'قطعة');
+  final _unitCtrl = TextEditingController(text: '┘é╪╖╪╣╪ر');
   final _barcodeCtrl = TextEditingController();
   final _stockCtrl = TextEditingController();
 
@@ -2267,7 +2230,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
       backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
-        'إضافة منتج جديد',
+        '╪ح╪╢╪د┘╪ر ┘à┘╪ز╪ش ╪ش╪»┘è╪»',
         style: GoogleFonts.almarai(fontWeight: FontWeight.bold, fontSize: 16),
         textAlign: TextAlign.center,
       ),
@@ -2281,24 +2244,24 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 controller: _nameCtrl,
                 textDirection: ui.TextDirection.rtl,
                 decoration: const InputDecoration(
-                  labelText: 'اسم المنتج *',
-                  hintText: 'مثال: حليب المراعي 1 لتر',
+                  labelText: '╪د╪│┘à ╪د┘┘à┘╪ز╪ش *',
+                  hintText: '┘à╪س╪د┘: ╪ص┘┘è╪ذ ╪د┘┘à╪▒╪د╪╣┘è 1 ┘╪ز╪▒',
                   prefixIcon: Icon(Icons.shopping_bag_outlined),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'اسم المنتج مطلوب' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? '╪د╪│┘à ╪د┘┘à┘╪ز╪ش ┘à╪╖┘┘ê╪ذ' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _retailCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'سعر المفرد *',
-                  hintText: 'سعر البيع بالمفرد',
+                  labelText: '╪│╪╣╪▒ ╪د┘┘à┘╪▒╪» *',
+                  hintText: '╪│╪╣╪▒ ╪د┘╪ذ┘è╪╣ ╪ذ╪د┘┘à┘╪▒╪»',
                   prefixIcon: Icon(Icons.monetization_on_outlined),
                 ),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'سعر المفرد مطلوب';
-                  if (double.tryParse(v) == null) return 'أدخل رقم صحيح';
+                  if (v == null || v.trim().isEmpty) return '╪│╪╣╪▒ ╪د┘┘à┘╪▒╪» ┘à╪╖┘┘ê╪ذ';
+                  if (double.tryParse(v) == null) return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
                   return null;
                 },
               ),
@@ -2307,13 +2270,13 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 controller: _wholesaleCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'سعر الجملة (اختياري)',
-                  hintText: 'سعر البيع بالجملة',
+                  labelText: '╪│╪╣╪▒ ╪د┘╪ش┘à┘╪ر (╪د╪«╪ز┘è╪د╪▒┘è)',
+                  hintText: '╪│╪╣╪▒ ╪د┘╪ذ┘è╪╣ ╪ذ╪د┘╪ش┘à┘╪ر',
                   prefixIcon: Icon(Icons.storefront_outlined),
                 ),
                 validator: (v) {
                   if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
-                    return 'أدخل رقم صحيح';
+                    return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
                   }
                   return null;
                 },
@@ -2323,8 +2286,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 controller: _unitCtrl,
                 textDirection: ui.TextDirection.rtl,
                 decoration: const InputDecoration(
-                  labelText: 'الوحدة',
-                  hintText: 'قطعة، كرتون، كغ...',
+                  labelText: '╪د┘┘ê╪ص╪»╪ر',
+                  hintText: '┘é╪╖╪╣╪ر╪î ┘â╪▒╪ز┘ê┘╪î ┘â╪║...',
                   prefixIcon: Icon(Icons.scale_outlined),
                 ),
               ),
@@ -2332,8 +2295,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
               TextFormField(
                 controller: _barcodeCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'الباركود (اختياري)',
-                  hintText: 'رقم الباركود',
+                  labelText: '╪د┘╪ذ╪د╪▒┘â┘ê╪» (╪د╪«╪ز┘è╪د╪▒┘è)',
+                  hintText: '╪▒┘é┘à ╪د┘╪ذ╪د╪▒┘â┘ê╪»',
                   prefixIcon: Icon(Icons.qr_code_outlined),
                 ),
               ),
@@ -2342,13 +2305,13 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 controller: _stockCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'المخزون الأولي (اختياري)',
-                  hintText: 'الكمية المتوفرة',
+                  labelText: '╪د┘┘à╪«╪▓┘ê┘ ╪د┘╪ث┘ê┘┘è (╪د╪«╪ز┘è╪د╪▒┘è)',
+                  hintText: '╪د┘┘â┘à┘è╪ر ╪د┘┘à╪ز┘ê┘╪▒╪ر',
                   prefixIcon: Icon(Icons.inventory_outlined),
                 ),
                 validator: (v) {
                   if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) {
-                    return 'أدخل رقم صحيح';
+                    return '╪ث╪»╪«┘ ╪▒┘é┘à ╪╡╪ص┘è╪ص';
                   }
                   return null;
                 },
@@ -2360,14 +2323,14 @@ class _AddProductDialogState extends State<_AddProductDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('إلغاء'),
+          child: const Text('╪ح┘╪║╪د╪ة'),
         ),
         FilledButton(
           onPressed: _isSaving ? null : _saveProduct,
           style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
           child: _isSaving
               ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text('حفظ'),
+              : const Text('╪ص┘╪╕'),
         ),
       ],
     );
@@ -2382,7 +2345,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
       final wholesale = _wholesaleCtrl.text.trim().isNotEmpty
           ? double.parse(_wholesaleCtrl.text.trim())
           : null;
-      final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : 'قطعة';
+      final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : '┘é╪╖╪╣╪ر';
       final barcode = _barcodeCtrl.text.trim().isNotEmpty ? _barcodeCtrl.text.trim() : null;
       final stock = _stockCtrl.text.trim().isNotEmpty ? double.parse(_stockCtrl.text.trim()) : null;
 
@@ -2393,28 +2356,26 @@ class _AddProductDialogState extends State<_AddProductDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        AppSnackBar.error(context, 'حدث خطأ أثناء حفظ المنتج: $e');
+        AppSnackBar.error(context, '╪ص╪»╪س ╪«╪╖╪ث ╪ث╪س┘╪د╪ة ╪ص┘╪╕ ╪د┘┘à┘╪ز╪ش: $e');
       }
     }
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 // Step 3: Payment
-// ─────────────────────────────────────────────────────────────────────────────
+// ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤ظ¤
 
 class _PaymentStep extends ConsumerWidget {
   const _PaymentStep({
     required this.discountCtrl,
     required this.receivedCtrl,
-    required this.noteCtrl,
     this.isEditing = false,
     this.originalInvoice,
   });
 
   final TextEditingController discountCtrl;
   final TextEditingController receivedCtrl;
-  final TextEditingController noteCtrl;
   final bool isEditing;
   final InvoiceModel? originalInvoice;
 
@@ -2427,7 +2388,7 @@ class _PaymentStep extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Totals summary card ──
+        // ظ¤ظ¤ Totals summary card ظ¤ظ¤
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -2448,14 +2409,14 @@ class _PaymentStep extends ConsumerWidget {
           child: Column(
             children: [
               _TotalRow(
-                label: 'الإجمالي الفرعي',
+                label: '╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘╪▒╪╣┘è',
                 value: invoiceState.subtotal,
                 size: 14,
               ),
               if (invoiceState.discount > 0) ...[
                 const SizedBox(height: 8),
                 _TotalRow(
-                  label: 'الخصم',
+                  label: '╪د┘╪«╪╡┘à',
                   value: -invoiceState.discount,
                   size: 14,
                   color: AppColors.warning,
@@ -2466,7 +2427,7 @@ class _PaymentStep extends ConsumerWidget {
                 child: Divider(color: isDark ? AppColors.darkDivider : AppColors.divider),
               ),
               _TotalRow(
-                label: 'الإجمالي النهائي',
+                label: '╪د┘╪ح╪ش┘à╪د┘┘è ╪د┘┘┘ç╪د╪خ┘è',
                 value: invoiceState.grandTotal,
                 size: 20,
                 bold: true,
@@ -2478,12 +2439,12 @@ class _PaymentStep extends ConsumerWidget {
 
         const SizedBox(height: 20),
 
-        // ── Discount field ──
+        // ظ¤ظ¤ Discount field ظ¤ظ¤
         TextField(
           controller: discountCtrl,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
-            labelText: 'الخصم (اختياري)',
+            labelText: '╪د┘╪«╪╡┘à (╪د╪«╪ز┘è╪د╪▒┘è)',
             prefixIcon: Icon(Icons.discount_outlined),
             suffixText: 'IQD',
           ),
@@ -2491,24 +2452,12 @@ class _PaymentStep extends ConsumerWidget {
               invoiceNotifier.setDiscount(double.tryParse(val) ?? 0),
         ),
 
-        const SizedBox(height: 16),
-
-        // ── Invoice Note field ──
-        TextField(
-          controller: noteCtrl,
-          decoration: const InputDecoration(
-            labelText: 'ملاحظات الفاتورة (اختياري)',
-            prefixIcon: Icon(Icons.notes_outlined),
-          ),
-          onChanged: (val) => invoiceNotifier.setInvoiceNote(val),
-        ),
-
         const SizedBox(height: 24),
 
         if (!isEditing) ...[
-          // ── Payment method ──
+          // ظ¤ظ¤ Payment method ظ¤ظ¤
           Text(
-            'طريقة الدفع',
+            '╪╖╪▒┘è┘é╪ر ╪د┘╪»┘╪╣',
             style: TextStyle(
               fontFamily: 'KOMedia',
               fontSize: 16,
@@ -2540,7 +2489,7 @@ class _PaymentStep extends ConsumerWidget {
             }).toList(),
           ),
 
-          // ── Received amount (partial only) ──
+          // ظ¤ظ¤ Received amount (partial only) ظ¤ظ¤
           if (invoiceState.paymentMethod == PaymentMethod.partial) ...[
             const SizedBox(height: 20),
             TextField(
@@ -2548,12 +2497,12 @@ class _PaymentStep extends ConsumerWidget {
               keyboardType: TextInputType.number,
               autofocus: true,
               decoration: InputDecoration(
-                labelText: 'المبلغ المستلم',
+                labelText: '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪│╪ز┘┘à',
                 prefixIcon: const Icon(Icons.payments_outlined),
                 suffixText: 'IQD',
                 helperText: invoiceState.receivedAmount != null &&
                         invoiceState.receivedAmount! > 0
-                    ? 'المتبقي: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
+                    ? '╪د┘┘à╪ز╪ذ┘é┘è: ${_fmt.format(invoiceState.grandTotal - invoiceState.receivedAmount!)} IQD'
                     : null,
                 helperStyle: const TextStyle(
                   fontFamily: 'KOMedia',
@@ -2570,168 +2519,41 @@ class _PaymentStep extends ConsumerWidget {
         if (isEditing && originalInvoice != null) ...[
           const SizedBox(height: 24),
           Builder(builder: (context) {
-            final grandTotal = invoiceState.grandTotal;
-            final totalPaid = (invoiceState.receivedAmount ?? originalInvoice!.currentPaid)
-                .clamp(0.0, grandTotal);
-            final remaining = grandTotal - totalPaid;
-            final isFullyPaid = remaining <= 0.01;
-
+            final totalPaid = invoiceState.receivedAmount ?? originalInvoice!.currentPaid;
+            final remaining = invoiceState.grandTotal - totalPaid;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── عنوان القسم ──────────────────────────────────────────
-                Row(
-                  children: [
-                    Icon(
-                      Icons.payments_outlined,
-                      size: 20,
-                      color: isDark ? Colors.white70 : AppColors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'تعديل مبلغ الدفع',
-                      style: TextStyle(
-                        fontFamily: 'KOMedia',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                // ── تلميح توضيحي ─────────────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.blue.withOpacity(0.1)
-                        : Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.blue.withOpacity(0.25),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.info_outline,
-                          size: 15, color: Colors.blue),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'يشمل المبلغ أدناه جميع الدفعات منذ إنشاء الفاتورة وحتى الآن (الدفعة الأولى + دفعات التسديد)',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 11.5,
-                            color: isDark ? Colors.blue.shade200 : Colors.blue.shade700,
-                          ),
-                        ),
-                      ),
-                    ],
+                Text(
+                  '╪ذ┘è╪د┘╪د╪ز ╪د┘╪»┘╪╣:',
+                  style: TextStyle(
+                    fontFamily: 'KOMedia',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // ── حقل المبلغ + زر سريع "مدفوع بالكامل" ───────────────
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: receivedCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'المبلغ المدفوع الكلي حتى الآن',
-                          prefixIcon: const Icon(Icons.attach_money_outlined),
-                          suffixText: 'IQD',
-                          helperText: isFullyPaid
-                              ? 'مدفوع بالكامل ✓'
-                              : remaining > 0
-                                  ? 'الباقي كدين: ${_fmt.format(remaining)} IQD'
-                                  : null,
-                          helperStyle: TextStyle(
-                            fontFamily: 'KOMedia',
-                            fontWeight: FontWeight.w800,
-                            color: isFullyPaid
-                                ? AppColors.success
-                                : AppColors.danger,
-                          ),
-                        ),
-                        onChanged: (val) {
-                          final parsed = double.tryParse(val);
-                          invoiceNotifier.setReceivedAmount(parsed);
-                        },
-                      ),
+                TextField(
+                  controller: receivedCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣ ╪د┘┘â┘┘è',
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                    suffixText: 'IQD',
+                    helperText: remaining > 0.01
+                        ? '╪د┘┘à╪ز╪ذ┘é┘è ┘â╪»┘è┘: ${_fmt.format(remaining)} IQD'
+                        : '┘à╪»┘┘ê╪╣ ╪ذ╪د┘┘â╪د┘à┘ ظ£ô',
+                    helperStyle: TextStyle(
+                      fontFamily: 'KOMedia',
+                      fontWeight: FontWeight.w800,
+                      color: remaining > 0.01 ? AppColors.danger : AppColors.success,
                     ),
-                    const SizedBox(width: 8),
-                    // زر سريع: مدفوع بالكامل
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Tooltip(
-                        message: 'ضبط المبلغ المدفوع على الإجمالي الكامل',
-                        child: InkWell(
-                          onTap: isFullyPaid
-                              ? null
-                              : () {
-                                  invoiceNotifier.setReceivedAmount(grandTotal);
-                                  receivedCtrl.text =
-                                      grandTotal.toStringAsFixed(0);
-                                },
-                          borderRadius: BorderRadius.circular(12),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: isFullyPaid
-                                  ? AppColors.success.withOpacity(0.15)
-                                  : (isDark
-                                      ? AppColors.darkSurface
-                                      : Colors.green.shade50),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isFullyPaid
-                                    ? AppColors.success
-                                    : Colors.green.shade300,
-                                width: isFullyPaid ? 2 : 1,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isFullyPaid
-                                      ? Icons.check_circle
-                                      : Icons.check_circle_outline,
-                                  size: 20,
-                                  color: AppColors.success,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'كامل',
-                                  style: TextStyle(
-                                    fontFamily: 'KOMedia',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                  onChanged: (val) =>
+                      invoiceNotifier.setReceivedAmount(double.tryParse(val)),
                 ),
-
-                const SizedBox(height: 16),
-
-                // ── بطاقة الملخص ──────────────────────────────────────────
+                const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -2744,47 +2566,15 @@ class _PaymentStep extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      // إجمالي الفاتورة
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'إجمالي الفاتورة:',
+                            '╪د┘┘à╪ذ┘╪║ ╪د┘┘à╪»┘┘ê╪╣:',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            '${_fmt.format(grandTotal)} IQD',
-                            style: TextStyle(
-                              fontFamily: 'KOMedia',
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : AppColors.textPrimary,
                               fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        height: 20,
-                        color: isDark ? AppColors.darkDivider : AppColors.divider,
-                      ),
-                      // المبلغ المدفوع
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'المبلغ المدفوع الكلي:',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.textSecondary,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                             ),
                           ),
                           Text(
@@ -2799,30 +2589,23 @@ class _PaymentStep extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // الباقي كدين
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'الباقي كدين:',
+                            '╪د┘┘à╪ز╪ذ┘é┘è ┘â╪»┘è┘:',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.darkTextSecondary
-                                  : AppColors.textSecondary,
+                              fontSize: 14,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                             ),
                           ),
                           Text(
-                            isFullyPaid
-                                ? 'لا يوجد دين ✓'
-                                : '${_fmt.format(remaining)} IQD',
-                            style: TextStyle(
+                            '${_fmt.format(remaining > 0 ? remaining : 0)} IQD',
+                            style: const TextStyle(
                               fontFamily: 'KOMedia',
                               fontWeight: FontWeight.w800,
-                              color: isFullyPaid
-                                  ? AppColors.success
-                                  : AppColors.danger,
+                              color: AppColors.danger,
                               fontSize: 15,
                             ),
                           ),
@@ -2902,17 +2685,17 @@ class _PaymentMethodCard extends StatelessWidget {
 
   static final _config = {
     PaymentMethod.cash: _MethodConfig(
-      label: 'نقدي',
+      label: '┘┘é╪»┘è',
       icon: Icons.payments_outlined,
       color: const Color(0xFF22C55E),
     ),
     PaymentMethod.debt: _MethodConfig(
-      label: 'آجل',
+      label: '╪ت╪ش┘',
       icon: Icons.schedule_outlined,
       color: const Color(0xFFEF4444),
     ),
     PaymentMethod.partial: _MethodConfig(
-      label: 'جزئي',
+      label: '╪ش╪▓╪خ┘è',
       icon: Icons.splitscreen_outlined,
       color: const Color(0xFFF59E0B),
     ),

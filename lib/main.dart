@@ -10,8 +10,18 @@ import 'src/core/services/connectivity_service.dart';
 import 'src/core/services/sync_service.dart';
 import 'src/data/local/offline_database.dart';
 
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb && 
+      (defaultTargetPlatform == TargetPlatform.windows || 
+       defaultTargetPlatform == TargetPlatform.linux || 
+       defaultTargetPlatform == TargetPlatform.macOS)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
   try {
     await initializeDateFormatting('ar', null);
     await initializeDateFormatting('en', null);

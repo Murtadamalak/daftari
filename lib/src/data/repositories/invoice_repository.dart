@@ -1021,6 +1021,7 @@ class InvoiceRepository {
     required double debt,
     required String status,
     required String payType,
+    String? note,
     required List<Map<String, dynamic>> items,
   }) async {
     if (original.payType == 'تسديد دين') {
@@ -1103,6 +1104,7 @@ class InvoiceRepository {
       'debt': debt,
       'status': status,
       'pay_type': payType,
+      'note': note ?? original.note,
       'shop_name': original.shopName,
       'shop_phone': original.shopPhone,
       'owner_name': original.ownerName,

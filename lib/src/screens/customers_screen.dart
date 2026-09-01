@@ -464,6 +464,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
 
       // 5. توليد PDF ومشاركته
       await PdfDebtReportGenerator.generateAndShare(
+        context: context,
         summary: summary,
         shopName: settings?.shopName,
         ownerName: settings?.ownerName,

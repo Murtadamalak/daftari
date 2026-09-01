@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/material.dart' show BuildContext;
+
+import 'export_helper.dart';
 
 class PdfPaymentReceiptGenerator {
   PdfPaymentReceiptGenerator._();
@@ -21,6 +23,7 @@ class PdfPaymentReceiptGenerator {
 
   /// Generates the payment receipt PDF and shares it.
   static Future<void> generateAndShare({
+    required BuildContext context,
     required String customerName,
     required double amountPaid,
     DateTime? date,
@@ -247,24 +250,14 @@ class PdfPaymentReceiptGenerator {
 
     final bytes = await pdf.save();
 
-    if (kIsWeb) {
-      await Share.shareXFiles(
-        [
-          XFile.fromData(bytes,
-              mimeType: 'application/pdf',
-              name: 'receipt_${DateTime.now().millisecondsSinceEpoch}.pdf')
-        ],
-        text: 'وصل استلام قبض - $customerName',
-      );
-    } else {
-      final dir = await getTemporaryDirectory();
-      final file = File(
-          '${dir.path}/receipt_${DateTime.now().millisecondsSinceEpoch}.pdf');
-      await file.writeAsBytes(bytes);
-
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        text: 'وصل استلام قبض - $customerName',
+    if (context.mounted) {
+      await ExportHelper.exportBytes(
+        context: context,
+        bytes: bytes,
+        fileName: 'receipt_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        extension: 'pdf',
+        mimeType: 'application/pdf',
+        shareText: 'وصل استلام قبض - $customerName',
       );
     }
   }

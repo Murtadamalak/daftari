@@ -346,6 +346,7 @@ class _ReportBody extends ConsumerWidget {
       final settings = ref.read(settingsProvider).valueOrNull;
       AppSnackBar.success(context, 'جاري توليد التقرير...');
       await PdfReportGenerator.generateAndShare(
+        context: context,
         dateRange: data.dateRange,
         invoices: data.invoices,
         itemQuantities: data.itemQuantities,

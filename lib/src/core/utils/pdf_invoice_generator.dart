@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/material.dart';
+
+import 'export_helper.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 import '../../data/repositories/customer_repository.dart';
@@ -32,6 +34,7 @@ class PdfInvoiceGenerator {
 
   /// Generates the invoice PDF and shares it via share_plus.
   static Future<void> generateAndShare({
+    required BuildContext context,
     required InvoiceModel invoice,
     required List<InvoiceItemModel> items,
     required String invoiceId,
@@ -544,22 +547,14 @@ class PdfInvoiceGenerator {
     // ── Save & share ──────────────────────────────────────────────────────────
     final bytes = await pdf.save();
 
-    if (kIsWeb) {
-      await Share.shareXFiles(
-        [
-          XFile.fromData(bytes,
-              mimeType: 'application/pdf', name: 'invoice_$invoiceId.pdf')
-        ],
-        text: 'فاتورة رقم $invoiceId - $_appName',
-      );
-    } else {
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/invoice_$invoiceId.pdf');
-      await file.writeAsBytes(bytes);
-
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        text: 'فاتورة رقم $invoiceId - $_appName',
+    if (context.mounted) {
+      await ExportHelper.exportBytes(
+        context: context,
+        bytes: bytes,
+        fileName: 'invoice_$invoiceId.pdf',
+        extension: 'pdf',
+        mimeType: 'application/pdf',
+        shareText: 'فاتورة رقم $invoiceId - $_appName',
       );
     }
   }

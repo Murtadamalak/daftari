@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/material.dart' show BuildContext;
+
+import 'export_helper.dart';
 
 import '../../data/repositories/customer_repository.dart';
 import '../../data/repositories/invoice_repository.dart';
@@ -207,6 +209,7 @@ class PdfDebtReportGenerator {
   // ─────────────────────────────────────────────────────────────────────────
 
   static Future<void> generateAndShare({
+    required BuildContext context,
     required DebtReportSummary summary,
     String? shopName,
     String? ownerName,
@@ -727,18 +730,14 @@ class PdfDebtReportGenerator {
     final bytes = await pdf.save();
     final fileName = 'debt_report_${summary.monthLabel}_${summary.year}.pdf';
 
-    if (kIsWeb) {
-      await Share.shareXFiles(
-        [XFile.fromData(bytes, mimeType: 'application/pdf', name: fileName)],
-        text: 'تقرير الديون الشهري - ${summary.monthLabel} ${summary.year}',
-      );
-    } else {
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/$fileName');
-      await file.writeAsBytes(bytes);
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        text: 'تقرير الديون الشهري - ${summary.monthLabel} ${summary.year}',
+    if (context.mounted) {
+      await ExportHelper.exportBytes(
+        context: context,
+        bytes: bytes,
+        fileName: fileName,
+        extension: 'pdf',
+        mimeType: 'application/pdf',
+        shareText: 'تقرير الديون الشهري - ${summary.monthLabel} ${summary.year}',
       );
     }
   }

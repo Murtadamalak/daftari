@@ -17,6 +17,7 @@ import '../core/providers/invoice_detail_provider.dart';
 import '../core/providers/invoices_provider.dart';
 import '../core/providers/settings_provider.dart';
 import '../core/utils/app_snackbar.dart';
+import '../core/utils/export_helper.dart';
 import '../core/utils/pdf_invoice_generator.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -267,22 +268,14 @@ class InvoiceDetailsScreen extends ConsumerWidget {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final bytes = byteData!.buffer.asUint8List();
 
-      if (kIsWeb) {
-        await Share.shareXFiles(
-          [
-            XFile.fromData(bytes,
-                mimeType: 'image/png', name: 'receipt_$invoiceId.png')
-          ],
-          text: 'وصل فاتورة رقم $invoiceId',
-        );
-      } else {
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/receipt_$invoiceId.png');
-        await file.writeAsBytes(bytes);
-
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          text: 'وصل فاتورة رقم $invoiceId',
+      if (context.mounted) {
+        await ExportHelper.exportBytes(
+          context: context,
+          bytes: bytes,
+          fileName: 'receipt_$invoiceId.png',
+          extension: 'png',
+          mimeType: 'image/png',
+          shareText: 'وصل فاتورة رقم $invoiceId',
         );
       }
     } catch (e) {
@@ -299,6 +292,7 @@ class InvoiceDetailsScreen extends ConsumerWidget {
     try {
       final settings = ref.read(settingsProvider).valueOrNull;
       await PdfInvoiceGenerator.generateAndShare(
+        context: context,
         invoice: d.invoice,
         items: d.items,
         invoiceId: d.invoice.formattedNum,

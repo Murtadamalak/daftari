@@ -532,6 +532,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
                     onPressed: () async {
                       final settings = ref.read(settingsProvider).valueOrNull;
                       await PdfPaymentReceiptGenerator.generateAndShare(
+                        context: context,
                         customerName: customer.name,
                         amountPaid: payment.paid,
                         shopName: settings?.shopName ?? 'مبيعات المحل',
@@ -646,10 +647,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
                             .payCustomerDebt(
                                 customerId: customer.id, amountPaid: amount);
 
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
-                          AppSnackBar.success(context, 'تم التسديد بنجاح');
-                        }
+                        if (!context.mounted) return;
+                        Navigator.pop(ctx);
+                        AppSnackBar.success(context, 'تم التسديد بنجاح');
 
                         ref.invalidate(customerProvider(customer.id));
                         ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
@@ -661,13 +661,14 @@ class CustomerDebtsScreen extends ConsumerWidget {
 
                         final settings = ref.read(settingsProvider).valueOrNull;
                         await PdfPaymentReceiptGenerator.generateAndShare(
+                          context: context,
                           customerName: customer.name,
                           amountPaid: amount,
                           shopName: settings?.shopName ?? 'مبيعات المحل',
                           shopLogoPath: settings?.logoPath,
                         );
                       } catch (e) {
-                        if (ctx.mounted) {
+                        if (context.mounted) {
                           AppSnackBar.error(context, 'خطأ: $e');
                         }
                       }

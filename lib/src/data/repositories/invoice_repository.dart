@@ -556,6 +556,7 @@ class InvoiceRepository {
   }
 
   Future<int> _nextInvoiceNumberLocal() async {
+    if (kIsWeb) return 1;
     final db = await _localDb.database;
     final res = await db.rawQuery(
       'SELECT num FROM invoices WHERE user_id = ? ORDER BY num DESC LIMIT 1',
@@ -570,6 +571,7 @@ class InvoiceRepository {
   /// إعادة ترقيم جميع الفواتير والمقبوضات بالتسلسل من 1 حسب تاريخ الإنشاء.
   /// تستخدم لمعالجة الفجوات في الأرقام الناتجة عن الحذف.
   Future<void> renumberAllInvoices() async {
+    if (kIsWeb) return;
     // 1. جلب معرفات وأرقام جميع السجلات مرتبة حسب التاريخ تصاعدياً محلياً
     final db = await _localDb.database;
     final localRows = await db.query(
@@ -798,24 +800,26 @@ class InvoiceRepository {
 
     // 1. استعادة المخزون محلياً
     if (inv.payType != 'تسديد دين' && items.isNotEmpty) {
-      final db = await _localDb.database;
-      for (final item in items) {
-        final prodRows = await db.query('products',
-            where: 'name = ? AND user_id = ?',
-            whereArgs: [item.productName, _userId]);
-        if (prodRows.isNotEmpty) {
-          final p = prodRows.first;
-          final currentStock = (p['stock'] as num?)?.toDouble() ?? 0.0;
-          final newStock = currentStock + item.qty;
-          await db.update('products', {'stock': newStock},
-              where: 'id = ?', whereArgs: [p['id']]);
+      if (!kIsWeb) {
+        final db = await _localDb.database;
+        for (final item in items) {
+          final prodRows = await db.query('products',
+              where: 'name = ? AND user_id = ?',
+              whereArgs: [item.productName, _userId]);
+          if (prodRows.isNotEmpty) {
+            final p = prodRows.first;
+            final currentStock = (p['stock'] as num?)?.toDouble() ?? 0.0;
+            final newStock = currentStock + item.qty;
+            await db.update('products', {'stock': newStock},
+                where: 'id = ?', whereArgs: [p['id']]);
 
-          await _localDb.addPendingOperation(
-            tableName: 'user_products',
-            operation: 'update',
-            recordId: p['id'] as String,
-            payload: {'stock': newStock, 'user_id': _userId},
-          );
+            await _localDb.addPendingOperation(
+              tableName: 'user_products',
+              operation: 'update',
+              recordId: p['id'] as String,
+              payload: {'stock': newStock, 'user_id': _userId},
+            );
+          }
         }
       }
     }
@@ -1050,7 +1054,7 @@ class InvoiceRepository {
     }
 
     // 2) ضبط المخزون محلياً
-    if (deltaByName.isNotEmpty) {
+    if (deltaByName.isNotEmpty && !kIsWeb) {
       final db = await _localDb.database;
       for (final entry in deltaByName.entries) {
         final name = entry.key;
@@ -1220,6 +1224,7 @@ class InvoiceRepository {
   // ── Recalculate Customer Debt Local ──
 
   Future<void> _recalculateCustomerDebtLocal(String customerId) async {
+    if (kIsWeb) return;
     final db = await _localDb.database;
     final invoicesRes = await db.query(
       'invoices',

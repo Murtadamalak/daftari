@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/material.dart' show DateTimeRange, BuildContext;
+
+import 'export_helper.dart';
 
 import '../../data/repositories/invoice_repository.dart';
 
@@ -25,6 +27,7 @@ class PdfReportGenerator {
   }
 
   static Future<void> generateAndShare({
+    required BuildContext context,
     required DateTimeRange dateRange,
     required List<InvoiceModel> invoices,
     required List<MapEntry<String, double>> itemQuantities,
@@ -321,24 +324,14 @@ class PdfReportGenerator {
 
     final bytes = await pdf.save();
 
-    if (kIsWeb) {
-      await Share.shareXFiles(
-        [
-          XFile.fromData(bytes,
-              mimeType: 'application/pdf',
-              name: 'report_${DateTime.now().millisecondsSinceEpoch}.pdf')
-        ],
-        text: 'تقرير المبيعات من $dateStr1 إلى $dateStr2',
-      );
-    } else {
-      final dir = await getTemporaryDirectory();
-      final file = File(
-          '${dir.path}/report_${DateTime.now().millisecondsSinceEpoch}.pdf');
-      await file.writeAsBytes(bytes);
-
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        text: 'تقرير المبيعات من $dateStr1 إلى $dateStr2',
+    if (context.mounted) {
+      await ExportHelper.exportBytes(
+        context: context,
+        bytes: bytes,
+        fileName: 'report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        extension: 'pdf',
+        mimeType: 'application/pdf',
+        shareText: 'تقرير المبيعات من $dateStr1 إلى $dateStr2',
       );
     }
   }

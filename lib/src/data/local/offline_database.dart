@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -23,12 +22,18 @@ class OfflineDatabase {
 
   /// فتح أو إنشاء قاعدة البيانات المحلية
   Future<Database> get database async {
+    if (kIsWeb) {
+      throw UnsupportedError('OfflineDatabase (sqflite) is not supported on web.');
+    }
     if (_db != null && _db!.isOpen) return _db!;
     _db = await _initDb();
     return _db!;
   }
 
   Future<Database> _initDb() async {
+    if (kIsWeb) {
+      throw UnsupportedError('OfflineDatabase (sqflite) is not supported on web.');
+    }
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'daftar_offline_v2.db');
 
@@ -166,8 +171,7 @@ class OfflineDatabase {
   }
 
   /// إدخال أو تحديث مجموعة صفوف دفعة واحدة
-  Future<void> upsertAll(
-      String table, List<Map<String, dynamic>> rows) async {
+  Future<void> upsertAll(String table, List<Map<String, dynamic>> rows) async {
     if (kIsWeb) return;
     final db = await database;
     final batch = db.batch();
@@ -192,8 +196,7 @@ class OfflineDatabase {
   }
 
   /// جلب جميع صفوف الجدول لمستخدم معين
-  Future<List<Map<String, dynamic>>> getAll(
-      String table, String userId) async {
+  Future<List<Map<String, dynamic>>> getAll(String table, String userId) async {
     if (kIsWeb) return [];
     final db = await database;
     return db.query(table, where: 'user_id = ?', whereArgs: [userId]);

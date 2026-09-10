@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -33,6 +34,12 @@ class OfflineDatabase {
   Future<Database> _initDb() async {
     if (kIsWeb) {
       throw UnsupportedError('OfflineDatabase (sqflite) is not supported on web.');
+    }
+    // تأكد من تهيئة databaseFactory على منصات سطح المكتب
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
     }
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'daftar_offline_v2.db');

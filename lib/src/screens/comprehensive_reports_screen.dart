@@ -1,4 +1,5 @@
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+import 'package:daftar_debt_manager/src/core/widgets/data_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
@@ -34,7 +35,10 @@ class ComprehensiveReportsScreen extends ConsumerWidget {
           Expanded(
             child: state.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('خطأ: $e')),
+              error: (e, _) => DataErrorWidget(
+                error: e,
+                onRetry: () => ref.invalidate(comprehensiveReportProvider),
+              ),
               data: (data) => _ReportBody(data: data),
             ),
           ),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../core/providers/comprehensive_reports_provider.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/app_bar_logo.dart';
+import '../core/widgets/data_error_widget.dart';
 import '../data/repositories/invoice_repository.dart';
 
 final _amtFmt = NumberFormat('#,###', 'en');
@@ -127,7 +128,10 @@ class _TransactionsLogScreenState extends ConsumerState<TransactionsLogScreen> {
             Expanded(
               child: state.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                error: (e, _) => Center(child: Text('حدث خطأ: $e', style: GoogleFonts.almarai(color: Colors.red))),
+                error: (e, _) => DataErrorWidget(
+                  error: e,
+                  onRetry: () => ref.invalidate(comprehensiveReportProvider),
+                ),
                 data: (data) {
                   // Filter invoices based on search query
                   final filteredInvoices = data.invoices.where((inv) {

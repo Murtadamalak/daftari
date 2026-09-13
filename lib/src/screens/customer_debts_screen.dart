@@ -1,4 +1,5 @@
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+import 'package:daftar_debt_manager/src/core/widgets/data_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
@@ -130,7 +131,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
         ),
         body: customerAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('خطأ: $e')),
+          error: (e, _) => DataErrorWidget(error: e, onRetry: () => ref.invalidate(customerProvider(customerId))),
           data: (customer) {
             if (customer == null) {
               return const Center(child: Text('لم يتم العثور على الزبون.'));
@@ -248,7 +249,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
     final invoicesAsync = ref.watch(customerUnpaidInvoicesProvider(customerId));
     return invoicesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('خطأ: $e')),
+      error: (e, _) => DataErrorWidget(error: e, onRetry: () => ref.invalidate(customerUnpaidInvoicesProvider(customerId))),
       data: (invoices) {
         if (invoices.isEmpty) {
           return Center(
@@ -279,7 +280,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
     final invoicesAsync = ref.watch(customerAllInvoicesProvider(customerId));
     return invoicesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('خطأ: $e')),
+      error: (e, _) => DataErrorWidget(error: e, onRetry: () => ref.invalidate(customerAllInvoicesProvider(customerId))),
       data: (invoices) {
         if (invoices.isEmpty) {
           return Center(
@@ -468,7 +469,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
 
     return paymentsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('خطأ: $e')),
+      error: (e, _) => DataErrorWidget(error: e, onRetry: () => ref.invalidate(customerPaymentsProvider(customerId))),
       data: (payments) {
         if (payments.isEmpty) {
           return Center(

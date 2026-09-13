@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+import 'package:daftar_debt_manager/src/core/widgets/data_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -198,7 +199,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             Expanded(
               child: productsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(child: Text('حدث خطأ: $err')),
+                error: (err, _) => DataErrorWidget(
+                  error: err,
+                  onRetry: () => ref.invalidate(productsProvider),
+                ),
                 data: (products) {
                   if (products.isEmpty) {
                     return _EmptyProductsState(hasSearch: searchQuery.isNotEmpty);

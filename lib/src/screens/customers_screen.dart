@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' show ImageFilter;
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:intl/intl.dart';
 import '../core/providers/app_providers.dart';
 import '../core/providers/auth_provider.dart';
+import '../core/services/connectivity_service.dart';
 import '../core/providers/settings_provider.dart';
 
 import '../core/theme/app_theme.dart';
@@ -35,16 +37,35 @@ final debtSearchDataProvider = FutureProvider.autoDispose((ref) async {
   final custRepo = ref.watch(customerRepositoryProvider);
   final invRepo = ref.watch(invoiceRepositoryProvider);
 
-  final allCustomers = await custRepo.getCustomersWithDebt();
-  final unpaidInvoices = await invRepo.getUnpaidInvoices();
-  final unpaidIds = unpaidInvoices.map((e) => e.id).toList();
-  final unpaidItems = await invRepo.getItemsByInvoiceIds(unpaidIds);
+  try {
+    final allCustomers = await custRepo.getCustomersWithDebt();
+    final unpaidInvoices = await invRepo.getUnpaidInvoices();
+    final unpaidIds = unpaidInvoices.map((e) => e.id).toList();
+    final unpaidItems = await invRepo.getItemsByInvoiceIds(unpaidIds);
 
-  return (
-    customers: allCustomers,
-    invoices: unpaidInvoices,
-    items: unpaidItems,
-  );
+    return (
+      customers: allCustomers,
+      invoices: unpaidInvoices,
+      items: unpaidItems,
+    );
+  } on SocketException catch (e) {
+    // انقطاع الشبكة — أبلغ خدمة الاتصال وأرجع بيانات فارغة
+    debugPrint('[debtSearchDataProvider] SocketException: $e');
+    ConnectivityService.instance.reportNetworkFailure();
+    return (
+      customers: <CustomerModel>[],
+      invoices: <InvoiceModel>[],
+      items: <InvoiceItemModel>[],
+    );
+  } catch (e) {
+    // أي خطأ آخر — أرجع بيانات فارغة بدل كسر الواجهة
+    debugPrint('[debtSearchDataProvider] Error: $e');
+    return (
+      customers: <CustomerModel>[],
+      invoices: <InvoiceModel>[],
+      items: <InvoiceItemModel>[],
+    );
+  }
 });
 
 final debtSearchQueryProvider = StateProvider<String>((ref) => '');
@@ -289,7 +310,8 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
             Expanded(
               child: customersAsync.when(
                 loading: () => const CustomerListSkeleton(),
-                error: (e, _) => Center(child: Text('حدث خطأ: $e')),
+                error: (e, _) => _buildErrorWidget(context, ref, e),
+                skipLoadingOnReload: true,
                 data: (customers) {
                   if (customers.isEmpty) {
                     return Center(
@@ -385,6 +407,67 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                     ],
                   );
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Error Widget
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Widget _buildErrorWidget(BuildContext context, WidgetRef ref, Object error) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isNetwork = error.toString().contains('SocketException') ||
+        error.toString().contains('No route to host') ||
+        error.toString().contains('Connection refused') ||
+        error.toString().contains('Network is unreachable');
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isNetwork ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
+              size: 64,
+              color: isDark ? const Color(0xFF85AFA7) : AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isNetwork ? 'لا يوجد اتصال بالإنترنت' : 'تعذّر تحميل البيانات',
+              style: GoogleFonts.almarai(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : const Color(0xFF0A221F),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isNetwork
+                  ? 'تحقق من اتصالك بالإنترنت وأعد المحاولة'
+                  : 'حدث خطأ أثناء تحميل البيانات',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.almarai(
+                fontSize: 14,
+                color: isDark
+                    ? const Color(0xFF85AFA7)
+                    : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: () => ref.invalidate(debtSearchDataProvider),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('إعادة المحاولة'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],

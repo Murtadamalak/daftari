@@ -1,4 +1,5 @@
 import 'dart:ui' show ImageFilter;
+import 'package:daftar_debt_manager/src/core/widgets/data_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -367,7 +368,10 @@ class _DelayedDebtsScreenState extends ConsumerState<DelayedDebtsScreen> {
             Expanded(
               child: listAsync.when(
                 loading: () => const DelayedListSkeleton(),
-                error: (e, _) => Center(child: Text('حدث خطأ: $e', style: GoogleFonts.almarai())),
+                error: (e, _) => DataErrorWidget(
+                  error: e,
+                  onRetry: () => ref.invalidate(delayedCustomersProvider),
+                ),
                 data: (list) {
                   if (list.isEmpty) {
                     return Center(

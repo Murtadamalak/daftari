@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
+import 'package:daftar_debt_manager/src/core/widgets/data_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -150,18 +151,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
             Expanded(
               child: filteredAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Colors.red),
-                      const SizedBox(height: 12),
-                      Text('حدث خطأ: $e',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red)),
-                    ],
-                  ),
+                error: (e, _) => DataErrorWidget(
+                  error: e,
+                  onRetry: () => ref.invalidate(filteredInvoicesProvider),
                 ),
                 data: (invoices) {
                   if (invoices.isEmpty) {

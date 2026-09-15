@@ -236,6 +236,17 @@ class CustomerRepository {
   }
 
   Future<void> updateDebt(String id, double newDebt) async {
+    // Always update local DB first for consistency
+    if (!kIsWeb) {
+      final db = await _localDb.database;
+      await db.update(
+        'customers',
+        {'total_debt': newDebt},
+        where: 'id = ? AND user_id = ?',
+        whereArgs: [id, _userId],
+      );
+    }
+
     if (_isOnline && _userId.isNotEmpty) {
       try {
         await _db
@@ -244,14 +255,8 @@ class CustomerRepository {
             .eq('id', id)
             .eq('user_id', _userId);
       } catch (_) {
+        // Queue for later sync if cloud update fails
         if (!kIsWeb) {
-          final db = await _localDb.database;
-          await db.update(
-            'customers',
-            {'total_debt': newDebt},
-            where: 'id = ? AND user_id = ?',
-            whereArgs: [id, _userId],
-          );
           await _localDb.addPendingOperation(
             tableName: 'user_customers',
             operation: 'update',
@@ -262,13 +267,6 @@ class CustomerRepository {
       }
     } else {
       if (!kIsWeb) {
-        final db = await _localDb.database;
-        await db.update(
-          'customers',
-          {'total_debt': newDebt},
-          where: 'id = ? AND user_id = ?',
-          whereArgs: [id, _userId],
-        );
         await _localDb.addPendingOperation(
           tableName: 'user_customers',
           operation: 'update',
@@ -278,6 +276,7 @@ class CustomerRepository {
       }
     }
   }
+
 
   Future<void> deleteCustomer(String id) async {
     if (_isOnline && _userId.isNotEmpty) {

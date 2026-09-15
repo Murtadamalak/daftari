@@ -17,6 +17,7 @@ import '../data/repositories/product_repository.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'barcode_scanner_screen.dart';
 import 'customers_screen.dart';
+import 'customer_debts_screen.dart';
 import 'delayed_debts_screen.dart';
 import '../core/providers/invoices_provider.dart';
 
@@ -424,10 +425,19 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       }
 
       // Refresh data
+      final savedCustomerId = customer?.id;
       ref.invalidate(productsProvider);
       ref.invalidate(debtSearchDataProvider);
       ref.invalidate(delayedCustomersProvider);
       ref.invalidate(allInvoicesProvider);
+
+      // Invalidate customer-specific providers so debt totals refresh
+      if (savedCustomerId != null) {
+        ref.invalidate(customerProvider(savedCustomerId));
+        ref.invalidate(customerUnpaidInvoicesProvider(savedCustomerId));
+        ref.invalidate(customerAllInvoicesProvider(savedCustomerId));
+        ref.invalidate(customerPaymentsProvider(savedCustomerId));
+      }
 
       invoiceNotifier.clear();
       if (mounted) {
@@ -520,11 +530,29 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         items: items,
       );
 
+      // Save customer IDs before clearing state
+      final savedCustomerId = invoiceState.customer?.id;
+      final oldCustomerId = original.customerId;
+
       ref.read(invoiceCreationProvider.notifier).clear();
       ref.invalidate(productsProvider);
       ref.invalidate(debtSearchDataProvider);
       ref.invalidate(delayedCustomersProvider);
       ref.invalidate(allInvoicesProvider);
+
+      // Invalidate customer-specific providers so debt totals refresh
+      if (oldCustomerId != null) {
+        ref.invalidate(customerProvider(oldCustomerId));
+        ref.invalidate(customerUnpaidInvoicesProvider(oldCustomerId));
+        ref.invalidate(customerAllInvoicesProvider(oldCustomerId));
+        ref.invalidate(customerPaymentsProvider(oldCustomerId));
+      }
+      if (savedCustomerId != null && savedCustomerId != oldCustomerId) {
+        ref.invalidate(customerProvider(savedCustomerId));
+        ref.invalidate(customerUnpaidInvoicesProvider(savedCustomerId));
+        ref.invalidate(customerAllInvoicesProvider(savedCustomerId));
+        ref.invalidate(customerPaymentsProvider(savedCustomerId));
+      }
 
       if (mounted) {
         Navigator.of(context).pop();

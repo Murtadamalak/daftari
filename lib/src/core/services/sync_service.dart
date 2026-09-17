@@ -31,6 +31,7 @@ class SyncService {
 
   StreamSubscription<bool>? _connectivitySub;
   Timer? _periodicSync;
+  Timer? _debounceTimer;
 
   bool _isSyncing = false;
   bool _initialized = false;
@@ -55,8 +56,8 @@ class SyncService {
       }
     });
 
-    // مزامنة دورية كل 3 دقائق إذا كان متصلاً
-    _periodicSync = Timer.periodic(const Duration(minutes: 3), (_) {
+    // مزامنة دورية كل 30 ثانية إذا كان متصلاً
+    _periodicSync = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_connectivity.isOnline && !_isSyncing) {
         syncAll();
       }
@@ -88,6 +89,18 @@ class SyncService {
       _emitStatus(SyncStatus.error);
     } finally {
       _isSyncing = false;
+      // تحقق إذا بقيت عمليات معلقة بعد المزامنة — أعد المزامنة خلال 5 ثوانٍ
+      if (_connectivity.isOnline) {
+        final remaining = await _offlineDb.getPendingCount();
+        if (remaining > 0) {
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(const Duration(seconds: 5), () {
+            if (_connectivity.isOnline && !_isSyncing) {
+              syncAll();
+            }
+          });
+        }
+      }
     }
   }
 
@@ -298,6 +311,17 @@ class SyncService {
   //  أدوات مساعدة
   // ═══════════════════════════════════════════════════════════════════════════
 
+  /// مزامنة فورية بعد عملية كتابة (مع debounce لمنع الاستدعاءات المتكررة)
+  void syncImmediate() {
+    if (kIsWeb || _userId.isEmpty || !_connectivity.isOnline) return;
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (!_isSyncing && _connectivity.isOnline) {
+        syncAll();
+      }
+    });
+  }
+
   void _emitStatus(SyncStatus status) {
     _lastStatus = status;
     _syncStatusController.add(status);
@@ -307,6 +331,7 @@ class SyncService {
   void dispose() {
     _connectivitySub?.cancel();
     _periodicSync?.cancel();
+    _debounceTimer?.cancel();
     _syncStatusController.close();
     _initialized = false;
     _instance = null;

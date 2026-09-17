@@ -38,6 +38,13 @@ final customerUnpaidInvoicesProvider = FutureProvider.autoDispose
   return repo.getUnpaidByCustomer(customerId);
 });
 
+// Compute the actual total debt from unpaid invoices (live calculation)
+final customerComputedDebtProvider = FutureProvider.autoDispose
+    .family<double, String>((ref, customerId) async {
+  final invoices = await ref.watch(customerUnpaidInvoicesProvider(customerId).future);
+  return invoices.fold<double>(0.0, (sum, inv) => sum + inv.debt);
+});
+
 // Fetch all sales invoices for a customer (excluding payments)
 final customerAllInvoicesProvider = FutureProvider.autoDispose
     .family<List<InvoiceModel>, String>((ref, customerId) {
@@ -52,13 +59,40 @@ final customerPaymentsProvider = FutureProvider.autoDispose
   return repo.getPaymentsByCustomer(customerId);
 });
 
-class CustomerDebtsScreen extends ConsumerWidget {
+class CustomerDebtsScreen extends ConsumerStatefulWidget {
   const CustomerDebtsScreen({super.key, required this.customerId});
 
   final String customerId;
 
+  @override
+  ConsumerState<CustomerDebtsScreen> createState() => _CustomerDebtsScreenState();
+}
+
+class _CustomerDebtsScreenState extends ConsumerState<CustomerDebtsScreen> {
+  String get customerId => widget.customerId;
+  bool _hasRecalculated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // إعادة حساب الديون عند فتح الشاشة
+    Future.microtask(() async {
+      if (!_hasRecalculated) {
+        _hasRecalculated = true;
+        try {
+          await ref.read(invoiceRepositoryProvider).recalculateCustomerDebt(customerId);
+          ref.invalidate(customerProvider(customerId));
+          ref.invalidate(customerUnpaidInvoicesProvider(customerId));
+          ref.invalidate(customerComputedDebtProvider(customerId));
+          ref.invalidate(customerAllInvoicesProvider(customerId));
+          ref.invalidate(customerPaymentsProvider(customerId));
+        } catch (_) {}
+      }
+    });
+  }
+
   Future<void> _confirmDeleteCustomer(
-      BuildContext context, WidgetRef ref, CustomerModel customer) async {
+      BuildContext context, CustomerModel customer) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -96,8 +130,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final customerAsync = ref.watch(customerProvider(customerId));
+    final computedDebtAsync = ref.watch(customerComputedDebtProvider(customerId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DefaultTabController(
@@ -112,6 +147,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
               onPressed: () {
                 ref.invalidate(customerProvider(customerId));
                 ref.invalidate(customerUnpaidInvoicesProvider(customerId));
+                ref.invalidate(customerComputedDebtProvider(customerId));
                 ref.invalidate(customerAllInvoicesProvider(customerId));
                 ref.invalidate(customerPaymentsProvider(customerId));
               },
@@ -121,7 +157,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
                   ? const SizedBox.shrink()
                   : IconButton(
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () => _confirmDeleteCustomer(context, ref, c),
+                      onPressed: () => _confirmDeleteCustomer(context, c),
                       tooltip: 'حذف الزبون',
                     ),
               loading: () => const SizedBox.shrink(),
@@ -179,8 +215,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
+                      // استخدام الدين المحسوب فعلياً من الفواتير
                       Text(
-                        _fmt(customer.totalDebt),
+                        _fmt(computedDebtAsync.valueOrNull ?? customer.totalDebt),
                         style: GoogleFonts.almarai(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
@@ -189,12 +226,12 @@ class CustomerDebtsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       // Main Payment Button
-                      if (customer.totalDebt > 0)
+                      if ((computedDebtAsync.valueOrNull ?? customer.totalDebt) > 0)
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
                             onPressed: () =>
-                                _showPayDialog(context, ref, customer),
+                                _showPayDialog(context, customer),
                             icon: const Icon(Icons.payments_outlined),
                             label: const Text('تسديد من الدين الكلي'),
                             style: FilledButton.styleFrom(
@@ -231,9 +268,9 @@ class CustomerDebtsScreen extends ConsumerWidget {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      _buildUnpaidInvoicesTab(context, ref, customer),
-                      _buildAllInvoicesTab(context, ref, customer),
-                      _buildPaymentsTab(context, ref, customer),
+                      _buildUnpaidInvoicesTab(context, customer),
+                      _buildAllInvoicesTab(context, customer),
+                      _buildPaymentsTab(context, customer),
                     ],
                   ),
                 ),
@@ -245,7 +282,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUnpaidInvoicesTab(BuildContext context, WidgetRef ref, CustomerModel customer) {
+  Widget _buildUnpaidInvoicesTab(BuildContext context, CustomerModel customer) {
     final invoicesAsync = ref.watch(customerUnpaidInvoicesProvider(customerId));
     return invoicesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -269,14 +306,14 @@ class CustomerDebtsScreen extends ConsumerWidget {
           separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final inv = invoices[index];
-            return _buildInvoiceRow(context, ref, customer, inv, isUnpaidOnly: true);
+            return _buildInvoiceRow(context, customer, inv, isUnpaidOnly: true);
           },
         );
       },
     );
   }
 
-  Widget _buildAllInvoicesTab(BuildContext context, WidgetRef ref, CustomerModel customer) {
+  Widget _buildAllInvoicesTab(BuildContext context, CustomerModel customer) {
     final invoicesAsync = ref.watch(customerAllInvoicesProvider(customerId));
     return invoicesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -300,14 +337,14 @@ class CustomerDebtsScreen extends ConsumerWidget {
           separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final inv = invoices[index];
-            return _buildInvoiceRow(context, ref, customer, inv, isUnpaidOnly: false);
+            return _buildInvoiceRow(context, customer, inv, isUnpaidOnly: false);
           },
         );
       },
     );
   }
 
-  Widget _buildInvoiceRow(BuildContext context, WidgetRef ref, CustomerModel customer, InvoiceModel inv, {required bool isUnpaidOnly}) {
+  Widget _buildInvoiceRow(BuildContext context, CustomerModel customer, InvoiceModel inv, {required bool isUnpaidOnly}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     ({String label, Color color}) statusInfo;
@@ -433,7 +470,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
               ),
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-              onPressed: () => _confirmDeleteInvoice(context, ref, inv),
+              onPressed: () => _confirmDeleteInvoice(context, inv),
               tooltip: 'حذف الفاتورة',
             ),
             const SizedBox(width: 8),
@@ -463,7 +500,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPaymentsTab(BuildContext context, WidgetRef ref, CustomerModel customer) {
+  Widget _buildPaymentsTab(BuildContext context, CustomerModel customer) {
     final paymentsAsync = ref.watch(customerPaymentsProvider(customerId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -543,7 +580,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                    onPressed: () => _confirmDeleteInvoice(context, ref, payment),
+                    onPressed: () => _confirmDeleteInvoice(context, payment),
                     tooltip: payment.payType == 'تسديد دين' ? 'حذف الدفعة' : 'حذف الفاتورة',
                   ),
                   const SizedBox(width: 8),
@@ -577,7 +614,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
   }
 
   Future<void> _showPayDialog(
-      BuildContext context, WidgetRef ref, CustomerModel customer,
+      BuildContext context, CustomerModel customer,
       {double? preferAmount}) async {
     final amountController =
         TextEditingController(text: preferAmount?.toStringAsFixed(0));
@@ -596,7 +633,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'الدين الكلي: ${_fmt(customer.totalDebt)}',
+                'الدين الكلي: ${_fmt(ref.read(customerComputedDebtProvider(customerId)).valueOrNull ?? customer.totalDebt)}',
                 style: GoogleFonts.almarai(
                   color: AppColors.danger,
                   fontWeight: FontWeight.bold,
@@ -615,7 +652,8 @@ class CustomerDebtsScreen extends ConsumerWidget {
                   if (val == null || val.isEmpty) return 'الرجاء إدخال المبلغ';
                   final parsed = double.tryParse(val);
                   if (parsed == null || parsed <= 0) return 'مبلغ غير صالح';
-                  if (parsed > customer.totalDebt) {
+                  final actualDebt = ref.read(customerComputedDebtProvider(customerId)).valueOrNull ?? customer.totalDebt;
+                  if (parsed > actualDebt) {
                     return 'المبلغ أكبر من الدين الكلي!';
                   }
                   return null;
@@ -654,6 +692,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
 
                         ref.invalidate(customerProvider(customer.id));
                         ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
+                        ref.invalidate(customerComputedDebtProvider(customer.id));
                         ref.invalidate(customerAllInvoicesProvider(customer.id));
                         ref.invalidate(customerPaymentsProvider(customer.id));
                         ref.invalidate(debtSearchDataProvider);
@@ -698,6 +737,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
 
                           ref.invalidate(customerProvider(customer.id));
                          ref.invalidate(customerUnpaidInvoicesProvider(customer.id));
+                         ref.invalidate(customerComputedDebtProvider(customer.id));
                          ref.invalidate(customerAllInvoicesProvider(customer.id));
                          ref.invalidate(customerPaymentsProvider(customer.id));
                          ref.invalidate(debtSearchDataProvider);
@@ -736,7 +776,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmDeleteInvoice(
-      BuildContext context, WidgetRef ref, InvoiceModel invoice) async {
+      BuildContext context, InvoiceModel invoice) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -765,6 +805,7 @@ class CustomerDebtsScreen extends ConsumerWidget {
         }
         ref.invalidate(customerProvider(customerId));
         ref.invalidate(customerUnpaidInvoicesProvider(customerId));
+        ref.invalidate(customerComputedDebtProvider(customerId));
         ref.invalidate(customerAllInvoicesProvider(customerId));
         ref.invalidate(customerPaymentsProvider(customerId));
         ref.invalidate(allInvoicesProvider);

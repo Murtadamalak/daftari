@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 import '../services/sync_service.dart';
 import '../../data/local/offline_database.dart';
@@ -142,6 +144,61 @@ class AuthNotifier extends StateNotifier<AppAuthState> {
       email: email,
       password: password,
     );
+
+    // حفظ بيانات تسجيل الدخول للاستخدام أوفلاين (خلال 24 ساعة)
+    final prefs = await SharedPreferences.getInstance();
+    final credHash = sha256.convert(utf8.encode('$email:$password')).toString();
+    await prefs.setString('offline_cred_hash', credHash);
+    await prefs.setString('offline_email', email);
+    await prefs.setInt('offline_login_time', DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// تسجيل الدخول أوفلاين — يعمل فقط إذا كان آخر تسجيل أقل من 24 ساعة
+  Future<void> loginOffline(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final savedEmail = prefs.getString('offline_email');
+    final savedHash = prefs.getString('offline_cred_hash');
+    final savedTime = prefs.getInt('offline_login_time');
+
+    if (savedEmail == null || savedHash == null || savedTime == null) {
+      throw Exception('لا توجد بيانات تسجيل سابقة. يرجى الاتصال بالإنترنت لتسجيل الدخول أولاً.');
+    }
+
+    // التحقق من المدة (24 ساعة)
+    final lastLogin = DateTime.fromMillisecondsSinceEpoch(savedTime);
+    final diff = DateTime.now().difference(lastLogin);
+    if (diff.inHours >= 24) {
+      throw Exception('انتهت صلاحية الدخول بدون إنترنت. يرجى الاتصال بالإنترنت لإعادة التحقق (مضى ${diff.inHours} ساعة).');
+    }
+
+    // التحقق من البيانات
+    final inputHash = sha256.convert(utf8.encode('$email:$password')).toString();
+    if (inputHash != savedHash) {
+      throw Exception('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+    }
+
+    // تسجيل دخول محلي ناجح — استخدام الكاش
+    final cachedIsAdmin =
+        prefs.getBool('cached_is_admin_${Supabase.instance.client.auth.currentUser?.id ?? ''}') ?? false;
+    final cachedSubStatus =
+        prefs.getString('cached_sub_status_${Supabase.instance.client.auth.currentUser?.id ?? ''}') ?? 'active';
+    final cachedPlanType =
+        prefs.getString('cached_plan_type_${Supabase.instance.client.auth.currentUser?.id ?? ''}') ?? 'monthly';
+    final cachedEndDate =
+        prefs.getString('cached_end_date_${Supabase.instance.client.auth.currentUser?.id ?? ''}');
+
+    state = AppAuthState(
+      role: cachedIsAdmin ? AuthRole.admin : AuthRole.user,
+      user: Supabase.instance.client.auth.currentUser,
+      subStatus: cachedSubStatus,
+      planType: cachedPlanType,
+      endDate: cachedEndDate,
+      isLoading: false,
+    );
+
+    // تهيئة المزامنة للبدء فور عودة الإنترنت
+    SyncService.instance.initialize();
   }
 
   Future<void> signUp(String email, String password, String fullName,

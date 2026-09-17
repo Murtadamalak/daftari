@@ -107,11 +107,13 @@ class _ConnectivityBannerState extends ConsumerState<ConnectivityBanner>
         if (mounted) _hide();
       });
     } else if (pending > 0 && isOnline) {
-      // ■ عمليات معلقة ولكن لم تبدأ المزامنة
+      // ■ عمليات معلقة ولكن لم تبدأ المزامنة — بدء مزامنة فورية
       bgColor = const Color(0xFF2196F3).withValues(alpha: 0.9);
       icon = Icons.sync_rounded;
       message = '$pending عملية بانتظار المزامنة';
       shouldShow = true;
+      // مزامنة تلقائية فورية
+      SyncService.instance.syncImmediate();
     } else {
       bgColor = Colors.transparent;
       icon = Icons.check;
@@ -177,7 +179,10 @@ class _ConnectivityBannerState extends ConsumerState<ConnectivityBanner>
                   status != SyncStatus.syncing) ...[
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => ref.invalidate(syncNowProvider),
+                  onTap: () {
+                    SyncService.instance.syncImmediate();
+                    ref.invalidate(syncNowProvider);
+                  },
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

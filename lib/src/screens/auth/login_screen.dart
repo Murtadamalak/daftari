@@ -4,6 +4,7 @@ import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/connectivity_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -45,12 +46,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('rememberMe', _rememberMe);
 
+      final isOnline = ConnectivityService.instance.isOnline;
+
       if (_isLogin) {
-        await ref.read(authProvider.notifier).login(
-              _emailController.text.trim(),
-              _passwordController.text.trim(),
-            );
+        if (isOnline) {
+          // تسجيل دخول عبر الإنترنت
+          await ref.read(authProvider.notifier).login(
+                _emailController.text.trim(),
+                _passwordController.text.trim(),
+              );
+        } else {
+          // تسجيل دخول أوفلاين (خلال 24 ساعة)
+          await ref.read(authProvider.notifier).loginOffline(
+                _emailController.text.trim(),
+                _passwordController.text.trim(),
+              );
+        }
       } else {
+        if (!isOnline) {
+          setState(() => _errorMessage = 'يرجى الاتصال بالإنترنت لإنشاء حساب جديد.');
+          return;
+        }
         await ref.read(authProvider.notifier).signUp(
               _emailController.text.trim(),
               _passwordController.text.trim(),
@@ -82,6 +98,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           eStr.contains('too many requests') ||
           eStr.contains('429')) {
         errorText = 'تم تجاوز الحد المسموح به للمحاولات. يرجى الانتظار قليلاً ثم المحاولة مجدداً.';
+      } else if (eStr.contains('لا توجد بيانات تسجيل') ||
+          eStr.contains('انتهت صلاحية') ||
+          eStr.contains('غير صحيحة')) {
+        // رسائل خطأ أوفلاين مخصصة — تمريرها كما هي
+        errorText = e.toString().replaceAll('Exception: ', '');
+      } else if (eStr.contains('socketexception') ||
+          eStr.contains('clientexception') ||
+          eStr.contains('no internet') ||
+          eStr.contains('network')) {
+        errorText = 'لا يوجد اتصال بالإنترنت. جرّب الدخول أوفلاين إذا سجلت مسبقاً.';
       } else {
         errorText = 'خطأ: ${e.toString()}';
       }

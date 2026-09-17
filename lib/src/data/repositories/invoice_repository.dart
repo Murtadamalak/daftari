@@ -7,6 +7,7 @@ import 'customer_repository.dart';
 import 'product_repository.dart';
 import '../local/offline_database.dart';
 import '../../core/services/connectivity_service.dart';
+import '../../core/services/sync_service.dart';
 
 class InvoiceItemModel {
   final String id;
@@ -762,6 +763,9 @@ class InvoiceRepository {
       await _queueInvoiceOffline(id, invData, itemsToInsert, customerId);
     }
 
+    // مزامنة فورية بعد إنشاء الفاتورة
+    SyncService.instance.syncImmediate();
+
     return (invoice, insertedItems);
   }
 
@@ -857,6 +861,9 @@ class InvoiceRepository {
     } else {
       await _queueDeleteOffline(id, inv.customerId);
     }
+
+    // مزامنة فورية بعد الحذف
+    SyncService.instance.syncImmediate();
   }
 
   Future<void> _queueDeleteOffline(String id, String? customerId) async {
@@ -898,6 +905,9 @@ class InvoiceRepository {
     if (inv.customerId != null) {
       await recalculateCustomerDebt(inv.customerId!);
     }
+
+    // مزامنة فورية
+    SyncService.instance.syncImmediate();
   }
 
   // ── Pay Customer Total Debt ───────────────────────────────────────────────
@@ -936,6 +946,9 @@ class InvoiceRepository {
     );
 
     await recalculateCustomerDebt(customerId);
+
+    // مزامنة فورية
+    SyncService.instance.syncImmediate();
   }
 
   // ── Internal: Create Receipt Record ──────────────────────────────────────
@@ -1192,6 +1205,9 @@ class InvoiceRepository {
     } else {
       await _queueUpdateOffline(original.id, invData, itemsToInsert, original.customerId, customerId);
     }
+
+    // مزامنة فورية بعد تحديث الفاتورة
+    SyncService.instance.syncImmediate();
   }
 
   Future<void> _queueUpdateOffline(

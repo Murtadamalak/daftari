@@ -257,17 +257,18 @@ class InvoiceRepository {
             .from('user_invoices')
             .select()
             .eq('user_id', _userId)
-            .inFilter('status', ['partial', 'unpaid']).order('date');
+            .or('status.eq.partial,status.eq.unpaid,debt.gt.0')
+            .order('date');
         return (res as List)
             .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
             .toList();
       } catch (_) {
         final all = await _getInvoicesFromCache();
-        return all.where((i) => i.status == 'partial' || i.status == 'unpaid').toList();
+        return all.where((i) => i.status == 'partial' || i.status == 'unpaid' || i.debt > 0.0001).toList();
       }
     } else {
       final all = await _getInvoicesFromCache();
-      return all.where((i) => i.status == 'partial' || i.status == 'unpaid').toList();
+      return all.where((i) => i.status == 'partial' || i.status == 'unpaid' || i.debt > 0.0001).toList();
     }
   }
 
@@ -279,17 +280,18 @@ class InvoiceRepository {
             .select()
             .eq('user_id', _userId)
             .eq('customer_id', customerId)
-            .inFilter('status', ['partial', 'unpaid']).order('date');
+            .or('status.eq.partial,status.eq.unpaid,debt.gt.0')
+            .order('date');
         return (res as List)
             .map((e) => InvoiceModel.fromJson(e as Map<String, dynamic>))
             .toList();
       } catch (_) {
         final all = await _getInvoicesFromCache();
-        return all.where((i) => i.customerId == customerId && (i.status == 'partial' || i.status == 'unpaid')).toList();
+        return all.where((i) => i.customerId == customerId && (i.status == 'partial' || i.status == 'unpaid' || i.debt > 0.0001)).toList();
       }
     } else {
       final all = await _getInvoicesFromCache();
-      return all.where((i) => i.customerId == customerId && (i.status == 'partial' || i.status == 'unpaid')).toList();
+      return all.where((i) => i.customerId == customerId && (i.status == 'partial' || i.status == 'unpaid' || i.debt > 0.0001)).toList();
     }
   }
 
@@ -765,14 +767,27 @@ class InvoiceRepository {
     if (_isOnline) {
       try {
         await _db.from('user_invoices').insert(_stripLocalOnlyInvoiceFields(invData));
-        for (final localItem in itemsToInsert) {
-          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
-        }
-        if (customerId != null) {
-          await recalculateCustomerDebt(customerId);
-        }
-      } catch (_) {
+      } catch (e) {
+        debugPrint('[InvoiceRepo] Error inserting invoice to cloud: $e');
         await _queueInvoiceOffline(id, invData, itemsToInsert, customerId);
+      }
+
+      // رفع بنود الفاتورة بشكل منفصل حتى لا يعطل أي خطأ فيها احتساب الديون
+      for (final localItem in itemsToInsert) {
+        try {
+          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
+        } catch (itemErr) {
+          debugPrint('[InvoiceRepo] Error inserting item to cloud: $itemErr');
+        }
+      }
+
+      // إعادة احتساب ديون الزبون دائماً بعد إنشاء الفاتورة
+      if (customerId != null) {
+        try {
+          await recalculateCustomerDebt(customerId);
+        } catch (debtErr) {
+          debugPrint('[InvoiceRepo] Error recalculating debt: $debtErr');
+        }
       }
     } else {
       await _queueInvoiceOffline(id, invData, itemsToInsert, customerId);
@@ -1198,21 +1213,29 @@ class InvoiceRepository {
             .eq('user_id', _userId)
             .eq('id', original.id);
 
-        await _db
-            .from('user_invoice_items')
-            .delete()
-            .eq('user_id', _userId)
-            .eq('invoice_id', original.id);
+        try {
+          await _db
+              .from('user_invoice_items')
+              .delete()
+              .eq('user_id', _userId)
+              .eq('invoice_id', original.id);
 
-        for (final localItem in itemsToInsert) {
-          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
+          for (final localItem in itemsToInsert) {
+            await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
+          }
+        } catch (itemErr) {
+          debugPrint('[InvoiceRepo] Error updating items in cloud: $itemErr');
         }
 
         if (original.customerId != null) {
-          await recalculateCustomerDebt(original.customerId!);
+          try {
+            await recalculateCustomerDebt(original.customerId!);
+          } catch (_) {}
         }
         if (customerId != null && customerId != original.customerId) {
-          await recalculateCustomerDebt(customerId);
+          try {
+            await recalculateCustomerDebt(customerId);
+          } catch (_) {}
         }
       } catch (_) {
         await _queueUpdateOffline(original.id, invData, itemsToInsert, original.customerId, customerId);

@@ -367,7 +367,9 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'مجموع الديون المطلوبة',
+                              ref.watch(debtSearchQueryProvider).trim().isNotEmpty
+                                  ? 'مجموع ديون نتائج البحث'
+                                  : 'مجموع الديون المطلوبة',
                               style: GoogleFonts.almarai(
                                 fontSize: 16,
                                 color: Colors.white.withOpacity(0.9),

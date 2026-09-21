@@ -108,22 +108,168 @@ class CustomerRepository {
         ..sort((a, b) => a.name.compareTo(b.name));
     }
 
-    if (_isOnline) {
-      try {
-        final res = await _db
-            .from('user_customers')
-            .select()
-            .eq('user_id', _userId)
-            .gt('total_debt', 0)
-            .order('name');
-        return res.map((e) => CustomerModel.fromJson(e)).toList();
-      } catch (_) {
-        // fallback إلى الكاش مع فلتر الديون
-        final all = await _getFromCache();
-        return all.where((c) => c.totalDebt > 0).toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+    try {
+      // 1. جلب جميع الزبائن المسجلين
+      final allCustomers = await getAllCustomers();
+
+      // 2. جلب جميع الفواتير غير المسددة أو التي بها متبقي دين
+      List<Map<String, dynamic>> unpaidInvoicesData = [];
+      if (_isOnline) {
+        try {
+          final res = await _db
+              .from('user_invoices')
+              .select()
+              .eq('user_id', _userId)
+              .or('status.eq.unpaid,status.eq.partial,debt.gt.0');
+          unpaidInvoicesData = List<Map<String, dynamic>>.from(res as List);
+        } catch (e) {
+          debugPrint('[CustomerRepo] Error fetching unpaid invoices: $e');
+        }
+      } else if (!kIsWeb) {
+        try {
+          final db = await _localDb.database;
+          final localUnpaid = await db.query(
+            'invoices',
+            where: 'user_id = ? AND (status = ? OR status = ? OR debt > 0)',
+            whereArgs: [_userId, 'unpaid', 'partial'],
+          );
+          unpaidInvoicesData = List<Map<String, dynamic>>.from(localUnpaid);
+        } catch (_) {}
       }
-    } else {
+
+      // 3. حساب مجموع الديون من الفواتير لكل زبون
+      final invoiceDebtByCustId = <String, double>{};
+      final unlinkedInvoices = <Map<String, dynamic>>[];
+
+      for (final inv in unpaidInvoicesData) {
+        final debt = (inv['debt'] as num?)?.toDouble() ?? 0.0;
+        if (debt <= 0.0001) continue;
+
+        final custId = inv['customer_id']?.toString();
+        if (custId != null && custId.isNotEmpty) {
+          invoiceDebtByCustId[custId] = (invoiceDebtByCustId[custId] ?? 0.0) + debt;
+        } else {
+          unlinkedInvoices.add(inv);
+        }
+      }
+
+      final Map<String, CustomerModel> debtors = {};
+
+      // 4. مراجعة جميع الزبائن المسجلين
+      for (final cust in allCustomers) {
+        final invoiceDebt = invoiceDebtByCustId[cust.id];
+        // إذا كان للزبون فواتير دين غير مسددة نعتمد مجموعها الفعلي
+        // وإذا لم يكن له فواتير دين ولكن حقل totalDebt > 0 نعتمد رصيده
+        final double effectiveDebt;
+        if (invoiceDebt != null && invoiceDebt > 0.0001) {
+          effectiveDebt = invoiceDebt;
+        } else if (cust.totalDebt > 0.0001) {
+          effectiveDebt = cust.totalDebt;
+        } else {
+          effectiveDebt = 0.0;
+        }
+
+        if (effectiveDebt > 0.0001) {
+          debtors[cust.id] = CustomerModel(
+            id: cust.id,
+            name: cust.name,
+            phone: cust.phone,
+            totalDebt: effectiveDebt,
+            createdAt: cust.createdAt,
+          );
+
+          // مزامنة حقل total_debt في قاعدة البيانات إذا كان مختلفاً
+          if ((cust.totalDebt - effectiveDebt).abs() > 0.01 && _isOnline) {
+            updateDebt(cust.id, effectiveDebt).catchError((_) {});
+          }
+        }
+      }
+
+      // 5. مراجعة أي زبائن لديهم فواتير دين في invoiceDebtByCustId ولكن لم يُعثر عليهم في allCustomers
+      for (final entry in invoiceDebtByCustId.entries) {
+        final custId = entry.key;
+        final debt = entry.value;
+        if (!debtors.containsKey(custId) && debt > 0.0001) {
+          final matchingInv = unpaidInvoicesData.firstWhere(
+            (inv) => inv['customer_id']?.toString() == custId,
+            orElse: () => <String, dynamic>{},
+          );
+          final cName = (matchingInv['customer_name']?.toString() ?? '').trim();
+          final cPhone = matchingInv['customer_phone']?.toString();
+          debtors[custId] = CustomerModel(
+            id: custId,
+            name: cName.isNotEmpty ? cName : 'زبون #$custId',
+            phone: cPhone,
+            totalDebt: debt,
+            createdAt: DateTime.now(),
+          );
+        }
+      }
+
+      // 6. معالجة الفواتير الآجلة غير المربوطة بزبون (لضمان ظهور كل مطلوب)
+      for (final inv in unlinkedInvoices) {
+        final debt = (inv['debt'] as num?)?.toDouble() ?? 0.0;
+        final name = (inv['customer_name']?.toString() ?? '').trim();
+        final rawNum = inv['num']?.toString() ?? '';
+        final invId = inv['id']?.toString() ?? '';
+        final displayName = name.isNotEmpty && name != 'زبون نقدي'
+            ? name
+            : 'فاتورة آجل #${rawNum.isNotEmpty ? rawNum : (invId.length >= 6 ? invId.substring(0, 6) : invId)}';
+
+        // البحث عن زبون مسجل بنفس الاسم لربطه
+        final matchedCustomer = allCustomers.firstWhere(
+          (c) => c.name.trim() == displayName,
+          orElse: () => CustomerModel(id: '', name: '', totalDebt: 0, createdAt: DateTime.now()),
+        );
+
+        if (matchedCustomer.id.isNotEmpty) {
+          final existing = debtors[matchedCustomer.id] ?? matchedCustomer;
+          final updatedDebt = existing.totalDebt + debt;
+          debtors[matchedCustomer.id] = CustomerModel(
+            id: existing.id,
+            name: existing.name,
+            phone: existing.phone ?? inv['customer_phone']?.toString(),
+            totalDebt: updatedDebt,
+            createdAt: existing.createdAt,
+          );
+          if (_isOnline) {
+            _db.from('user_invoices').update({'customer_id': matchedCustomer.id}).eq('id', invId).catchError((_) {});
+            updateDebt(matchedCustomer.id, updatedDebt).catchError((_) {});
+          }
+        } else {
+          // إنشاء زبون حقيقي في قاعدة البيانات وربط الفاتورة به لضمان ثباته
+          try {
+            final newCust = await createCustomer(
+              name: displayName,
+              phone: inv['customer_phone']?.toString(),
+              initialDebt: debt,
+            );
+            debtors[newCust.id] = newCust;
+            if (_isOnline && newCust.id.isNotEmpty) {
+              await _db
+                  .from('user_invoices')
+                  .update({'customer_id': newCust.id})
+                  .eq('id', invId)
+                  .eq('user_id', _userId);
+            }
+          } catch (_) {
+            final fallbackId = 'unlinked_$invId';
+            debtors[fallbackId] = CustomerModel(
+              id: fallbackId,
+              name: displayName,
+              phone: inv['customer_phone']?.toString(),
+              totalDebt: debt,
+              createdAt: DateTime.tryParse(inv['date']?.toString() ?? '') ?? DateTime.now(),
+            );
+          }
+        }
+      }
+
+      final result = debtors.values.toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+      return result;
+    } catch (e) {
+      debugPrint('[CustomerRepo] getCustomersWithDebt error: $e');
       final all = await _getFromCache();
       return all.where((c) => c.totalDebt > 0).toList()
         ..sort((a, b) => a.name.compareTo(b.name));

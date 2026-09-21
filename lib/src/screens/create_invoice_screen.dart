@@ -282,6 +282,18 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       return;
     }
     if (_currentStep == 2) {
+      if (!widget.isEditing) {
+        if (state.paymentMethod == PaymentMethod.debt && state.customer == null) {
+          _showToast('يرجى اختيار زبون لتسجيل الفاتورة الآجلة باسمه');
+          return;
+        }
+        if (state.paymentMethod == PaymentMethod.partial &&
+            state.customer == null &&
+            (state.grandTotal - (state.receivedAmount ?? 0)) > 0.01) {
+          _showToast('يرجى اختيار زبون لتسجيل الدين المتبقي باسمه');
+          return;
+        }
+      }
       if (!widget.isEditing &&
           state.paymentMethod == PaymentMethod.partial &&
           (state.receivedAmount == null || state.receivedAmount! <= 0)) {
@@ -366,7 +378,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         status = 'partial';
       }
 
-      final customer = invoiceState.customer;
+      CustomerModel? customer = invoiceState.customer;
+      if (customer == null && debt > 0.0001) {
+        final custRepo = ref.read(customerRepositoryProvider);
+        customer = await custRepo.upsertCustomer(
+          name: 'زبون آجل ${DateFormat('yyyy/MM/dd HH:mm').format(DateTime.now())}',
+          totalDebt: debt,
+        );
+      }
 
       final items = invoiceState.items.map((item) {
         return <String, dynamic>{

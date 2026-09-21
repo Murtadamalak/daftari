@@ -122,15 +122,24 @@ class SyncService {
       final payload =
           jsonDecode(op['payload'] as String) as Map<String, dynamic>;
 
+      // إزالة الحقول المحلية فقط قبل الإرسال للسحابة
+      final cloudPayload = Map<String, dynamic>.from(payload);
+      if (tableName == 'user_invoice_items') {
+        cloudPayload.remove('note');
+      } else if (tableName == 'user_invoices') {
+        cloudPayload.remove('shop_phone');
+        cloudPayload.remove('owner_name');
+      }
+
       try {
         switch (operation) {
           case 'insert':
-            await _supabase.from(tableName).upsert(payload);
+            await _supabase.from(tableName).upsert(cloudPayload);
             break;
           case 'update':
             await _supabase
                 .from(tableName)
-                .update(payload)
+                .update(cloudPayload)
                 .eq('id', recordId)
                 .eq('user_id', _userId);
             break;

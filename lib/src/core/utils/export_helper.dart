@@ -84,19 +84,29 @@ class ExportHelper {
         return;
       }
 
+      // file_picker v8+ requires `bytes` on Android & iOS.
+      // On mobile, saveFile writes the bytes internally and may return null.
+      // On desktop, it returns a path and we write the bytes ourselves.
       String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'حفظ الملف',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: [extension.replaceAll('.', '')],
+        bytes: bytes,
       );
 
+      // On mobile, a null return after passing bytes means success.
+      // On desktop, we get a path back and must write manually.
       if (outputFile != null) {
         final file = File(outputFile);
-        await file.writeAsBytes(bytes);
-        if (context.mounted) {
-          AppSnackBar.success(context, 'تم حفظ الملف بنجاح');
+        // Only write if the file doesn't already exist (desktop case)
+        if (!await file.exists() || await file.length() == 0) {
+          await file.writeAsBytes(bytes);
         }
+      }
+
+      if (context.mounted) {
+        AppSnackBar.success(context, 'تم حفظ الملف بنجاح');
       }
     } catch (e) {
       if (context.mounted) {

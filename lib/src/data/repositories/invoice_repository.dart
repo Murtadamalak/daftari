@@ -203,6 +203,21 @@ class InvoiceRepository {
   String get _userId => _db.auth.currentUser?.id ?? '';
   bool get _isOnline => ConnectivityService.instance.isOnline;
 
+  /// إزالة الحقول التي لا توجد في جدول user_invoice_items في Supabase
+  Map<String, dynamic> _stripLocalOnlyItemFields(Map<String, dynamic> item) {
+    final stripped = Map<String, dynamic>.from(item);
+    stripped.remove('note'); // عمود note غير موجود في Supabase
+    return stripped;
+  }
+
+  /// إزالة الحقول التي لا توجد في جدول user_invoices في Supabase
+  Map<String, dynamic> _stripLocalOnlyInvoiceFields(Map<String, dynamic> inv) {
+    final stripped = Map<String, dynamic>.from(inv);
+    stripped.remove('shop_phone'); // عمود غير موجود في Supabase
+    stripped.remove('owner_name'); // عمود غير موجود في Supabase
+    return stripped;
+  }
+
   // ── Read ─────────────────────────────────────────────────────────────────
 
   Future<List<InvoiceModel>> getAllInvoices() async {
@@ -749,9 +764,9 @@ class InvoiceRepository {
     // 3. محاولة الرفع السحابي أو التسجيل في pending_operations
     if (_isOnline) {
       try {
-        await _db.from('user_invoices').insert(invData);
+        await _db.from('user_invoices').insert(_stripLocalOnlyInvoiceFields(invData));
         for (final localItem in itemsToInsert) {
-          await _db.from('user_invoice_items').insert(localItem);
+          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
         }
         if (customerId != null) {
           await recalculateCustomerDebt(customerId);
@@ -1190,7 +1205,7 @@ class InvoiceRepository {
             .eq('invoice_id', original.id);
 
         for (final localItem in itemsToInsert) {
-          await _db.from('user_invoice_items').insert(localItem);
+          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
         }
 
         if (original.customerId != null) {

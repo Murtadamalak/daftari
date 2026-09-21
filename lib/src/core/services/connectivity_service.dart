@@ -37,6 +37,12 @@ class ConnectivityService {
     if (_initialized) return;
     _initialized = true;
 
+    // connectivity_plus لا يدعم الويب — نعتبر الجهاز أونلاين دائماً
+    if (kIsWeb) {
+      _isOnline = true;
+      return;
+    }
+
     // فحص الحالة المبدئية
     await checkConnection();
 

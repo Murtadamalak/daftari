@@ -446,9 +446,13 @@ class _ReceiptCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final totalAmount = invoice.subtotal > 0.0001
+        ? invoice.subtotal
+        : (invoice.grandTotal > 0.0001 ? invoice.grandTotal : 0.0);
+
     final effectiveItems = items.isNotEmpty
         ? items
-        : (invoice.subtotal > 0
+        : (totalAmount > 0.0001
             ? [
                 InvoiceItemModel(
                   id: 'syn_${invoice.id}',
@@ -458,9 +462,9 @@ class _ReceiptCard extends StatelessWidget {
                       : 'مشتريات الفاتورة',
                   unit: 'قائمة',
                   qty: 1,
-                  unitPrice: invoice.subtotal,
+                  unitPrice: totalAmount,
                   priceType: 'retail',
-                  total: invoice.subtotal,
+                  total: totalAmount,
                   note: '',
                 ),
               ]

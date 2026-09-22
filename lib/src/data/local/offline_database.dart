@@ -251,13 +251,21 @@ class OfflineDatabase {
 
   /// جلب بنود فاتورة معينة
   Future<List<Map<String, dynamic>>> getInvoiceItems(
-      String invoiceId, String userId) async {
+      String invoiceId, [String? userId]) async {
     if (kIsWeb) return [];
     final db = await database;
+    if (userId != null && userId.isNotEmpty) {
+      final res = await db.query(
+        'invoice_items',
+        where: 'invoice_id = ? AND user_id = ?',
+        whereArgs: [invoiceId, userId],
+      );
+      if (res.isNotEmpty) return res;
+    }
     return db.query(
       'invoice_items',
-      where: 'invoice_id = ? AND user_id = ?',
-      whereArgs: [invoiceId, userId],
+      where: 'invoice_id = ?',
+      whereArgs: [invoiceId],
     );
   }
 

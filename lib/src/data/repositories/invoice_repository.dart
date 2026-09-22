@@ -43,15 +43,22 @@ class InvoiceItemModel {
       note = rawName.substring(idx + 2, rawName.length - 1);
     }
 
+    double toDouble(dynamic val, [double defaultVal = 0.0]) {
+      if (val == null) return defaultVal;
+      if (val is num) return val.toDouble();
+      if (val is String) return double.tryParse(val) ?? defaultVal;
+      return defaultVal;
+    }
+
     return InvoiceItemModel(
       id: j['id']?.toString() ?? '',
       invoiceId: j['invoice_id']?.toString() ?? '',
       productName: baseName,
       unit: j['unit']?.toString() ?? 'قطعة',
-      qty: (j['qty'] as num?)?.toDouble() ?? 1.0,
-      unitPrice: (j['unit_price'] as num?)?.toDouble() ?? 0.0,
+      qty: toDouble(j['qty'], 1.0),
+      unitPrice: toDouble(j['unit_price'], 0.0),
       priceType: j['price_type']?.toString() ?? 'retail',
-      total: (j['total'] as num?)?.toDouble() ?? 0.0,
+      total: toDouble(j['total'], 0.0),
       note: note,
     );
   }
@@ -358,13 +365,12 @@ class InvoiceRepository {
   Future<List<InvoiceItemModel>> getItemsByInvoiceId(String invoiceId) async {
     List<InvoiceItemModel> items = [];
 
-    if (_isOnline && _userId.isNotEmpty) {
+    if (_isOnline) {
       try {
         final res = await _db
             .from('user_invoice_items')
             .select()
-            .eq('invoice_id', invoiceId)
-            .eq('user_id', _userId);
+            .eq('invoice_id', invoiceId);
         items = (res as List)
             .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -403,7 +409,10 @@ class InvoiceRepository {
     if (items.isEmpty) {
       try {
         final inv = await getById(invoiceId);
-        if (inv != null && inv.subtotal > 0.0001) {
+        final totalVal = (inv != null && inv.subtotal > 0.0001)
+            ? inv.subtotal
+            : (inv?.grandTotal ?? 0.0);
+        if (inv != null && totalVal > 0.0001) {
           final fallbackName = (inv.note != null && inv.note!.trim().isNotEmpty)
               ? inv.note!.trim()
               : 'مشتريات متنوعة';
@@ -413,9 +422,9 @@ class InvoiceRepository {
             productName: fallbackName,
             unit: 'قائمة',
             qty: 1,
-            unitPrice: inv.subtotal,
+            unitPrice: totalVal,
             priceType: 'retail',
-            total: inv.subtotal,
+            total: totalVal,
             note: '',
           );
           items = [fallbackItem];

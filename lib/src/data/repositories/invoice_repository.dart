@@ -242,6 +242,7 @@ class InvoiceRepository {
       'unit_price': unitPrice,
       'price_type': item['price_type'] as String? ?? 'retail',
       'total': total,
+      'note': note,
     };
   }
 
@@ -287,7 +288,7 @@ class InvoiceRepository {
         // تخزين في الكاش المحلي
         await _cacheInvoices(invoices);
 
-        return invoices;
+        return _getInvoicesFromCache();
       } catch (e) {
         debugPrint('[InvoiceRepo] Error fetching invoices from cloud: $e');
         // فشل حتى وهو أونلاين → نقرأ من الكاش
@@ -371,14 +372,14 @@ class InvoiceRepository {
             .from('user_invoice_items')
             .select()
             .eq('invoice_id', invoiceId);
-        items = (res as List)
+        final cloudItems = (res as List)
             .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
             .toList();
 
-        if (items.isNotEmpty) {
-          _cacheInvoiceItems(
+        if (cloudItems.isNotEmpty) {
+          await _cacheInvoiceItems(
             invoiceId,
-            items.map((e) => e.toJson()).toList(),
+            cloudItems.map((e) => e.toJson()).toList(),
           );
         }
       } catch (e) {
@@ -386,21 +387,19 @@ class InvoiceRepository {
       }
     }
 
-    // إذا لم تكن هناك بنود في السحابة، نفحص الكاش المحلي (SharedPreferences / SQLite)
-    if (items.isEmpty) {
-      items = await _getItemsFromCache(invoiceId);
+    // الاعتماد دائماً على الكاش المحلي لضمان جلب البنود المعلقة
+    items = await _getItemsFromCache(invoiceId);
 
-      // إذا وُجدت محلياً والسحابة فارغة ونحن متصلون، نرفعها للسحابة فوراً
-      if (items.isNotEmpty && _isOnline && _userId.isNotEmpty) {
-        try {
-          final toInsert = items
-              .map((it) => _cleanItemForSupabase(it.toJson(), invoiceId, _userId))
-              .toList();
-          await _db.from('user_invoice_items').upsert(toInsert);
-          debugPrint('[InvoiceRepo] Auto-synced ${items.length} items to cloud for invoice $invoiceId');
-        } catch (e) {
-          debugPrint('[InvoiceRepo] Auto-sync to cloud failed: $e');
-        }
+    // إذا وُجدت محلياً والسحابة فارغة ونحن متصلون، نرفعها للسحابة فوراً
+    if (items.isNotEmpty && _isOnline && _userId.isNotEmpty) {
+      try {
+        final toInsert = items
+            .map((it) => _cleanItemForSupabase(it.toJson(), invoiceId, _userId))
+            .toList();
+        await _db.from('user_invoice_items').upsert(toInsert);
+        // debugPrint('[InvoiceRepo] Auto-synced ${items.length} items to cloud for invoice $invoiceId');
+      } catch (e) {
+        // debugPrint('[InvoiceRepo] Auto-sync to cloud failed: $e');
       }
     }
 
@@ -930,6 +929,12 @@ class InvoiceRepository {
               await _db.from('user_invoice_items').insert(cItem);
             } catch (e2) {
               debugPrint('[InvoiceRepo] Error inserting item to cloud: $e2');
+              await _localDb.addPendingOperation(
+                tableName: 'user_invoice_items',
+                operation: 'insert',
+                recordId: cItem['id'] as String,
+                payload: cItem,
+              );
             }
           }
         }

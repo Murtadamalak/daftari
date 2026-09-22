@@ -91,7 +91,7 @@ class CustomerRepository {
         // حفظ في الكاش المحلي
         await _cacheCustomers(customers);
 
-        return customers;
+        return _getFromCache();
       } catch (e) {
         debugPrint('[CustomerRepo] Error fetching customers: $e');
         return _getFromCache();
@@ -114,6 +114,8 @@ class CustomerRepository {
 
       // 2. جلب جميع الفواتير غير المسددة أو التي بها متبقي دين
       List<Map<String, dynamic>> unpaidInvoicesData = [];
+      List<Map<String, dynamic>> cloudUnpaid = [];
+      
       if (_isOnline) {
         try {
           final res = await _db
@@ -121,11 +123,23 @@ class CustomerRepository {
               .select()
               .eq('user_id', _userId)
               .or('status.eq.unpaid,status.eq.partial,debt.gt.0');
-          unpaidInvoicesData = List<Map<String, dynamic>>.from(res as List);
+          cloudUnpaid = List<Map<String, dynamic>>.from(res as List);
+          
+          // تحديث الكاش المحلي للفواتير غير المسددة
+          if (!kIsWeb) {
+            for (final inv in cloudUnpaid) {
+              final stripped = Map<String, dynamic>.from(inv);
+              stripped.remove('shop_phone');
+              stripped.remove('owner_name');
+              await _localDb.upsert('invoices', stripped);
+            }
+          }
         } catch (e) {
           debugPrint('[CustomerRepo] Error fetching unpaid invoices: $e');
         }
-      } else if (!kIsWeb) {
+      }
+
+      if (!kIsWeb) {
         try {
           final db = await _localDb.database;
           final localUnpaid = await db.query(
@@ -135,6 +149,8 @@ class CustomerRepository {
           );
           unpaidInvoicesData = List<Map<String, dynamic>>.from(localUnpaid);
         } catch (_) {}
+      } else {
+        unpaidInvoicesData = cloudUnpaid;
       }
 
       // 3. حساب مجموع الديون من الفواتير لكل زبون

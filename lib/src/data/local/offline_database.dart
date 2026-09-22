@@ -199,7 +199,24 @@ class OfflineDatabase {
   Future<void> clearTable(String table, String userId) async {
     if (kIsWeb) return;
     final db = await database;
-    await db.delete(table, where: 'user_id = ?', whereArgs: [userId]);
+    
+    String supabaseTable = '';
+    if (table == 'invoices') supabaseTable = 'user_invoices';
+    else if (table == 'customers') supabaseTable = 'user_customers';
+    else if (table == 'products') supabaseTable = 'user_products';
+    else if (table == 'invoice_items') supabaseTable = 'user_invoice_items';
+    
+    if (supabaseTable.isNotEmpty) {
+      await db.rawDelete('''
+        DELETE FROM $table 
+        WHERE user_id = ? 
+        AND id NOT IN (
+          SELECT record_id FROM pending_operations WHERE table_name = ?
+        )
+      ''', [userId, supabaseTable]);
+    } else {
+      await db.delete(table, where: 'user_id = ?', whereArgs: [userId]);
+    }
   }
 
   /// جلب جميع صفوف الجدول لمستخدم معين

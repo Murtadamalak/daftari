@@ -294,11 +294,10 @@ class SyncService {
         .map((e) => e as Map<String, dynamic>)
         .toList();
 
-    // حذف بنود المستخدم القديمة
     final db = await _offlineDb.database;
-    await db.delete('invoice_items', where: 'user_id = ?', whereArgs: [_userId]);
 
     if (items.isNotEmpty) {
+      await db.delete('invoice_items', where: 'user_id = ?', whereArgs: [_userId]);
       await _offlineDb.upsertAll('invoice_items', items.map((r) => {
         'id': r['id'],
         'invoice_id': r['invoice_id'],
@@ -311,6 +310,28 @@ class SyncService {
         'total': (r['total'] as num?)?.toDouble() ?? 0,
         'note': r['note'] as String? ?? '',
       }).toList());
+    } else {
+      // إذا كانت السحابة لا تحتوي على بنود ولكن الجهاز المحلي لديه بنود، نرفعها للسحابة فوراً
+      try {
+        final localRows = await db.query('invoice_items', where: 'user_id = ?', whereArgs: [_userId]);
+        if (localRows.isNotEmpty) {
+          final toPush = localRows.map((r) => {
+            'id': r['id'],
+            'invoice_id': r['invoice_id'],
+            'user_id': _userId,
+            'product_name': r['product_name'],
+            'unit': r['unit'] ?? 'قطعة',
+            'qty': (r['qty'] as num?)?.toDouble() ?? 1,
+            'unit_price': (r['unit_price'] as num?)?.toDouble() ?? 0,
+            'price_type': r['price_type'] ?? 'retail',
+            'total': (r['total'] as num?)?.toDouble() ?? 0,
+          }).toList();
+          await _supabase.from('user_invoice_items').upsert(toPush);
+          debugPrint('[SyncService] Auto-synced ${toPush.length} local items to cloud');
+        }
+      } catch (e) {
+        debugPrint('[SyncService] Failed to auto-sync local items to cloud: $e');
+      }
     }
 
     await _offlineDb.setLastSyncTime('invoices', DateTime.now().toUtc());

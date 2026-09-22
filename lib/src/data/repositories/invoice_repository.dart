@@ -203,12 +203,41 @@ class InvoiceRepository {
   String get _userId => _db.auth.currentUser?.id ?? '';
   bool get _isOnline => ConnectivityService.instance.isOnline;
 
-  /// إزالة الحقول التي لا توجد في جدول user_invoice_items في Supabase
-  Map<String, dynamic> _stripLocalOnlyItemFields(Map<String, dynamic> item) {
-    final stripped = Map<String, dynamic>.from(item);
-    stripped.remove('note'); // عمود note غير موجود في Supabase
-    return stripped;
+  /// تنظيف وتجهيز بنود الفاتورة للإرسال لـ Supabase بما يتطابق 100% مع الأعمدة الموجودة في الجدول
+  Map<String, dynamic> _cleanItemForSupabase(
+    Map<String, dynamic> item,
+    String invoiceId,
+    String userId,
+  ) {
+    final qty = (item['qty'] as num?)?.toDouble() ?? 1.0;
+    final unitPrice = (item['unit_price'] as num?)?.toDouble() ?? 0.0;
+    final total = (item['total'] as num?)?.toDouble() ?? (qty * unitPrice);
+
+    final rawName = item['product_name'] as String? ?? '';
+    String baseName = rawName;
+    final note = item['note'] as String? ?? '';
+    if (note.isNotEmpty && !rawName.contains(' [$note]')) {
+      baseName = '$rawName [$note]';
+    }
+
+    final id = item['id'] as String?;
+    final validId = (id != null && id.isNotEmpty && id.contains('-'))
+        ? id
+        : const Uuid().v4();
+
+    return {
+      'id': validId,
+      'invoice_id': invoiceId,
+      'user_id': userId,
+      'product_name': baseName.isNotEmpty ? baseName : 'منتج',
+      'unit': item['unit'] as String? ?? 'قطعة',
+      'qty': qty,
+      'unit_price': unitPrice,
+      'price_type': item['price_type'] as String? ?? 'retail',
+      'total': total,
+    };
   }
+
 
   /// إزالة الحقول التي لا توجد في جدول user_invoices في Supabase
   Map<String, dynamic> _stripLocalOnlyInvoiceFields(Map<String, dynamic> inv) {
@@ -216,6 +245,18 @@ class InvoiceRepository {
     stripped.remove('shop_phone'); // عمود غير موجود في Supabase
     stripped.remove('owner_name'); // عمود غير موجود في Supabase
     return stripped;
+  }
+
+  /// تخزين بنود فاتورة محددة في SharedPreferences (يعمل على الويب والمحمول)
+  Future<void> _cacheInvoiceItems(
+    String invoiceId,
+    List<Map<String, dynamic>> items,
+  ) async {
+    if (invoiceId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_items_$invoiceId', jsonEncode(items));
+    } catch (_) {}
   }
 
   // ── Read ─────────────────────────────────────────────────────────────────
@@ -315,22 +356,74 @@ class InvoiceRepository {
   }
 
   Future<List<InvoiceItemModel>> getItemsByInvoiceId(String invoiceId) async {
-    if (_isOnline) {
+    List<InvoiceItemModel> items = [];
+
+    if (_isOnline && _userId.isNotEmpty) {
       try {
         final res = await _db
             .from('user_invoice_items')
             .select()
             .eq('invoice_id', invoiceId)
             .eq('user_id', _userId);
-        return (res as List)
+        items = (res as List)
             .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
             .toList();
-      } catch (_) {
-        return _getItemsFromCache(invoiceId);
+
+        if (items.isNotEmpty) {
+          _cacheInvoiceItems(
+            invoiceId,
+            items.map((e) => e.toJson()).toList(),
+          );
+        }
+      } catch (e) {
+        debugPrint('[InvoiceRepo] Error fetching items by id from cloud: $e');
       }
-    } else {
-      return _getItemsFromCache(invoiceId);
     }
+
+    // إذا لم تكن هناك بنود في السحابة، نفحص الكاش المحلي (SharedPreferences / SQLite)
+    if (items.isEmpty) {
+      items = await _getItemsFromCache(invoiceId);
+
+      // إذا وُجدت محلياً والسحابة فارغة ونحن متصلون، نرفعها للسحابة فوراً
+      if (items.isNotEmpty && _isOnline && _userId.isNotEmpty) {
+        try {
+          final toInsert = items
+              .map((it) => _cleanItemForSupabase(it.toJson(), invoiceId, _userId))
+              .toList();
+          await _db.from('user_invoice_items').upsert(toInsert);
+          debugPrint('[InvoiceRepo] Auto-synced ${items.length} items to cloud for invoice $invoiceId');
+        } catch (e) {
+          debugPrint('[InvoiceRepo] Auto-sync to cloud failed: $e');
+        }
+      }
+    }
+
+    // إذا كانت البنود لا تزال فارغة ولكن الفاتورة لها مبلغ إجمالي، نُنشئ بنداً تلقائياً
+    // حتى لا تظهر الفاتورة فارغة أبداً عند العرض أو الطباعة أو PDF
+    if (items.isEmpty) {
+      try {
+        final inv = await getById(invoiceId);
+        if (inv != null && inv.subtotal > 0.0001) {
+          final fallbackName = (inv.note != null && inv.note!.trim().isNotEmpty)
+              ? inv.note!.trim()
+              : 'مشتريات متنوعة';
+          final fallbackItem = InvoiceItemModel(
+            id: 'syn_${inv.id}',
+            invoiceId: inv.id,
+            productName: fallbackName,
+            unit: 'قائمة',
+            qty: 1,
+            unitPrice: inv.subtotal,
+            priceType: 'retail',
+            total: inv.subtotal,
+            note: '',
+          );
+          items = [fallbackItem];
+        }
+      } catch (_) {}
+    }
+
+    return items;
   }
 
   /// جميع الفواتير المبيعات لزبون محدد (بدون إدخالات التسديد)
@@ -525,17 +618,55 @@ class InvoiceRepository {
 
   Future<List<InvoiceItemModel>> getItemsByInvoiceIds(List<String> ids) async {
     if (ids.isEmpty) return [];
+    if (_userId.isEmpty) {
+      final List<InvoiceItemModel> result = [];
+      for (final id in ids) {
+        result.addAll(await _getItemsFromCache(id));
+      }
+      return result;
+    }
+
     if (_isOnline) {
       try {
-        final res = await _db
-            .from('user_invoice_items')
-            .select()
-            .eq('user_id', _userId)
-            .inFilter('invoice_id', ids);
-        return (res as List)
-            .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
-            .toList();
-      } catch (_) {
+        final List<InvoiceItemModel> allResults = [];
+        const chunkSize = 50;
+        for (var i = 0; i < ids.length; i += chunkSize) {
+          final chunk = ids.sublist(
+            i,
+            (i + chunkSize > ids.length) ? ids.length : i + chunkSize,
+          );
+          final res = await _db
+              .from('user_invoice_items')
+              .select()
+              .eq('user_id', _userId)
+              .inFilter('invoice_id', chunk);
+          final items = (res as List)
+              .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+          allResults.addAll(items);
+        }
+
+        // تخزين في الكاش لكل فاتورة
+        final grouped = <String, List<Map<String, dynamic>>>{};
+        for (final it in allResults) {
+          grouped.putIfAbsent(it.invoiceId, () => []).add(it.toJson());
+        }
+        for (final entry in grouped.entries) {
+          _cacheInvoiceItems(entry.key, entry.value);
+        }
+
+        // أي فاتورة لم توجد بنودها في السحابة، نفحص الكاش المحلي لها
+        final foundInvoiceIds = allResults.map((e) => e.invoiceId).toSet();
+        for (final id in ids) {
+          if (!foundInvoiceIds.contains(id)) {
+            final cached = await _getItemsFromCache(id);
+            allResults.addAll(cached);
+          }
+        }
+
+        return allResults;
+      } catch (e) {
+        debugPrint('[InvoiceRepo] Error in getItemsByInvoiceIds: $e');
         final List<InvoiceItemModel> result = [];
         for (final id in ids) {
           result.addAll(await _getItemsFromCache(id));
@@ -753,6 +884,8 @@ class InvoiceRepository {
     for (final localItem in itemsToInsert) {
       await _localDb.upsert('invoice_items', localItem);
     }
+    // تخزين في SharedPreferences فوراً لضمان توفر البنود على الويب والمحمول
+    await _cacheInvoiceItems(id, itemsToInsert);
 
     // 2. تحديث المخزون محلياً
     if (payType != 'تسديد دين' && itemsToInsert.isNotEmpty) {
@@ -772,12 +905,24 @@ class InvoiceRepository {
         await _queueInvoiceOffline(id, invData, itemsToInsert, customerId);
       }
 
-      // رفع بنود الفاتورة بشكل منفصل حتى لا يعطل أي خطأ فيها احتساب الديون
-      for (final localItem in itemsToInsert) {
+      // رفع بنود الفاتورة للسحابة بشكل نظيف
+      if (itemsToInsert.isNotEmpty) {
+        final cloudUserId = _userId.isNotEmpty ? _userId : (_db.auth.currentUser?.id ?? '');
+        final cleanItems = itemsToInsert
+            .map((item) => _cleanItemForSupabase(item, id, cloudUserId))
+            .toList();
+
         try {
-          await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
+          await _db.from('user_invoice_items').insert(cleanItems);
         } catch (itemErr) {
-          debugPrint('[InvoiceRepo] Error inserting item to cloud: $itemErr');
+          debugPrint('[InvoiceRepo] Batch insert items failed ($itemErr), retrying one-by-one...');
+          for (final cItem in cleanItems) {
+            try {
+              await _db.from('user_invoice_items').insert(cItem);
+            } catch (e2) {
+              debugPrint('[InvoiceRepo] Error inserting item to cloud: $e2');
+            }
+          }
         }
       }
 
@@ -1184,6 +1329,8 @@ class InvoiceRepository {
       itemsToInsert.add(localItem);
       await _localDb.upsert('invoice_items', localItem);
     }
+    // تخزين البنود المحدثة في SharedPreferences فوراً
+    await _cacheInvoiceItems(original.id, itemsToInsert);
 
     // 4) إعادة احتساب الديون محلياً
     if (original.customerId != null) {
@@ -1220,8 +1367,24 @@ class InvoiceRepository {
               .eq('user_id', _userId)
               .eq('invoice_id', original.id);
 
-          for (final localItem in itemsToInsert) {
-            await _db.from('user_invoice_items').insert(_stripLocalOnlyItemFields(localItem));
+          if (itemsToInsert.isNotEmpty) {
+            final cloudUserId = _userId.isNotEmpty ? _userId : (_db.auth.currentUser?.id ?? '');
+            final cleanItems = itemsToInsert
+                .map((item) => _cleanItemForSupabase(item, original.id, cloudUserId))
+                .toList();
+
+            try {
+              await _db.from('user_invoice_items').insert(cleanItems);
+            } catch (e) {
+              debugPrint('[InvoiceRepo] Batch update items failed ($e), retrying one-by-one...');
+              for (final cItem in cleanItems) {
+                try {
+                  await _db.from('user_invoice_items').insert(cItem);
+                } catch (e2) {
+                  debugPrint('[InvoiceRepo] Error inserting item: $e2');
+                }
+              }
+            }
           }
         } catch (itemErr) {
           debugPrint('[InvoiceRepo] Error updating items in cloud: $itemErr');
@@ -1432,14 +1595,35 @@ class InvoiceRepository {
     return match.isNotEmpty ? match.first : null;
   }
 
-  /// جلب بنود فاتورة من الكاش المحلي
+  /// جلب بنود فاتورة من الكاش المحلي (SharedPreferences للويب والمحمول، و SQLite للأجهزة)
   Future<List<InvoiceItemModel>> _getItemsFromCache(String invoiceId) async {
-    if (kIsWeb) return [];
+    if (invoiceId.isEmpty) return [];
+
+    // 1. فحص SharedPreferences أولاً (يعمل على الويب والمحمول)
     try {
-      final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
-      return rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
-    } catch (_) {
-      return [];
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_items_$invoiceId');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List;
+        final list = decoded
+            .map((e) => InvoiceItemModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        if (list.isNotEmpty) return list;
+      }
+    } catch (_) {}
+
+    // 2. فحص SQLite للأجهزة المحمولة
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
+        if (rows.isNotEmpty) {
+          final list = rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
+          _cacheInvoiceItems(invoiceId, rows);
+          return list;
+        }
+      } catch (_) {}
     }
+
+    return [];
   }
 }

@@ -446,6 +446,26 @@ class _ReceiptCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final effectiveItems = items.isNotEmpty
+        ? items
+        : (invoice.subtotal > 0
+            ? [
+                InvoiceItemModel(
+                  id: 'syn_${invoice.id}',
+                  invoiceId: invoice.id,
+                  productName: (invoice.note != null && invoice.note!.trim().isNotEmpty)
+                      ? invoice.note!.trim()
+                      : 'مشتريات الفاتورة',
+                  unit: 'قائمة',
+                  qty: 1,
+                  unitPrice: invoice.subtotal,
+                  priceType: 'retail',
+                  total: invoice.subtotal,
+                  note: '',
+                ),
+              ]
+            : <InvoiceItemModel>[]);
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -595,7 +615,7 @@ class _ReceiptCard extends StatelessWidget {
           const Divider(height: 8, indent: 20, endIndent: 20),
 
           // ── Items rows ───────────────────────────────────────────────────────
-          ...items.map(
+          ...effectiveItems.map(
             (item) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
               child: Row(
@@ -656,6 +676,34 @@ class _ReceiptCard extends StatelessWidget {
               ),
             ),
           ),
+
+          if (items.isEmpty && invoice.subtotal > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.amber.withOpacity(0.15) : Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 14, color: isDark ? Colors.amber.shade300 : Colors.amber.shade800),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'تفاصيل المنتجات الفردية غير محفوظة في هذه الفاتورة. اضغط على أيقونة التعديل في الأعلى لإضافة المنتجات.',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isDark ? Colors.amber.shade200 : Colors.amber.shade900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),

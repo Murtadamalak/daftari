@@ -2,7 +2,6 @@ import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart'; // Added for rootBundle
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/material.dart';
@@ -62,6 +61,26 @@ class PdfInvoiceGenerator {
     final boldStyle = ts(fontBold, fontSize: 11);
     final smallStyle = ts(fontReg, fontSize: 9, color: PdfColors.grey600);
     final smallBoldStyle = ts(fontBold, fontSize: 9);
+
+    final effectiveItems = items.isNotEmpty
+        ? items
+        : (invoice.subtotal > 0
+            ? [
+                InvoiceItemModel(
+                  id: 'pdf_syn_${invoice.id}',
+                  invoiceId: invoice.id,
+                  productName: (invoice.note != null && invoice.note!.trim().isNotEmpty)
+                      ? invoice.note!.trim()
+                      : 'مشتريات متنوعة',
+                  unit: 'قائمة',
+                  qty: 1,
+                  unitPrice: invoice.subtotal,
+                  priceType: 'retail',
+                  total: invoice.subtotal,
+                  note: '',
+                ),
+              ]
+            : <InvoiceItemModel>[]);
 
     double previousDebt = 0;
     double newTotalDebt = 0;
@@ -356,7 +375,7 @@ class PdfInvoiceGenerator {
                         .toList(),
                   ),
                   // Item rows
-                  ...items.asMap().entries.map((e) {
+                  ...effectiveItems.asMap().entries.map((e) {
                     final i = e.key;
                     final item = e.value;
                     final bg = i.isOdd ? PdfColors.grey50 : PdfColors.white;

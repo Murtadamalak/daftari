@@ -324,6 +324,17 @@ class ProductRepository {
   Future<List<ProductModel>> _getFromCache() async {
     if (_userId.isEmpty) return [];
 
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('products', _userId);
+        if (rows.isNotEmpty) {
+          final products = rows.map((r) => ProductModel.fromJson(r)).toList();
+          products.sort((a, b) => a.name.compareTo(b.name));
+          return products;
+        }
+      } catch (_) {}
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('cached_products_$_userId');
@@ -336,15 +347,6 @@ class ProductRepository {
         return list;
       }
     } catch (_) {}
-
-    if (!kIsWeb) {
-      try {
-        final rows = await _localDb.getAll('products', _userId);
-        final products = rows.map((r) => ProductModel.fromJson(r)).toList();
-        products.sort((a, b) => a.name.compareTo(b.name));
-        return products;
-      } catch (_) {}
-    }
 
     return [];
   }

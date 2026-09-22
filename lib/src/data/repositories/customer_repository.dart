@@ -500,6 +500,17 @@ class CustomerRepository {
   Future<List<CustomerModel>> _getFromCache() async {
     if (_userId.isEmpty) return [];
 
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('customers', _userId);
+        if (rows.isNotEmpty) {
+          final customers = rows.map((r) => CustomerModel.fromJson(r)).toList();
+          customers.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return customers;
+        }
+      } catch (_) {}
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('cached_customers_$_userId');
@@ -512,15 +523,6 @@ class CustomerRepository {
         return list;
       }
     } catch (_) {}
-
-    if (!kIsWeb) {
-      try {
-        final rows = await _localDb.getAll('customers', _userId);
-        final customers = rows.map((r) => CustomerModel.fromJson(r)).toList();
-        customers.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return customers;
-      } catch (_) {}
-    }
 
     return [];
   }

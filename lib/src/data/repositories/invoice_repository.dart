@@ -1572,6 +1572,22 @@ class InvoiceRepository {
   Future<List<InvoiceModel>> _getInvoicesFromCache() async {
     if (_userId.isEmpty) return [];
 
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getAll('invoices', _userId);
+        if (rows.isNotEmpty) {
+          final invoices = rows.map((r) {
+            return InvoiceModel.fromJson({
+              ...r,
+              'grand_total': r['grand_total'] ?? 0,
+            });
+          }).toList();
+          invoices.sort((a, b) => b.num.compareTo(a.num));
+          return invoices;
+        }
+      } catch (_) {}
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('cached_invoices_$_userId');
@@ -1584,20 +1600,6 @@ class InvoiceRepository {
         return invoices;
       }
     } catch (_) {}
-
-    if (!kIsWeb) {
-      try {
-        final rows = await _localDb.getAll('invoices', _userId);
-        final invoices = rows.map((r) {
-          return InvoiceModel.fromJson({
-            ...r,
-            'grand_total': r['grand_total'] ?? 0,
-          });
-        }).toList();
-        invoices.sort((a, b) => b.num.compareTo(a.num));
-        return invoices;
-      } catch (_) {}
-    }
 
     return [];
   }
@@ -1613,7 +1615,16 @@ class InvoiceRepository {
   Future<List<InvoiceItemModel>> _getItemsFromCache(String invoiceId) async {
     if (invoiceId.isEmpty) return [];
 
-    // 1. فحص SharedPreferences أولاً (يعمل على الويب والمحمول)
+    if (!kIsWeb) {
+      try {
+        final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
+        if (rows.isNotEmpty) {
+          final list = rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
+          return list;
+        }
+      } catch (_) {}
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('cached_items_$invoiceId');
@@ -1625,18 +1636,6 @@ class InvoiceRepository {
         if (list.isNotEmpty) return list;
       }
     } catch (_) {}
-
-    // 2. فحص SQLite للأجهزة المحمولة
-    if (!kIsWeb) {
-      try {
-        final rows = await _localDb.getInvoiceItems(invoiceId, _userId);
-        if (rows.isNotEmpty) {
-          final list = rows.map((r) => InvoiceItemModel.fromJson(r)).toList();
-          _cacheInvoiceItems(invoiceId, rows);
-          return list;
-        }
-      } catch (_) {}
-    }
 
     return [];
   }

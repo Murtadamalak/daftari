@@ -57,7 +57,7 @@ void main() async {
   // Check if user opted out of "remember me" — if so, sign them out on cold start.
   try {
     final prefs = await SharedPreferences.getInstance();
-    final rememberMe = prefs.getBool('rememberMe') ?? false;
+    final rememberMe = prefs.getBool('rememberMe') ?? true;
     if (!rememberMe) {
       final existingSession = Supabase.instance.client.auth.currentSession;
       if (existingSession != null) {

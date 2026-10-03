@@ -46,7 +46,7 @@ class OfflineDatabase {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -54,6 +54,32 @@ class OfflineDatabase {
             await db.execute('ALTER TABLE invoice_items ADD COLUMN note TEXT');
           } catch (e) {
             debugPrint('Error altering invoice_items table: $e');
+          }
+        }
+        if (oldVersion < 3) {
+          try {
+            await db.execute('''
+              CREATE TABLE IF NOT EXISTS expenses (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'أخرى',
+                amount REAL DEFAULT 0,
+                date TEXT NOT NULL,
+                note TEXT,
+                invoice_id TEXT,
+                invoice_num TEXT,
+                created_at TEXT NOT NULL
+              )
+            ''');
+            await db.execute(
+                'CREATE INDEX IF NOT EXISTS idx_expenses_user ON expenses(user_id)');
+            await db.execute(
+                'CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date)');
+            await db.execute(
+                'CREATE INDEX IF NOT EXISTS idx_expenses_invoice ON expenses(invoice_id)');
+          } catch (e) {
+            debugPrint('Error creating expenses table: $e');
           }
         }
       },
@@ -151,6 +177,22 @@ class OfflineDatabase {
       )
     ''');
 
+    // ── المصروفات ──
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS expenses (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'أخرى',
+        amount REAL DEFAULT 0,
+        date TEXT NOT NULL,
+        note TEXT,
+        invoice_id TEXT,
+        invoice_num TEXT,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // فهارس لتسريع البحث
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_invoices_user ON invoices(user_id)');
@@ -164,6 +206,12 @@ class OfflineDatabase {
         'CREATE INDEX IF NOT EXISTS idx_customers_user ON customers(user_id)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_pending_created ON pending_operations(created_at)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_expenses_user ON expenses(user_id)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_expenses_invoice ON expenses(invoice_id)');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -392,6 +440,7 @@ class OfflineDatabase {
     await db.delete('invoices');
     await db.delete('customers');
     await db.delete('products');
+    await db.delete('expenses');
     await db.delete('pending_operations');
     await db.delete('sync_meta');
     debugPrint('[OfflineDB] All local data cleared.');

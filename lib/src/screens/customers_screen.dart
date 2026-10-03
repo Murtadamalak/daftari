@@ -14,6 +14,7 @@ import '../core/providers/settings_provider.dart';
 import '../core/theme/app_theme.dart';
 import '../core/utils/whatsapp_launcher.dart';
 import '../core/utils/pdf_debt_report_generator.dart';
+import '../core/utils/export_helper.dart';
 import '../data/repositories/customer_repository.dart';
 import '../data/repositories/invoice_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -547,9 +548,8 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         forMonth: selectedMonth,
       );
 
-      // 5. توليد PDF ومشاركته
-      await PdfDebtReportGenerator.generateAndShare(
-        context: context,
+      // 5. توليد ملف PDF
+      final pdfBytes = await PdfDebtReportGenerator.generatePdf(
         summary: summary,
         shopName: settings?.shopName,
         ownerName: settings?.ownerName,
@@ -557,10 +557,26 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         shopLogoPath: settings?.logoPath,
       );
 
-      if (context.mounted) Navigator.pop(context);
+      // 6. إغلاق مؤشر التحميل فوراً قبل فتح نافذة الخيارات
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      // 7. عرض خيارات التصدير (طباعة / حفظ / مشاركة)
+      if (context.mounted) {
+        final fileName = 'debt_report_${summary.monthLabel}_${summary.year}.pdf';
+        await ExportHelper.exportBytes(
+          context: context,
+          bytes: pdfBytes,
+          fileName: fileName,
+          extension: 'pdf',
+          mimeType: 'application/pdf',
+          shareText: 'تقرير الديون الشهري - ${summary.monthLabel} ${summary.year}',
+        );
+      }
     } catch (e) {
       if (context.mounted) {
-        Navigator.pop(context);
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:

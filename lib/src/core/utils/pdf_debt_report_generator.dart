@@ -2,7 +2,6 @@ import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/material.dart' show BuildContext;
@@ -208,8 +207,7 @@ class PdfDebtReportGenerator {
   // Generate PDF
   // ─────────────────────────────────────────────────────────────────────────
 
-  static Future<void> generateAndShare({
-    required BuildContext context,
+  static Future<Uint8List> generatePdf({
     required DebtReportSummary summary,
     String? shopName,
     String? ownerName,
@@ -726,8 +724,25 @@ class PdfDebtReportGenerator {
       ),
     );
 
-    // ── Save & Share ──────────────────────────────────────────────────────
-    final bytes = await pdf.save();
+    // ── Save & Return Bytes ──────────────────────────────────────────────
+    return await pdf.save();
+  }
+
+  static Future<void> generateAndShare({
+    required BuildContext context,
+    required DebtReportSummary summary,
+    String? shopName,
+    String? ownerName,
+    String? shopPhone,
+    String? shopLogoPath,
+  }) async {
+    final bytes = await generatePdf(
+      summary: summary,
+      shopName: shopName,
+      ownerName: ownerName,
+      shopPhone: shopPhone,
+      shopLogoPath: shopLogoPath,
+    );
     final fileName = 'debt_report_${summary.monthLabel}_${summary.year}.pdf';
 
     if (context.mounted) {

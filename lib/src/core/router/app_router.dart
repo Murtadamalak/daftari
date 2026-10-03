@@ -24,6 +24,7 @@ import '../../screens/comprehensive_reports_screen.dart';
 import '../../screens/customer_debts_screen.dart';
 import '../../screens/transactions_log_screen.dart';
 import '../../screens/delayed_debts_screen.dart';
+import '../../screens/expenses_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -287,6 +288,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         child: InvoiceDetailsScreen(invoiceId: id),
                       );
                     },
+                    routes: [
+                      GoRoute(
+                        path: 'expenses',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        pageBuilder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          final invoiceNum = state.uri.queryParameters['num'];
+                          return _buildSmoothPage(
+                            key: state.pageKey,
+                            child: ExpensesScreen(
+                              linkedInvoiceId: id,
+                              linkedInvoiceNum: invoiceNum,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'edit/:id',
@@ -328,6 +346,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     pageBuilder: (context, state) => _buildSmoothPage(
                       key: state.pageKey,
                       child: const TransactionsLogScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'expenses',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    pageBuilder: (context, state) => _buildSmoothPage(
+                      key: state.pageKey,
+                      child: const ExpensesScreen(),
                     ),
                   ),
                 ],

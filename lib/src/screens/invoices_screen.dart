@@ -57,6 +57,25 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         ),
         actions: [
           Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFBE185D).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: Color(0xFFBE185D),
+                  size: 18,
+                ),
+              ),
+              tooltip: 'المصروفات',
+              onPressed: () => context.push('/reports/expenses'),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.only(left: 8),
             child: IconButton(
               icon: Container(
@@ -183,12 +202,29 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         ),
       ),
       floatingActionButtonLocation: AppTheme.customCenterFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/invoices/create'),
-        icon: const Icon(Icons.add),
-        label: const Text('فاتورة جديدة'),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'invoices_add_expense_fab',
+            onPressed: () => context.push('/reports/expenses'),
+            icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+            label: const Text('المصروفات', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            backgroundColor: const Color(0xFF881337),
+            foregroundColor: Colors.white,
+            elevation: 3,
+          ),
+          const SizedBox(width: 10),
+          FloatingActionButton.extended(
+            heroTag: 'invoices_new_invoice_fab',
+            onPressed: () => context.go('/invoices/create'),
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text('فاتورة جديدة', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
+            backgroundColor: colorScheme.primary,
+            foregroundColor: Colors.white,
+            elevation: 3,
+          ),
+        ],
       ),
     );
   }

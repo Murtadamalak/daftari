@@ -150,6 +150,15 @@ class _DashboardBody extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              // ── Expenses button ────────────────────────────────────────────
+              _ReportsButton(
+                title: 'المصروفات',
+                subtitle: 'تتبع مصاريف العمل وتوزيعها بالفئات',
+                icon: Icons.account_balance_wallet_outlined,
+                gradientColors: const [Color(0xFF881337), Color(0xFFBE185D)],
+                onTap: () => context.push('/reports/expenses'),
+              ),
               const SizedBox(height: 24),
 
               if (isWide)

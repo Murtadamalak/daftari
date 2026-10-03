@@ -20,6 +20,7 @@ import 'customers_screen.dart';
 import 'customer_debts_screen.dart';
 import 'delayed_debts_screen.dart';
 import '../core/providers/invoices_provider.dart';
+import '../data/repositories/expense_repository.dart';
 
 // ─── Number formatter ─────────────────────────────────────────────────────────
 final _fmt = NumberFormat('#,###');
@@ -53,6 +54,10 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   final _discountCtrl = TextEditingController();
   final _receivedCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
+  final _expenseAmountCtrl = TextEditingController();
+  final _expenseTitleCtrl = TextEditingController();
+  final _expenseNoteCtrl = TextEditingController();
+  String _expenseCategory = 'مواد خام';
 
   bool _isSaving = false;
 
@@ -65,6 +70,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     _discountCtrl.dispose();
     _receivedCtrl.dispose();
     _noteCtrl.dispose();
+    _expenseAmountCtrl.dispose();
+    _expenseTitleCtrl.dispose();
+    _expenseNoteCtrl.dispose();
     super.dispose();
   }
 
@@ -131,6 +139,12 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                   discountCtrl: _discountCtrl,
                                   receivedCtrl: _receivedCtrl,
                                   noteCtrl: _noteCtrl,
+                                  expenseAmountCtrl: _expenseAmountCtrl,
+                                  expenseTitleCtrl: _expenseTitleCtrl,
+                                  expenseNoteCtrl: _expenseNoteCtrl,
+                                  expenseCategory: _expenseCategory,
+                                  onExpenseCategoryChanged: (cat) =>
+                                      setState(() => _expenseCategory = cat),
                                   isEditing: widget.isEditing,
                                   originalInvoice: _originalInvoice,
                                 ),
@@ -408,7 +422,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         }
       }
 
-      await repo.createInvoice(
+      final (createdInvoice, _) = await repo.createInvoice(
         customerName: customer?.name ?? 'زبون نقدي',
         customerId: customer?.id,
         customerPhone: customer?.phone,
@@ -443,10 +457,40 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         await productRepo.decreaseStockBulk(productsToDecrease);
       }
 
+      // حفظ مصروف الفاتورة إن تم إدخال مبلغ
+      final expAmount = double.tryParse(
+              _expenseAmountCtrl.text.replaceAll(',', '').trim()) ??
+          0;
+      if (expAmount > 0) {
+        try {
+          final expRepo = ref.read(expenseRepositoryProvider);
+          final title = _expenseTitleCtrl.text.trim().isNotEmpty
+              ? _expenseTitleCtrl.text.trim()
+              : 'كلفة فاتورة #${createdInvoice.num}';
+          await expRepo.create(
+            title: title,
+            category: _expenseCategory,
+            amount: expAmount,
+            date: DateTime.now(),
+            note: _expenseNoteCtrl.text.trim().isEmpty
+                ? null
+                : _expenseNoteCtrl.text.trim(),
+            invoiceId: createdInvoice.id,
+            invoiceNum: '#${createdInvoice.num}',
+          );
+          ref.invalidate(allExpensesProvider);
+          ref.invalidate(invoiceExpensesProvider(createdInvoice.id));
+        } catch (e) {
+          debugPrint('Error creating invoice expense: $e');
+        }
+      }
+
       // Refresh data
       final savedCustomerId = customer?.id;
       ref.invalidate(productsProvider);
       ref.invalidate(debtSearchDataProvider);
+      ref.invalidate(customersWithDebtProvider);
+      ref.invalidate(_customersStreamProvider);
       ref.invalidate(delayedCustomersProvider);
       ref.invalidate(allInvoicesProvider);
 
@@ -2125,12 +2169,12 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkBg : AppColors.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           )
         ],
       ),
@@ -2138,30 +2182,31 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
         children: [
           // Handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 50,
-            height: 5,
+            margin: const EdgeInsets.only(top: 8, bottom: 4),
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+              color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    'اختر منتجاً',
+                    'اختيار منتج',
                     style: GoogleFonts.almarai(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                     ),
                   ),
                 ),
                 FilledButton.icon(
                   onPressed: () => _quickAddProduct(context),
-                  icon: const Icon(Icons.add, size: 18),
+                  icon: const Icon(Icons.add, size: 16),
                   label: const Text(
                     'منتج جديد',
                     style: TextStyle(fontFamily: 'Cairo', fontSize: 12),
@@ -2169,37 +2214,43 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                 ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: TextField(
               autofocus: true,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
                 hintText: 'بحث في المنتجات...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, size: 20),
                 filled: true,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           Expanded(
             child: filtered.isEmpty
                 ? Center(
@@ -2455,6 +2506,11 @@ class _PaymentStep extends ConsumerWidget {
     required this.discountCtrl,
     required this.receivedCtrl,
     required this.noteCtrl,
+    required this.expenseAmountCtrl,
+    required this.expenseTitleCtrl,
+    required this.expenseNoteCtrl,
+    required this.expenseCategory,
+    required this.onExpenseCategoryChanged,
     this.isEditing = false,
     this.originalInvoice,
   });
@@ -2462,6 +2518,11 @@ class _PaymentStep extends ConsumerWidget {
   final TextEditingController discountCtrl;
   final TextEditingController receivedCtrl;
   final TextEditingController noteCtrl;
+  final TextEditingController expenseAmountCtrl;
+  final TextEditingController expenseTitleCtrl;
+  final TextEditingController expenseNoteCtrl;
+  final String expenseCategory;
+  final ValueChanged<String> onExpenseCategoryChanged;
   final bool isEditing;
   final InvoiceModel? originalInvoice;
 
@@ -2548,6 +2609,18 @@ class _PaymentStep extends ConsumerWidget {
             prefixIcon: Icon(Icons.notes_outlined),
           ),
           onChanged: (val) => invoiceNotifier.setInvoiceNote(val),
+        ),
+
+        const SizedBox(height: 16),
+
+        // ── حقل مصروفات وتكلفة الفاتورة ──
+        _InvoiceExpenseSection(
+          amountCtrl: expenseAmountCtrl,
+          titleCtrl: expenseTitleCtrl,
+          noteCtrl: expenseNoteCtrl,
+          category: expenseCategory,
+          onCategoryChanged: onExpenseCategoryChanged,
+          grandTotal: invoiceState.grandTotal,
         ),
 
         const SizedBox(height: 24),
@@ -3005,6 +3078,283 @@ class _TotalRow extends StatelessWidget {
           style: style,
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Invoice Expense Section (الكلفة والمصروفات الخاصة بالفاتورة)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _InvoiceExpenseSection extends StatefulWidget {
+  final TextEditingController amountCtrl;
+  final TextEditingController titleCtrl;
+  final TextEditingController noteCtrl;
+  final String category;
+  final ValueChanged<String> onCategoryChanged;
+  final double grandTotal;
+
+  const _InvoiceExpenseSection({
+    required this.amountCtrl,
+    required this.titleCtrl,
+    required this.noteCtrl,
+    required this.category,
+    required this.onCategoryChanged,
+    required this.grandTotal,
+  });
+
+  @override
+  State<_InvoiceExpenseSection> createState() => _InvoiceExpenseSectionState();
+}
+
+class _InvoiceExpenseSectionState extends State<_InvoiceExpenseSection> {
+  bool _expanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final amt = double.tryParse(widget.amountCtrl.text.replaceAll(',', '').trim()) ?? 0;
+    if (amt > 0) _expanded = true;
+    widget.amountCtrl.addListener(_onAmountChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.amountCtrl.removeListener(_onAmountChanged);
+    super.dispose();
+  }
+
+  void _onAmountChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final amt = double.tryParse(widget.amountCtrl.text.replaceAll(',', '').trim()) ?? 0;
+    final netProfit = widget.grandTotal - amt;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFDF2F8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: amt > 0
+              ? const Color(0xFFBE185D)
+              : (isDark ? AppColors.darkBorder : const Color(0xFFFCE7F3)),
+          width: amt > 0 ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header / Toggle
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFBE185D).withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: Color(0xFFBE185D),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'مصروفات الفاتورة (الكلفة)',
+                              style: TextStyle(
+                                fontFamily: 'KOMedia',
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF881337),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (amt > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFBE185D),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${_fmt.format(amt.round())} د.ع',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          amt > 0
+                              ? 'صافي الربح المتوقع: ${_fmt.format(netProfit.round())} د.ع'
+                              : 'لحساب كلفة هذه الفاتورة وصافي ربحها (اختياري)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: amt > 0
+                                ? (netProfit >= 0 ? const Color(0xFF059669) : Colors.red)
+                                : (isDark ? Colors.white54 : Colors.grey.shade600),
+                            fontWeight: amt > 0 ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: isDark ? Colors.white70 : Colors.grey.shade700,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (_expanded) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Amount Field
+                  TextField(
+                    controller: widget.amountCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'مبلغ المصروف / التكلفة',
+                      hintText: 'مثال: 15,000',
+                      prefixIcon: const Icon(Icons.payments_outlined, color: Color(0xFFBE185D)),
+                      suffixText: 'د.ع',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Title Field
+                  TextField(
+                    controller: widget.titleCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'اسم المصروف / البيان',
+                      hintText: 'مثال: أجور نقل، مواد، تصنيع',
+                      prefixIcon: const Icon(Icons.label_outlined),
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Category dropdown
+                  DropdownButtonFormField<String>(
+                    value: widget.category,
+                    decoration: InputDecoration(
+                      labelText: 'فئة المصروف',
+                      prefixIcon: const Icon(Icons.category_outlined),
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                    ),
+                    items: kExpenseCategories.map((c) {
+                      return DropdownMenuItem(value: c, child: Text(c));
+                    }).toList(),
+                    onChanged: (v) {
+                      if (v != null) widget.onCategoryChanged(v);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Expense Notes
+                  TextField(
+                    controller: widget.noteCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'ملاحظات المصروف (اختياري)',
+                      prefixIcon: const Icon(Icons.notes_outlined),
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                    ),
+                  ),
+
+                  if (amt > 0) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: netProfit >= 0
+                            ? const Color(0xFFECFDF5)
+                            : const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: netProfit >= 0
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                netProfit >= 0
+                                    ? Icons.trending_up
+                                    : Icons.trending_down,
+                                color: netProfit >= 0
+                                    ? const Color(0xFF059669)
+                                    : const Color(0xFFDC2626),
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'صافي الربح:',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: netProfit >= 0
+                                      ? const Color(0xFF065F46)
+                                      : const Color(0xFF991B1B),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '${_fmt.format(netProfit.round())} د.ع',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: netProfit >= 0
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFFDC2626),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

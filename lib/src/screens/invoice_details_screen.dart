@@ -1,5 +1,4 @@
 import 'package:daftar_debt_manager/src/core/widgets/app_bar_logo.dart';
-import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:daftar_debt_manager/src/core/theme/google_fonts_mock.dart';
 import 'dart:ui' as ui;
@@ -9,8 +8,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../core/providers/app_providers.dart';
 import '../core/providers/invoice_detail_provider.dart';
@@ -20,6 +17,7 @@ import '../core/utils/app_snackbar.dart';
 import '../core/utils/export_helper.dart';
 import '../core/utils/pdf_invoice_generator.dart';
 import '../data/repositories/invoice_repository.dart';
+import '../data/repositories/expense_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/utils/whatsapp_launcher.dart';
 import '../core/theme/app_theme.dart';
@@ -125,25 +123,35 @@ class InvoiceDetailsScreen extends ConsumerWidget {
                               _sendInvoiceWhatsApp(context, ref, d),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       // 2. Print/PDF Button
                       Expanded(
                         child: _ActionBtn(
                           icon: Icons.print_outlined,
                           label: 'طبع / PDF',
-                          // use brand color for main action
                           color: const Color(0xFF098677),
                           onPressed: () => _exportPdf(context, ref, d),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       // 3. Share Image Button
                       Expanded(
                         child: _ActionBtn(
                           icon: Icons.share_outlined,
-                          label: 'مشاركة صوره',
+                          label: 'مشاركة',
                           color: Colors.orange,
                           onPressed: () => _shareImage(context),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // 4. Expenses Button
+                      Expanded(
+                        child: _ActionBtn(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: 'المصروفات',
+                          color: const Color(0xFFBE185D),
+                          onPressed: () => context.push(
+                              '/invoices/details/${d.invoice.id}/expenses?num=${d.invoice.num}'),
                         ),
                       ),
                     ],
@@ -435,16 +443,22 @@ class InvoiceDetailsScreen extends ConsumerWidget {
 // Receipt Card Widget  ─  the "real receipt" design shown on screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ReceiptCard extends StatelessWidget {
+class _ReceiptCard extends ConsumerWidget {
   const _ReceiptCard({required this.invoice, required this.items});
 
   final InvoiceModel invoice;
   final List<InvoiceItemModel> items;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    final expensesAsync = ref.watch(invoiceExpensesProvider(invoice.id));
+    final invoiceExpenses = expensesAsync.valueOrNull ?? const [];
+    final totalExpenses =
+        invoiceExpenses.fold<double>(0.0, (sum, e) => sum + e.amount);
+    final netProfit = invoice.grandTotal - totalExpenses;
 
     final totalAmount = invoice.subtotal > 0.0001
         ? invoice.subtotal
@@ -733,6 +747,24 @@ class _ReceiptCard extends StatelessWidget {
                   bold: true,
                   fontSize: 16,
                 ),
+                if (totalExpenses > 0) ...[
+                  const SizedBox(height: 6),
+                  _TotalRow(
+                    label: 'مصروفات الفاتورة (الكلفة)',
+                    value: -totalExpenses,
+                    valueColor: const Color(0xFFBE185D),
+                    bold: true,
+                  ),
+                  const SizedBox(height: 6),
+                  _TotalRow(
+                    label: 'صافي ربح الفاتورة',
+                    value: netProfit,
+                    valueColor:
+                        netProfit >= 0 ? const Color(0xFF059669) : Colors.red,
+                    bold: true,
+                    fontSize: 15,
+                  ),
+                ],
                 const SizedBox(height: 6),
                 _TotalRow(label: 'المبلغ المدفوع', value: invoice.currentPaid),
                 if (invoice.debt > 0)
@@ -782,6 +814,14 @@ class _ReceiptCard extends StatelessWidget {
                 ),
               ),
             ),
+
+          // ── قسم مصروفات الفاتورة والكلفة ──
+          _ReceiptExpensesSection(
+            invoice: invoice,
+            expenses: invoiceExpenses,
+            totalExpenses: totalExpenses,
+            netProfit: netProfit,
+          ),
 
           Container(
             decoration: BoxDecoration(
@@ -1005,6 +1045,211 @@ class _ActionBtn extends StatelessWidget {
                 color: color,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Receipt Expenses Section Widget
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ReceiptExpensesSection extends StatelessWidget {
+  final InvoiceModel invoice;
+  final List<ExpenseModel> expenses;
+  final double totalExpenses;
+  final double netProfit;
+
+  const _ReceiptExpensesSection({
+    required this.invoice,
+    required this.expenses,
+    required this.totalExpenses,
+    required this.netProfit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final numFmt = NumberFormat('#,###');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFFDF2F8),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: expenses.isNotEmpty
+                ? const Color(0xFFBE185D).withOpacity(0.4)
+                : (isDark ? Colors.white12 : const Color(0xFFFCE7F3)),
+          ),
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFBE185D).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: Color(0xFFBE185D),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'مصروفات وكلفة الفاتورة',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: isDark ? Colors.white : const Color(0xFF881337),
+                        ),
+                      ),
+                      Text(
+                        expenses.isNotEmpty
+                            ? '${expenses.length} مصروف مسجّل • الكلفة: ${numFmt.format(totalExpenses.round())} د.ع'
+                            : 'لم تسجل مصروفات لهذه الفاتورة بعد',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white60 : Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFBE185D),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: Icon(
+                      expenses.isNotEmpty ? Icons.open_in_new : Icons.add,
+                      size: 14),
+                  label: Text(
+                    expenses.isNotEmpty ? 'عرض / إضافة' : 'إضافة كلفة',
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () {
+                    context.push(
+                        '/invoices/details/${invoice.id}/expenses?num=${invoice.num}');
+                  },
+                ),
+              ],
+            ),
+            if (expenses.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              ...expenses.take(3).map((e) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xFFBE185D).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                e.category,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFFBE185D),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              e.title,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    isDark ? Colors.white70 : Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '${numFmt.format(e.amount.round())} د.ع',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFBE185D),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+              if (expenses.length > 3)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    '+ ${expenses.length - 3} مصروفات إضافية...',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.white38 : Colors.grey,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: netProfit >= 0
+                      ? const Color(0xFF059669).withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'صافي ربح هذه الفاتورة:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: netProfit >= 0
+                            ? const Color(0xFF059669)
+                            : Colors.red,
+                      ),
+                    ),
+                    Text(
+                      '${numFmt.format(netProfit.round())} د.ع',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: netProfit >= 0
+                            ? const Color(0xFF059669)
+                            : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

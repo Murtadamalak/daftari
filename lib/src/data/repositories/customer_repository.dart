@@ -91,7 +91,7 @@ class CustomerRepository {
         // حفظ في الكاش المحلي
         await _cacheCustomers(customers);
 
-        return _getFromCache();
+        return customers;
       } catch (e) {
         debugPrint('[CustomerRepo] Error fetching customers: $e');
         return _getFromCache();

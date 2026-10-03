@@ -22,7 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool _isLogin = true;
   bool _isLoading = false;
-  bool _rememberMe = false;
+  bool _rememberMe = true;
   bool _obscurePassword = true;
   String? _errorMessage;
 

@@ -124,17 +124,21 @@ class SyncService {
 
       // إزالة الحقول المحلية فقط قبل الإرسال للسحابة
       final cloudPayload = Map<String, dynamic>.from(payload);
+      if (cloudPayload['user_id'] == null || (cloudPayload['user_id'] as String).isEmpty) {
+        cloudPayload['user_id'] = _userId;
+      }
       if (tableName == 'user_invoice_items') {
         cloudPayload.remove('note');
       } else if (tableName == 'user_invoices') {
         cloudPayload.remove('shop_phone');
         cloudPayload.remove('owner_name');
+        cloudPayload.remove('shop_logo_path');
       }
 
       try {
         switch (operation) {
           case 'insert':
-            await _supabase.from(tableName).upsert(cloudPayload);
+            await _supabase.from(tableName).upsert(cloudPayload, onConflict: 'id');
             break;
           case 'update':
             await _supabase

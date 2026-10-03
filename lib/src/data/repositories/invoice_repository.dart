@@ -242,7 +242,6 @@ class InvoiceRepository {
       'unit_price': unitPrice,
       'price_type': item['price_type'] as String? ?? 'retail',
       'total': total,
-      'note': note,
     };
   }
 
@@ -252,6 +251,7 @@ class InvoiceRepository {
     final stripped = Map<String, dynamic>.from(inv);
     stripped.remove('shop_phone'); // عمود غير موجود في Supabase
     stripped.remove('owner_name'); // عمود غير موجود في Supabase
+    stripped.remove('shop_logo_path'); // عمود غير موجود في Supabase
     return stripped;
   }
 
@@ -288,7 +288,7 @@ class InvoiceRepository {
         // تخزين في الكاش المحلي
         await _cacheInvoices(invoices);
 
-        return _getInvoicesFromCache();
+        return invoices;
       } catch (e) {
         debugPrint('[InvoiceRepo] Error fetching invoices from cloud: $e');
         // فشل حتى وهو أونلاين → نقرأ من الكاش
